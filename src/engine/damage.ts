@@ -48,3 +48,18 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
     critMultiplier: cm,
   }
 }
+
+export interface ComputeMonsterDamageParams {
+  charCount: number
+  timeUsedMs: number
+  timeLimitMs: number
+  combat: CombatConfig
+}
+
+// The monster's damage uses the same shape minus Luck (crit) and power-ups —
+// both player-only — so difficulty is tuned by monster stats, not a second
+// rulebook. See game-design.html#damage.
+export const computeMonsterDamage = (params: ComputeMonsterDamageParams): number => {
+  const { charCount, timeUsedMs, timeLimitMs, combat } = params
+  return combat.baseDamage * lengthFactor(charCount, combat) * speedBonus(timeUsedMs, timeLimitMs)
+}

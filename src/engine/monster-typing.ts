@@ -13,18 +13,18 @@ export interface MonsterTyper {
   advance(dtMs: number): void
 }
 
-const msPerChar = (monster: Monster, combat: CombatConfig): number =>
-  60000 / (monster.wpm * combat.avgWordLength)
+const msPerChar = (wpm: number, combat: CombatConfig): number =>
+  60000 / (wpm * combat.avgWordLength)
 
-// The monster's own expected typing time for this prompt, before any slack.
-// Shared by the typer (to size its time limit) and the battle engine (to
-// show a time limit in the UI) so there's one source of truth for "how long
-// should this monster take."
+// Expected typing time for `promptLength` chars at `wpm`, before any slack.
+// Takes a plain wpm so both the monster typer (monster.wpm) and the battle
+// engine's player time limit (combat.playerBaselineWpm) share one formula —
+// one source of truth for "how long should typing this take."
 export const expectedTypingTimeMs = (
   promptLength: number,
-  monster: Monster,
+  wpm: number,
   combat: CombatConfig,
-): number => msPerChar(monster, combat) * promptLength
+): number => msPerChar(wpm, combat) * promptLength
 
 const WRONG_CHAR_POOL = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -46,8 +46,9 @@ export const createMonsterTyper = (
   rng: Rng,
   combat: CombatConfig,
 ): MonsterTyper => {
-  const intervalMeanMs = msPerChar(monster, combat)
-  const timeLimitMs = expectedTypingTimeMs(prompt.length, monster, combat) * combat.monsterSlack
+  const intervalMeanMs = msPerChar(monster.wpm, combat)
+  const timeLimitMs =
+    expectedTypingTimeMs(prompt.length, monster.wpm, combat) * combat.monsterSlack
 
   let elapsedMs = 0
   let done = false

@@ -31,6 +31,7 @@ export interface CombatConfig {
   playerBaselineWpm: number
   avgWordLength: number
   playerTimeLimitFloorMs: number
+  playerMaxHp: number
   monsterSlack: number
   criticalChance: number
   criticalDamageMultiplier: number

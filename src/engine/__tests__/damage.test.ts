@@ -10,6 +10,7 @@ const baseCombat: CombatConfig = {
   playerBaselineWpm: 15,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 3000,
+  playerMaxHp: 100,
   monsterSlack: 1.75,
   criticalChance: 0,
   criticalDamageMultiplier: 2,

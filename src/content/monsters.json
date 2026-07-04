@@ -1,0 +1,24 @@
+[
+  {
+    "id": "slime",
+    "name": "Slime",
+    "tier": 1,
+    "hp": 40,
+    "textTier": 1,
+    "wpm": 15,
+    "accuracy": 0.75,
+    "attention": 1.5,
+    "flavor": "Slow, and slow to notice its own mistakes — the tutorial fight"
+  },
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "tier": 1,
+    "hp": 60,
+    "textTier": 2,
+    "wpm": 25,
+    "accuracy": 0.7,
+    "attention": 1.0,
+    "flavor": "Quick but sloppy, and a bit slow to catch it"
+  }
+]

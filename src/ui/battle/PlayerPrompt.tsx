@@ -1,11 +1,12 @@
-import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
 
 interface PlayerPromptProps {
   prompt: string
+  input: string
   timeLimitMs: number
   elapsedMs: number
   disabled: boolean
+  onInputChange: (value: string) => void
   onSubmit: (input: string) => void
 }
 
@@ -14,12 +15,17 @@ interface PlayerPromptProps {
 // (engine/battle.ts) enforces this too, this is just the UI-local typing box
 // feeding it. See game-design.html#submitting.
 //
-// The parent remounts this component (via `key={player.attempt}`) on every
-// new prompt cycle, so `input` resets even when the new prompt's text
-// happens to be identical to the last one.
-const PlayerPrompt = ({ prompt, timeLimitMs, elapsedMs, disabled, onSubmit }: PlayerPromptProps) => {
-  const [input, setInput] = useState('')
-
+// `input` is lifted to BattleScreen (Story 7) rather than owned here, since
+// Keyboard needs it too, alongside `prompt`.
+const PlayerPrompt = ({
+  prompt,
+  input,
+  timeLimitMs,
+  elapsedMs,
+  disabled,
+  onInputChange,
+  onSubmit,
+}: PlayerPromptProps) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key !== 'Enter') return
     if (input.length !== prompt.length) return
@@ -35,7 +41,7 @@ const PlayerPrompt = ({ prompt, timeLimitMs, elapsedMs, disabled, onSubmit }: Pl
         className="border p-2 font-mono disabled:opacity-50"
         value={input}
         disabled={disabled}
-        onChange={(event) => setInput(event.target.value)}
+        onChange={(event) => onInputChange(event.target.value)}
         onKeyDown={handleKeyDown}
         aria-label="Type the prompt"
         // This is the game's one always-relevant control; the kid should be

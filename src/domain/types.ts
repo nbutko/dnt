@@ -50,6 +50,10 @@ export interface PlayerState {
   hp: number
   maxHp: number
   prompt: string
+  // Increments every new prompt cycle, even if the drawn text repeats — lets
+  // the UI reset its typed-input box on a real prompt change rather than a
+  // text change (two different lines can be identical strings).
+  attempt: number
   timeLimitMs: number
   elapsedMs: number
 }

@@ -28,6 +28,7 @@ export const createBattle = (config: BattleConfig): Battle => {
     )
 
   let playerPrompt = playerPrompts()
+  let playerAttempt = 0
   let playerTimeLimitMs = playerTimeLimitFor(playerPrompt)
   let playerElapsedMs = 0
 
@@ -45,6 +46,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         hp: playerHp,
         maxHp: combat.playerMaxHp,
         prompt: playerPrompt,
+        attempt: playerAttempt,
         timeLimitMs: playerTimeLimitMs,
         elapsedMs: playerElapsedMs,
       },
@@ -71,6 +73,7 @@ export const createBattle = (config: BattleConfig): Battle => {
 
   const advancePlayerPrompt = (): void => {
     playerPrompt = playerPrompts()
+    playerAttempt += 1
     playerTimeLimitMs = playerTimeLimitFor(playerPrompt)
     playerElapsedMs = 0
   }

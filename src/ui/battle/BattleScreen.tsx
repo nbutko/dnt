@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react'
+import { getMonster } from '../../content/monsters'
 import { createBattleStore, type BattleStore } from '../../state/battle-store'
 import { useBattle } from '../hooks/useBattle'
 import { useGameLoop } from '../hooks/useGameLoop'
 import BattleResult from './BattleResult'
 import HealthBar from './HealthBar'
 import Keyboard from './Keyboard'
-import MonsterTyping from './MonsterTyping'
 import PlayerPrompt from './PlayerPrompt'
+import TypedProgress from './TypedProgress'
 
 const M0_MONSTER_ID = 'slime' // M0/M1 hardcode one monster; the roster grows in M2.
+
+// Outer-frame gradient/outline per docs/design/visual-spec.html#layout: a
+// radial glow behind a double-border look, too one-off to earn a Tailwind
+// utility of its own.
+const outerFrameStyle = {
+  background: 'radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)',
+  outline: '1px solid var(--color-border-inset)',
+  outlineOffset: '-8px',
+}
 
 interface ReadyBattleScreenProps {
   store: BattleStore
 }
 
+// "Vertical Duel" layout (docs/design/visual-spec.html#layout): title, then
+// monster panel (top), a VS divider, then the player's own panel (bottom) —
+// HP, prompt, live input, countdown, and the keyboard.
 const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
   const { state, actions } = useBattle(store)
   useGameLoop(actions.tick, state.status === 'ongoing')
+  const monsterInfo = getMonster(state.monster.id)
 
   // Owned here (not PlayerPrompt) because Keyboard needs it alongside
   // `prompt` — see m0-implementation.html#keyboard.
@@ -25,23 +39,71 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
     setInput('')
   }, [state.player.attempt])
 
+  const secondsLeft = Math.max(0, state.player.timeLimitMs - state.player.elapsedMs) / 1000
+
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
-      <HealthBar label="You" hp={state.player.hp} maxHp={state.player.maxHp} />
-      <HealthBar label={state.monster.id} hp={state.monster.hp} maxHp={state.monster.maxHp} />
-      <MonsterTyping prompt={state.monster.prompt} typed={state.monster.typed} />
-      <PlayerPrompt
-        prompt={state.player.prompt}
-        input={input}
-        timeLimitMs={state.player.timeLimitMs}
-        elapsedMs={state.player.elapsedMs}
-        disabled={state.status !== 'ongoing'}
-        onInputChange={setInput}
-        onSubmit={actions.submit}
-      />
-      <Keyboard prompt={state.player.prompt} input={input} />
-      <BattleResult status={state.status} />
-    </main>
+    <div className="mx-auto max-w-[1040px] border-[3px] border-border-gold p-7" style={outerFrameStyle}>
+      <h1 className="mb-6 text-center font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
+        Battle — Tier {monsterInfo.tier}
+      </h1>
+
+      <section className="rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-monster-from to-panel-monster-to p-4">
+        <HealthBar
+          label={monsterInfo.name}
+          hp={state.monster.hp}
+          maxHp={state.monster.maxHp}
+          family="danger"
+        />
+        <div className="mt-3 rounded border border-border-gold-dim bg-black/30 p-3">
+          <TypedProgress
+            prompt={state.monster.prompt}
+            typed={state.monster.typed}
+            revealRemaining={false}
+            className="text-lg"
+          />
+        </div>
+      </section>
+
+      <div className="my-4 flex items-center gap-3 text-accent-gold">
+        <span className="h-px flex-1 bg-border-gold-dim" />
+        <span>◆</span>
+        <span className="font-display text-sm tracking-[0.2em]">VS</span>
+        <span>◆</span>
+        <span className="h-px flex-1 bg-border-gold-dim" />
+      </div>
+
+      <section className="rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-player-from to-panel-player-to p-4">
+        <HealthBar label="You" hp={state.player.hp} maxHp={state.player.maxHp} family="gold" />
+
+        <div className="mt-3 flex items-start gap-4">
+          <div className="flex-1">
+            <PlayerPrompt
+              prompt={state.player.prompt}
+              input={input}
+              disabled={state.status !== 'ongoing'}
+              onInputChange={setInput}
+              onSubmit={actions.submit}
+            />
+          </div>
+          <div className="w-16 flex-none text-center">
+            <div className="font-display text-[22px] font-bold text-accent-gold-bright">
+              {secondsLeft.toFixed(1)}
+            </div>
+            <div className="font-mono text-[10px] tracking-wide text-text-dim uppercase">Sec left</div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <Keyboard prompt={state.player.prompt} input={input} />
+        </div>
+
+        {state.status !== 'ongoing' && (
+          <div className="mt-4">
+            <BattleResult status={state.status} />
+          </div>
+        )}
+      </section>
+    </div>
   )
 }
 
@@ -59,7 +121,7 @@ const BattleScreen = () => {
   }, [])
 
   if (!store) {
-    return <p className="p-8">Loading battle…</p>
+    return <p className="p-8 text-text-dim">Loading battle…</p>
   }
 
   return <ReadyBattleScreen store={store} />

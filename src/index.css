@@ -1,1 +1,32 @@
 @import 'tailwindcss';
+
+/* Palette + type tokens from docs/design/tokens.json and visual-spec.html
+   ("2a — Vertical Duel"). Player-side fills/borders use the gold family;
+   monster-side uses the danger (red) family — never mix. */
+@theme {
+  --color-bg-deep: #140b07;
+  --color-panel-base: #1c1608;
+  --color-panel-monster-from: #3b1220;
+  --color-panel-monster-to: #2a0d17;
+  --color-panel-player-from: #241f3d20;
+  --color-panel-player-to: #1a1226;
+  --color-border-gold: #7a5a22;
+  --color-border-gold-dim: #4a3a18;
+  --color-border-inset: #3a2a10;
+  --color-accent-gold: #c9a227;
+  --color-accent-gold-bright: #e8c766;
+  --color-danger: #8b2020;
+  --color-danger-bright: #c94b4b;
+  --color-text-primary: #ede1c3;
+  --color-text-dim: #a89a7a;
+  --color-key-base: rgba(237, 225, 195, 0.06);
+
+  --font-display: 'Cinzel', serif;
+  --font-body: 'EB Garamond', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background: var(--color-bg-deep);
+  font-family: var(--font-body);
+}

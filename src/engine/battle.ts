@@ -114,13 +114,13 @@ export const createBattle = (config: BattleConfig): Battle => {
       })
       playerHp = Math.max(0, playerHp - damage)
       lastEvent = { side: 'monster', kind: 'hit', damage }
-      advanceMonsterPrompt()
+      checkOutcome()
+      if (status === 'ongoing') advanceMonsterPrompt()
     } else if (monsterTyperState.failed) {
       lastEvent = { side: 'monster', kind: 'miss' }
       advanceMonsterPrompt()
     }
 
-    checkOutcome()
     rebuildSnapshot()
     notify()
   }
@@ -146,8 +146,12 @@ export const createBattle = (config: BattleConfig): Battle => {
       lastEvent = { side: 'player', kind: 'miss' }
     }
 
-    advancePlayerPrompt()
+    // Only draw a new prompt if the battle is still ongoing — otherwise the
+    // UI would show a fresh, never-attempted prompt sitting next to the
+    // win/lose banner instead of the line that actually ended the fight.
     checkOutcome()
+    if (status === 'ongoing') advancePlayerPrompt()
+
     rebuildSnapshot()
     notify()
   }

@@ -14,7 +14,7 @@ const Keyboard = ({ prompt, input }: KeyboardProps) => {
   const highlights = nextKeyHighlights(prompt, input)
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 rounded-lg border border-border-gold-dim bg-panel-base p-3.5">
       {keyboardLayout.map((row) => (
         <div key={row[0].code} className="flex gap-1">
           {row.map((keyData) => (

@@ -18,8 +18,6 @@ const Harness = ({ prompt, disabled = false, onSubmit }: HarnessProps) => {
     <PlayerPrompt
       prompt={prompt}
       input={input}
-      timeLimitMs={5000}
-      elapsedMs={0}
       disabled={disabled}
       onInputChange={setInput}
       onSubmit={onSubmit}

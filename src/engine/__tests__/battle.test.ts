@@ -157,6 +157,35 @@ describe('createBattle', () => {
     expect(state.monster.hp).toBe(0)
   })
 
+  it('freezes the winning prompt instead of drawing a new one once the battle ends', () => {
+    const rng = createRng(1)
+    const oneHpMonster: Monster = { ...steadyMonster, hp: 1 }
+    const attemptBefore = createBattle({
+      combat,
+      monster: oneHpMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+    }).getState().player.attempt
+
+    const battle = createBattle({
+      combat,
+      monster: oneHpMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng: createRng(1),
+    })
+    battle.submitPlayerAttack('jak')
+    const state = battle.getState()
+    expect(state.status).toBe('won')
+    expect(state.player.prompt).toBe('jak')
+    expect(state.player.attempt).toBe(attemptBefore)
+
+    // ticking further after the win must not advance the frozen prompt either
+    battle.tick(1000)
+    expect(battle.getState().player.attempt).toBe(attemptBefore)
+  })
+
   it('loses when the player never attacks and the monster keeps landing hits', () => {
     const rng = createRng(1)
     const battle = createBattle({

@@ -66,4 +66,12 @@ module.exports = {
     ],
     'react/require-default-props': 'off',
   },
+  overrides: [
+    {
+      // mulberry32 is a bitwise-arithmetic PRNG by nature; airbnb's no-bitwise
+      // ban is right everywhere else, but fights the algorithm here.
+      files: ['src/engine/rng.ts'],
+      rules: { 'no-bitwise': 'off', 'operator-assignment': 'off' },
+    },
+  ],
 }

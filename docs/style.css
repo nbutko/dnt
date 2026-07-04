@@ -1,0 +1,174 @@
+:root {
+  --bg: #14121f;
+  --panel: #1d1a2e;
+  --panel-2: #241f3d;
+  --border: #34304f;
+  --text: #e9e6f5;
+  --text-dim: #a8a2c4;
+  --accent: #ffb454;
+  --accent-2: #7ee0c3;
+  --danger: #ff6b6b;
+  --link: #9ab8ff;
+  --radius: 10px;
+  --maxw: 880px;
+  font-size: 17px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #201c33 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+header.page-head {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 1rem;
+}
+
+main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+nav.crumbs {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 1rem 1.5rem 0;
+  font-size: 0.9rem;
+}
+nav.crumbs a { color: var(--text-dim); text-decoration: none; }
+nav.crumbs a:hover { color: var(--link); }
+
+h1 {
+  font-size: 2rem;
+  margin: 0.2rem 0 0.3rem;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+.tagline { color: var(--text-dim); font-size: 1.05rem; margin: 0; }
+
+h2 {
+  font-size: 1.35rem;
+  margin-top: 2.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent-2);
+}
+h3 { font-size: 1.05rem; color: var(--text); margin-top: 1.6rem; }
+
+p { color: var(--text); }
+code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.92em;
+}
+pre {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+}
+pre code { border: none; background: none; padding: 0; }
+
+a { color: var(--link); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+th { color: var(--accent-2); font-weight: 600; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.card {
+  display: block;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card .card-title { color: var(--accent); font-weight: 600; display: block; margin-bottom: 0.3rem; }
+.card .card-desc { color: var(--text-dim); font-size: 0.9rem; }
+
+.callout {
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin: 1.2rem 0;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+.callout.why::before { content: "Why"; }
+.callout.decision::before { content: "Decision"; }
+.callout.open::before { content: "Open question"; }
+.callout::before {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+.callout.why { border-left: 3px solid var(--accent-2); }
+.callout.decision { border-left: 3px solid var(--accent); }
+.callout.open { border-left: 3px solid var(--danger); }
+
+.milestone {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin: 1.3rem 0;
+  background: var(--panel);
+}
+.milestone h3 { margin-top: 0; display: flex; align-items: center; gap: 0.6rem; }
+.tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.tag.playable { color: var(--accent-2); border-color: var(--accent-2); }
+.tag.core { color: var(--accent); border-color: var(--accent); }
+.tag.defer { color: var(--text-dim); border-color: var(--border); }
+.tag.flag { color: var(--danger); border-color: var(--danger); }
+
+ul, ol { padding-left: 1.3rem; }
+li { margin: 0.25rem 0; }
+
+footer.page-foot {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}

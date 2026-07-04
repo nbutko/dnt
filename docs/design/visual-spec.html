@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual Spec — M0 Battle Screen — Dungeons & Typing</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 0.9rem; margin: 1rem 0 1.6rem; }
+  .swatch { width: 132px; }
+  .swatch .chip { height: 56px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 0.4rem; }
+  .swatch .name { font-size: 0.82rem; color: var(--text); display: block; }
+  .swatch .hex { font-size: 0.78rem; color: var(--text-dim); font-family: monospace; }
+  .font-sample { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; margin: 0.6rem 0; background: var(--panel); }
+  .font-sample .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-2); margin-bottom: 0.4rem; display: block; }
+  kbd.key { display: inline-block; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.4rem; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> <span style="opacity:.5">/ design</span></nav>
+<header class="page-head">
+  <h1>Visual Spec — Battle Screen</h1>
+  <p class="tagline">Implementer-ready tokens and component specs for direction 2a ("Vertical Duel"), chosen from the <a href="../m0-implementation.html">M0</a> wireframe pass.</p>
+</header>
+<main>
+
+<div class="callout decision">
+  Scope note: <a href="../m0-implementation.html">M0's own plan</a> deliberately ships Story 5's UI unstyled
+  (Tailwind defaults, no art) — the point of the spike is to prove the combat math, not the look. Treat this
+  spec as <strong>ready whenever you apply it</strong>: drop it in at M0 if you'd rather build styled from day
+  one, or hold it for M1's "one real UI" milestone and keep M0 truly bare. Either way, these are the exact
+  values so no visual decisions are left to the implementer.
+</div>
+
+<h2 id="palette">Color palette</h2>
+<p>One dark base, one warm accent (gold), one danger (monster/damage). Same accent-hue-family rule as the rest
+of the site — don't add more hues.</p>
+<div class="swatch-row">
+  <div class="swatch"><div class="chip" style="background:#140b07"></div><span class="name">bg-deep</span><span class="hex">#140b07</span></div>
+  <div class="swatch"><div class="chip" style="background:#1c1608"></div><span class="name">panel-player</span><span class="hex">#1c1608</span></div>
+  <div class="swatch"><div class="chip" style="background:#2a0d17"></div><span class="name">panel-monster</span><span class="hex">#2a0d17</span></div>
+  <div class="swatch"><div class="chip" style="background:#7a5a22"></div><span class="name">border-gold</span><span class="hex">#7a5a22</span></div>
+  <div class="swatch"><div class="chip" style="background:#c9a227"></div><span class="name">accent-gold</span><span class="hex">#c9a227</span></div>
+  <div class="swatch"><div class="chip" style="background:#e8c766"></div><span class="name">accent-gold-bright</span><span class="hex">#e8c766</span></div>
+  <div class="swatch"><div class="chip" style="background:#8b2020"></div><span class="name">danger</span><span class="hex">#8b2020</span></div>
+  <div class="swatch"><div class="chip" style="background:#c94b4b"></div><span class="name">danger-bright</span><span class="hex">#c94b4b</span></div>
+  <div class="swatch"><div class="chip" style="background:#ede1c3"></div><span class="name">text-primary</span><span class="hex">#ede1c3</span></div>
+  <div class="swatch"><div class="chip" style="background:#a89a7a"></div><span class="name">text-dim</span><span class="hex">#a89a7a</span></div>
+</div>
+<pre><code>:root {
+  --bg-deep: #140b07;
+  --panel-player: #1c1608;
+  --panel-monster: #2a0d17;
+  --border-gold: #7a5a22;
+  --border-gold-dim: #4a3a18;
+  --accent-gold: #c9a227;
+  --accent-gold-bright: #e8c766;
+  --danger: #8b2020;
+  --danger-bright: #c94b4b;
+  --text-primary: #ede1c3;
+  --text-dim: #a89a7a;
+}</code></pre>
+<p>Player-side fills/borders use the gold family; monster-side fills/borders use the danger (red) family. Never mix — it's the fastest visual read for "whose bar is whose."</p>
+
+<h2 id="type">Typography</h2>
+<div class="font-sample">
+  <span class="label">Display — headers, panel labels, HP names</span>
+  <div style="font-family:'Cinzel',serif;font-size:1.4rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2)">Goblin Scout · You</div>
+</div>
+<div class="font-sample">
+  <span class="label">Body / flavor — taglines, incidental copy</span>
+  <div style="font-family:'EB Garamond',serif;font-size:1.1rem">The goblin sneers and lunges for its next line.</div>
+</div>
+<div class="font-sample">
+  <span class="label">Monospace — target prompt, live input, monster's typed text (never swap this out — legibility of the actual typing is the one thing that can't flex)</span>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem">the gobl<span style="color:#c94b4b">x</span>in sca_</div>
+</div>
+<pre><code>&lt;link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&amp;family=EB+Garamond:ital@0;1&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"&gt;
+
+font-family: 'Cinzel', serif;         /* display */
+font-family: 'EB Garamond', serif;    /* body */
+font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</code></pre>
+<table>
+  <tr><th>Use</th><th>Font</th><th>Size</th><th>Weight</th><th>Notes</th></tr>
+  <tr><td>Screen title ("Battle — Tier 1")</td><td>Cinzel</td><td>22px</td><td>700</td><td>letter-spacing .12em, uppercase</td></tr>
+  <tr><td>Panel name (GOBLIN SCOUT / YOU)</td><td>Cinzel</td><td>15px</td><td>500</td><td>letter-spacing .06em</td></tr>
+  <tr><td>HP numeric readout</td><td>JetBrains Mono</td><td>12px</td><td>400</td><td>text-dim color</td></tr>
+  <tr><td>Target prompt / monster typed text</td><td>JetBrains Mono</td><td>16–19px</td><td>400</td><td>min 16px — this is the text a 10-year-old is reading under time pressure</td></tr>
+  <tr><td>Live input echo</td><td>JetBrains Mono</td><td>13px</td><td>400</td><td>dimmer than the prompt above it</td></tr>
+  <tr><td>Countdown number</td><td>Cinzel</td><td>22px</td><td>700</td><td>gold</td></tr>
+  <tr><td>Keyboard key labels</td><td>JetBrains Mono</td><td>12–13px</td><td>400–700</td><td>700 only for the currently-lit key</td></tr>
+</table>
+
+<h2 id="layout">Layout — Vertical Duel (2a)</h2>
+<ul>
+  <li>Outer frame: max-width <code>1040px</code>, centered; <code>3px solid var(--border-gold)</code> outer border + a 1px inset outline 8px in for a double-border look; padding <code>28px</code>; background <code>radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)</code>.</li>
+  <li>Stack order, top → bottom: title → monster panel → divider ("VS" + gold diamonds) → player panel (HP + prompt/input/countdown + keyboard).</li>
+  <li>Monster panel: <code>border-radius: 8px</code>, <code>2px solid var(--border-gold)</code>, background <code>linear-gradient(180deg, #3b1220, #2a0d17)</code>, padding <code>16px 20px</code>.</li>
+  <li>Player panel: same shape, background <code>linear-gradient(180deg, #241f3d20, #1a1226)</code> — i.e. same structure as the monster panel, gold family instead of red.</li>
+  <li>HP bar: <code>14px</code> tall, <code>7px</code> radius, 1px border in the side's color family, fill is a gradient from the darker to brighter shade of that family.</li>
+  <li>Prompt/input row: prompt+input stacked on the left (flex: 1), countdown block fixed at <code>64px</code> wide to its right.</li>
+</ul>
+
+<h2 id="keyboard">Keyboard — all three states</h2>
+<p>Full 5-row QWERTY per <a href="../m0-implementation.html#keyboard">the implementation plan</a>: number row (ends in Backspace), two letter rows (second ends in Enter), Shift row, space row. Base key: <code>34×32px</code>, <code>4px</code> radius, <code>1px solid var(--border-gold-dim)</code>, background <code>rgba(237,225,195,.06)</code>. Only three states ever apply color — everything else stays the neutral base key above.</p>
+<table>
+  <tr><th>State</th><th>Trigger</th><th>Styling</th></tr>
+  <tr><td>On track</td><td><code>input === prompt.slice(0, input.length)</code></td><td>Next key: solid <code>#e8c766</code> bg, dark text, <code>box-shadow: 0 0 10px #e8c76699</code>. +1 key: <code>rgba(232,199,102,.55)</code>. +2 key: <code>rgba(232,199,102,.3)</code>. Everything else: base key.</td></tr>
+  <tr><td>Off track</td><td>a wrong char anywhere in input, or input longer than prompt</td><td>Only <kbd class="key">Backspace</kbd> lit (same solid-gold treatment as "next key" above); every other key — including letters — drops to base/neutral. Nothing else may glow.</td></tr>
+  <tr><td>Complete</td><td><code>input === prompt</code></td><td>Only <kbd class="key">Enter</kbd> lit (solid-gold treatment); all else neutral.</td></tr>
+</table>
+<p>Reference render, on-track case (next 3 keys are L → I → N):</p>
+<div style="background:#1c1608;border:1px solid #4a3a18;border-radius:8px;padding:14px;max-width:420px">
+  <div style="display:flex;gap:4px;margin-bottom:4px">
+    <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px"></div>
+    <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px"></div>
+    <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px"></div>
+    <div style="width:34px;height:32px;border-radius:4px;background:#e8c766;box-shadow:0 0 10px #e8c76699;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:#1c0f0a">L</div>
+    <div style="width:34px;height:32px;border-radius:4px;background:rgba(232,199,102,.55);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;color:#1c0f0a">I</div>
+    <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px"></div>
+    <div style="width:34px;height:32px;border-radius:4px;background:rgba(232,199,102,.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;color:#1c0f0a">N</div>
+  </div>
+  <p style="font-size:0.8rem;color:var(--text-dim);margin:6px 0 0">(abbreviated row for reference — see 2a mock for the full 5-row layout)</p>
+</div>
+
+<h2 id="assets">Assets checklist</h2>
+<ul>
+  <li>Google Fonts: <strong>Cinzel</strong> (500, 700), <strong>EB Garamond</strong> (400, 400 italic), <strong>JetBrains Mono</strong> (400, 500, 700) — all free/open license, no local font files needed.</li>
+  <li>No image assets for M0/M1 — the ornate borders/dividers above are CSS gradients + a rotated div ("◆"), not SVG or bitmap art. Real monster art doesn't arrive until <a href="../roadmap.html">M6</a>.</li>
+  <li><code>tokens.json</code> in this folder mirrors the palette/type table above in a machine-readable form for wiring into <code>config/combat.ts</code>'s sibling theme file or Tailwind config.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../m0-implementation.html">← Back to M0 implementation plan</a></footer>
+</body>
+</html>

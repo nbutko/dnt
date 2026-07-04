@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M0 Implementation Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M0 Implementation Plan</h1>
+  <p class="tagline">The combat-math spike, built on a skeleton the rest of the game grows into.</p>
+</header>
+<main>
+
+<p>
+  M0's goal is unchanged from the <a href="roadmap.html">roadmap</a>: prove the
+  <a href="game-design.html#damage">combat math</a> and <a href="game-design.html#monster-ai">monster typing</a>
+  feel right in a barebones page — winnable-but-tense in ~30–45s — before any art or animation. What this doc
+  adds is <em>how</em> to build it so M1–M6 are additive, not a rewrite: the file layout, the state
+  architecture, and a story-by-story task breakdown.
+</p>
+<div class="callout decision">
+  M0 is a spike, but not a throwaway. The UI is disposable; the <code>engine/</code>, <code>config/</code>, and
+  <code>content/</code> layers below are the real foundation the whole game keeps. The single rule that buys
+  that: <strong>the combat engine never imports React.</strong>
+</div>
+
+<h2>Review notes folded into the plan</h2>
+<p>Four things surfaced reviewing the design docs; all are now reflected here and in the source docs.</p>
+<table>
+  <tr><th>#</th><th>Finding</th><th>Resolution</th></tr>
+  <tr><td>A</td><td>The monster's time limit was undefined; reusing the player's short budget would leave slow monsters (Slime) unable to <em>ever</em> land a hit.</td><td><strong>Decided:</strong> monster budget = its own expected typing time × <code>slack</code> (~1.75). A per-battle tuning knob. See <a href="game-design.html#monster-ai">Monster typing</a>.</td></tr>
+  <tr><td>B</td><td>"15 chars/sec" for the player time limit ≈ 180 WPM (pro speed) — far too fast for a beginner 10-year-old.</td><td><strong>Fixed:</strong> it's a baseline <em>typing speed</em>, 15 <strong>WPM</strong> (≈ 1.25 chars/sec). Tuning it up/down is a core M0 job.</td></tr>
+  <tr><td>C</td><td><code>lengthFactor</code> could go to zero/negative for a very short prompt.</td><td><strong>Fixed:</strong> clamp with <code>Math.max(0.25, …)</code>.</td></tr>
+  <tr><td>D</td><td>The monster pseudo-code's <code>wait(interval)</code> can't exist in single-threaded JS.</td><td><strong>Design:</strong> the engine is tick-driven (<code>tick(dt)</code>) with an injectable clock + seedable RNG, so the whole race is deterministic and testable.</td></tr>
+</table>
+
+<h2 id="state">State architecture: no Redux, three homes</h2>
+<p>
+  The design doc's "React state, no external library" is the right call — but the reasoning matters, because
+  following it too literally is where tech debt would actually accrue. A <strong>battle is a real-time
+  simulation, not a form.</strong> Redux is not the fix; recognizing three <em>kinds</em> of state is.
+</p>
+<table>
+  <tr><th>Kind</th><th>Example</th><th>Frequency</th><th>Home</th></tr>
+  <tr><td>Simulation / battle</td><td>monster's live-typed string, both HP bars, both countdowns</td><td>many/sec</td><td>Plain-TS engine outside React; read via <code>useSyncExternalStore</code></td></tr>
+  <tr><td>Persistent / save</td><td>coins, xp, skillTree, inventory</td><td>once per battle/purchase</td><td>Context + <code>useReducer</code> <span class="tag defer">M2</span></td></tr>
+  <tr><td>Ephemeral UI</td><td>input box text, current screen</td><td>local</td><td><code>useState</code> in the component</td></tr>
+</table>
+<div class="callout why">
+  Context re-renders <em>every</em> consumer on <em>every</em> change — fine for a save file that changes once a
+  battle, pathological for state ticking 60×/sec. That's the concrete reason the battle lives in an
+  external-store engine rather than Context, and why Redux (which solves a different problem — predictable
+  updates to sprawling shared trees) earns its keep in neither place. Keeping the engine React-free is also what
+  makes the M0 deliverable — "prove the numbers" — testable headlessly (Story 2–4) and lets a balance simulator
+  reuse it (Story 6).
+</div>
+
+<h2>File &amp; component layout</h2>
+<p>The M0 skeleton. React-free layers (<code>engine/</code>, <code>config/</code>, <code>content/</code>,
+<code>domain/</code>) are the seam between combat logic and rendering — <code>state/battle-store.ts</code> is
+the <em>only</em> place the two meet.</p>
+<pre><code>src/
+  main.tsx
+  App.tsx                      # M0: renders &lt;BattleScreen/&gt; directly
+  config/
+    combat.ts                  # ALL tuning knobs in one object: baseDamage,
+                               #   referenceLength, lengthFactorFloor(0.25),
+                               #   playerBaselineWpm(15), avgWordLength(5),
+                               #   monsterSlack(1.75), crit defaults, typing variance
+  content/                     # DATA, not code — editable without touching logic
+    text/
+      tier-01.json             # { "tier": 1, "lines": ["asdf jkl;", …] }
+      tier-02.json             #   M0 ships tiers 1–2; a new tier = a new JSON file
+    text-banks.ts              # TextBank provider: loads the JSON, exposes
+                               #   loadTier(tier) + makePromptSource(tier, rng)
+    monsters.json              # roster stats as data — M0: slime, goblin
+    keyboard-layout.ts         # full 5-row QWERTY as data (incl. Backspace,
+                               #   Enter, Shift, Space); swappable layout later
+  domain/
+    types.ts                   # Monster, BattleState, BattleConfig… (types only, no logic)
+  engine/                      # ← the heart of M0. Pure TS, NO React imports.
+    rng.ts                     # createRng(seed): seedable (mulberry32). Injectable.
+    damage.ts                  # lengthFactor, speedBonus, critMultiplier, computeDamage
+    monster-typing.ts          # createMonsterTyper(monster, prompt, rng): advance(dt)
+    battle.ts                  # createBattle(config): getState/subscribe/tick/submitPlayerAttack
+    sim/
+      balance.ts               # headless "simulate N battles at player wpm X" harness
+    __tests__/                 # vitest, seeded RNG + fake clock
+  state/
+    battle-store.ts            # useSyncExternalStore adapter over one createBattle()
+                               #   (SaveContext lands here in M2)
+  ui/
+    hooks/
+      useGameLoop.ts           # rAF loop → engine.tick(dt); stops on win/lose
+      useBattle.ts             # useSyncExternalStore(battleStore) → { state, actions }
+    battle/
+      BattleScreen.tsx         # composition root; OWNS the shared `input` state
+      HealthBar.tsx            # reused for player + monster
+      PlayerPrompt.tsx         # target text + input box + countdown
+      MonsterTyping.tsx        # live char-by-char render (typos/corrections visible)
+      Keyboard.tsx             # on-screen keyboard; highlights the next ~3 keys
+      Key.tsx                  # one key; takes a brightness level
+      keyboard.ts              # pure helpers: keyForChar(), nextKeyHighlights() — testable
+      BattleResult.tsx         # win/lose overlay</code></pre>
+<div class="callout why">
+  Why this shape scales: adding the M2 save file is a new <code>state/</code> context + a call site, not a
+  combat-math change. Adding M6 sprites swaps <code>MonsterTyping.tsx</code>'s renderer, not the sim. Adding a
+  monster or a text tier stays a <a href="content-plan.html">content edit</a>. Every future milestone lands in
+  exactly one layer.
+</div>
+
+<h3>Engine API sketch</h3>
+<pre><code>// engine/battle.ts — a factory (no classes, per the code-style rules)
+createBattle(config: BattleConfig) =&gt; {
+  getState(): BattleState                     // authoritative snapshot
+  subscribe(cb: () =&gt; void): () =&gt; void        // for useSyncExternalStore
+  tick(dtMs: number): void                    // advance both cycles one frame
+  submitPlayerAttack(input: string): void     // evaluate on Return (length-gated, exact match)
+}
+
+// A prompt source is sync-by-design: the tier's lines are loaded (possibly async)
+// at battle SETUP, then handed to the engine as a plain picker so the sim stays pure.
+type PromptSource = () =&gt; string
+
+interface BattleConfig {
+  combat: CombatConfig            // the tuning-knob object from config/combat.ts
+  monster: Monster                // who we're fighting (from content/monsters.json)
+  playerPrompts: PromptSource     // player's next-prompt source (skill-gated tier in M2)
+  monsterPrompts: PromptSource    // monster's next-prompt source (its fixed text tier)
+  rng: Rng                        // seedable; injected so a whole battle is reproducible
+}
+
+// BattleState (read by the UI)
+{
+  status: 'ongoing' | 'won' | 'lost'
+  player:  { hp, maxHp, prompt, timeLimitMs, elapsedMs }
+  monster: { id, hp, maxHp, prompt, typed, timeLimitMs, elapsedMs }
+  lastEvent?: { side, kind: 'hit'|'miss'|'expire', damage? }   // for barebones feedback
+}</code></pre>
+<p>
+  The player's in-progress input stays <em>UI-local</em> (the human is doing the typing, not a simulation) and
+  is handed to <code>submitPlayerAttack(input)</code> on Return. The engine owns the player's prompt and
+  countdown so it can expire an attack and advance to the next prompt on its own.
+</p>
+
+<h2 id="text-as-data">Text content: data, not code</h2>
+<p>
+  The <a href="content-plan.html">content plan</a> makes expandable text banks an explicit goal — "add ten
+  lines to tier 3" should be a content edit, not a code change, and the kid should eventually be able to submit
+  his own lines. A <code>text-banks.ts</code> full of string literals quietly breaks that. So text is treated
+  the same way the <a href="architecture.html#persistence"><code>SaveStore</code></a> treats save data:
+  <strong>data behind a provider interface</strong>, with the source swappable.
+</p>
+<pre><code>// domain/types.ts
+interface TextBank {
+  loadTier(tier: TextTier): Promise&lt;readonly string[]&gt;   // async: allows lazy-loading later
+  makePromptSource(tier: TextTier, rng: Rng): Promise&lt;PromptSource&gt;  // () =&gt; string, for the engine
+}</code></pre>
+<table>
+  <tr><th>Concern</th><th>Long-term</th><th>M0 short-term (leads there)</th></tr>
+  <tr><td>Where text lives</td><td>JSON files (tiers 1–6 hand-authored; 7–10 excerpted books), validated against a schema</td><td>Per-tier JSON under <code>content/text/</code>, imported by Vite</td></tr>
+  <tr><td>How it's read</td><td>Everything goes through the <code>TextBank</code> interface</td><td>One bundled-JSON <code>TextBank</code> implementation</td></tr>
+  <tr><td>Large tiers (7–10)</td><td>Swap the static import for a dynamic <code>import()</code>/<code>fetch()</code> so big book excerpts code-split and lazy-load</td><td>Not built — but the async <code>loadTier</code> shape is already there, so it's a localized swap</td></tr>
+  <tr><td>Kid's custom bank</td><td>A second <code>TextBank</code> backed by IndexedDB, composed with the bundled one</td><td>Not built — composing two providers is a wrapper, not a rewrite</td></tr>
+</table>
+<div class="callout why">
+  The async <code>loadTier</code> is deliberate even though M0's bundled JSON resolves instantly: it's the
+  same lesson as choosing IndexedDB over <code>localStorage</code> — pick the async-shaped interface now so the
+  future networked/lazy source is a swap behind one seam, not a rewrite of every call site. Crucially, loading
+  is async but the <em>engine</em> only ever sees a synchronous <code>PromptSource</code>: a tier is loaded at
+  battle setup, then the engine gets a plain <code>() =&gt; string</code> picker, so the combat sim stays pure
+  and testable. (Monster stats follow the same "data behind a loader" idea via <code>monsters.json</code>.)
+</div>
+
+<h2 id="keyboard">Keyboard visualization: sharing state with the prompt</h2>
+<p>
+  An on-screen keyboard that highlights the next ~3 keys — brightest for the very next key, dimmer for the two
+  after — directly serves the project's first principle ("typing quality first"): it teaches touch position
+  (don't look at your hands) and lets the kid pre-load a multi-key sequence mentally. It's worth putting into
+  the UI architecture from the start because it <em>shares state with the prompt</em>, and getting that seam
+  right early avoids a refactor later.
+</p>
+<p>The shared state is small and already exists — it's just placed at the right level:</p>
+<ul>
+  <li><strong>The target <code>prompt</code></strong> comes from <code>useBattle()</code> (engine state).</li>
+  <li><strong>The <code>input</code></strong> (what's typed so far) is the UI-local state from Story 5.</li>
+  <li><strong>Both</strong> <code>PlayerPrompt</code> <em>and</em> <code>Keyboard</code> need both values, so
+  <code>input</code> lifts to their nearest common parent, <code>BattleScreen</code>, which passes
+  <code>prompt</code> + <code>input</code> down to each. Standard "lift state up" — no context needed at M0
+  scale; it can graduate to a scoped <code>TypingContext</code> only if the tree deepens.</li>
+</ul>
+<p>
+  Highlighting is a function of the <em>actual input</em>, not just the cursor position — because a mistake
+  changes what the correct next keystroke is. Three cases:
+</p>
+<ul>
+  <li><strong>On track</strong> (<code>input === prompt.slice(0, input.length)</code>) → highlight the next ~3
+  keys in descending brightness.</li>
+  <li><strong>Off track</strong> (a wrong character anywhere in what's typed, or over-typed past the end of the
+  prompt) → highlight <em>only</em> <kbd>Backspace</kbd>. Backspacing is the single correct move until the input
+  is a valid prefix again, so nothing else should glow.</li>
+  <li><strong>Complete &amp; correct</strong> (<code>input === prompt</code>) → highlight <kbd>Enter</kbd>, the
+  key that submits the attack.</li>
+</ul>
+<div class="callout decision">
+  This is why M0 needs the <strong>full five rows</strong>, not just the three letter rows: <kbd>Backspace</kbd>
+  lives on the number row and <kbd>Enter</kbd> on the home row, so both must render from the start. The layout
+  data therefore includes the number row, the <kbd>Tab</kbd>/<kbd>Caps</kbd>/<kbd>Shift</kbd> modifiers, and the
+  space bar, and <code>Key.tsx</code> handles variable key widths — even though M0 only ever <em>highlights</em>
+  letters, space, <kbd>Backspace</kbd>, and <kbd>Enter</kbd>.
+</div>
+<pre><code>// ui/battle/keyboard.ts — pure, unit-testable, no React
+keyForChar(char: string): { code: string; shift: boolean }   // 'A' → {code:'a', shift:true}, ' ' → 'Space'
+nextKeyHighlights(prompt: string, input: string, n = 3): Map&lt;string, number&gt;
+//   on track  → { &lt;next code&gt;: 0, &lt;+1&gt;: 1, &lt;+2&gt;: 2 }   (0 = brightest; nearest wins on duplicates)
+//   off track → { 'Backspace': 0 }
+//   complete  → { 'Enter': 0 }</code></pre>
+<div class="callout why">
+  The keyboard is pure derivation: given <code>prompt</code> + <code>input</code> it computes which keys glow
+  and holds no state of its own. That keeps <code>nextKeyHighlights</code> testable outside React, keeps the
+  layout swappable <code>keyboard-layout.ts</code> data, and makes <code>keyForChar</code> the single seam where
+  tiers 4+ (capitals, punctuation, symbols) teach themselves — highlighting the base key plus <kbd>Shift</kbd> —
+  without touching battle logic. M0 ships the letters/space/Backspace/Enter cases; the seam is ready for the rest.
+</div>
+
+<h2>Stories &amp; tasks</h2>
+<p>
+  Build order: <strong>0 → 1 → 2 → 3 → 4 → 6 → 5 → 7.</strong> Note Story 6 (the balance harness) lands
+  <em>before</em> the UI — prove the numbers headlessly, then build a throwaway-grade UI to feel them. That's
+  the most faithful reading of "prove the numbers before investing in any polish." Story 7 (keyboard) follows
+  Story 5 because it consumes the shared prompt/input state that Story 5 establishes.
+</p>
+
+<div class="milestone">
+  <h3>Story 0 — Scaffold &amp; tooling <span class="tag">foundation</span></h3>
+  <p>Stand up the project and the <a href="architecture.html#code-style">code-style baseline</a>, minus the
+  deploy pieces (those are M4).</p>
+  <ul>
+    <li>Vite <code>react-ts</code> template; add Tailwind.</li>
+    <li>ESLint airbnb + airbnb-typescript + <code>react-hooks</code>; Prettier (<code>printWidth:100, semi:false, tabWidth:2</code>) + <code>eslint-config-prettier</code>.</li>
+    <li>The two <code>no-restricted-syntax</code> bans (no <code>function</code>, no <code>class</code> → factory functions); relax <code>no-console</code> to warn.</li>
+    <li>Vitest + <code>@testing-library/react</code>.</li>
+    <li>Create the folder skeleton with placeholder barrels.</li>
+    <li>npm scripts:
+      <ul>
+        <li><code>lint</code> → <code>eslint .</code></li>
+        <li><code>lint:fix</code> → <code>eslint . --fix</code></li>
+        <li><code>build</code> → <code>tsc -b &amp;&amp; vite build</code> (type-checks <em>and</em> produces the optimized prod build)</li>
+        <li><code>test</code> → <code>vitest run</code></li>
+        <li><code>presubmit</code> → <code>npm run lint &amp;&amp; npm run build &amp;&amp; npm run test</code> (the gate to run before every commit)</li>
+        <li><span class="tag defer">M4</span> <code>deploy</code> — added in the ship-it milestone once hosting exists</li>
+      </ul>
+    </li>
+    <li><span class="tag defer">defer to M4</span> husky + lint-staged pre-commit (wire it to <code>presubmit</code>) and the GitHub Actions lint/build gate.</li>
+  </ul>
+  <p><strong>Done when:</strong> <code>npm run dev</code> shows a page; <code>lint</code> and <code>test</code> run green on an empty suite.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 1 — Domain types, config, content <span class="tag">foundation</span></h3>
+  <ul>
+    <li><code>domain/types.ts</code>: <code>Monster</code>, <code>TextTier</code>, <code>BattleConfig</code>, <code>PromptSource</code>, <code>TextBank</code>, <code>Rng</code>, <code>PlayerState</code>, <code>MonsterState</code>, <code>BattleState</code>, <code>DamageResult</code>.</li>
+    <li><code>config/combat.ts</code>: every knob in one exported object — <code>baseDamage</code>, <code>referenceLength</code>, <code>lengthFactorFloor: 0.25</code> (finding C), <code>playerBaselineWpm: 15</code> (finding B), <code>avgWordLength: 5</code>, <code>monsterSlack: 1.75</code> (finding A), crit defaults, typing <code>variance</code>.</li>
+    <li><strong>Content as data</strong> (see <a href="#text-as-data">Text: data, not code</a>): <code>content/text/tier-01.json</code> + <code>tier-02.json</code>; <code>content/text-banks.ts</code> as the thin bundled-JSON <code>TextBank</code> provider; <code>content/monsters.json</code> (Slime + Goblin) with a typed loader; <code>content/keyboard-layout.ts</code> (QWERTY rows).</li>
+  </ul>
+  <p><strong>Done when:</strong> types compile; content loads through the <code>TextBank</code> interface (no string literals in <code>.ts</code>); config imports cleanly with zero logic in it.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 2 — RNG + damage math <span class="tag core">core M0 deliverable</span></h3>
+  <ul>
+    <li><code>engine/rng.ts</code>: <code>createRng(seed)</code> (mulberry32) with <code>next()</code> → [0,1) and <code>sample(mean, variance)</code>.</li>
+    <li><code>engine/damage.ts</code>: <code>lengthFactor</code> (clamped), <code>speedBonus(timeUsed, timeLimit)</code>, <code>critMultiplier(luck, rng)</code>, <code>computeDamage(…)</code>.</li>
+    <li>Tests: table-driven cases; short-prompt clamp; speed-bonus boundaries; crit determinism under a fixed seed.</li>
+  </ul>
+  <p><strong>Done when:</strong> damage is a pure function of inputs + seed, fully covered.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 3 — Monster typing simulation <span class="tag core">core M0 deliverable</span></h3>
+  <ul>
+    <li><code>engine/monster-typing.ts</code>: <code>createMonsterTyper(monster, prompt, rng)</code> with <code>advance(dtMs)</code> — accumulates time toward the next (sampled-interval) character, rolls <code>accuracy</code> for typos, models the <em>time-based</em> notice/correction (finding D). Exposes <code>{ typed, done, failed, elapsedMs }</code>.</li>
+    <li>Tests (seeded RNG + manual <code>dt</code> stepping): a high-accuracy monster converges to the target string; a low-accuracy/slow-attention one visibly overshoots then corrects; a tight <code>slack</code> makes it blow its budget.</li>
+  </ul>
+  <p><strong>Done when:</strong> stepping <code>advance()</code> reproduces identical typed-strings for a given seed.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 4 — Battle engine <span class="tag core">core M0 deliverable</span></h3>
+  <ul>
+    <li><code>engine/battle.ts</code>: <code>createBattle(config)</code> integrating the player cycle (prompt → countdown → <code>submitPlayerAttack(input)</code> → hit/miss/expire → next prompt) and the monster cycle (drive <code>monster-typing</code>, resolve on completion, start next), HP, and win/lose. <code>getState/subscribe/tick(dt)</code>.</li>
+    <li>Honor the <a href="game-design.html#submitting">submit rules</a>: Return only counts once input length matches the target; exact match → hit, else miss; no re-attempt.</li>
+    <li>Tests: a scripted battle (seeded RNG + a list of <code>(timeOffset, playerInput)</code> submissions) produces a deterministic winner and duration.</li>
+  </ul>
+  <p><strong>Done when:</strong> a headless battle runs start → finish deterministically.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 6 — Tuning / balance harness <span class="tag core">makes "done" defensible</span></h3>
+  <p>This is what lets you <em>answer</em> M0's question instead of guessing at it.</p>
+  <ul>
+    <li><code>engine/sim/balance.ts</code>: a Node/vitest script that runs N headless battles with a <em>simulated</em> player of configurable wpm/accuracy vs. a monster, reporting win rate + median duration. ~30 lines, because the engine is React-free.</li>
+    <li>Use it to land <code>playerBaselineWpm</code>, <code>baseDamage</code>, and the monster stats on "winnable-but-tense, ~30–45s" <em>before</em> touching UI.</li>
+  </ul>
+  <p><strong>Done when:</strong> you can answer "what win rate does a 20-wpm kid get vs the Slime, and how long does it take?" without playing 50 games by hand.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 5 — React bridge + barebones UI <span class="tag playable">playable: barebones battle</span></h3>
+  <ul>
+    <li><code>state/battle-store.ts</code> (<code>useSyncExternalStore</code> adapter), <code>ui/hooks/useGameLoop.ts</code> (rAF → <code>tick</code>, stop on end), <code>ui/hooks/useBattle.ts</code>.</li>
+    <li><code>BattleScreen</code> composing <code>HealthBar</code> ×2, <code>MonsterTyping</code>, <code>PlayerPrompt</code>, <code>BattleResult</code>. Deliberately unstyled — Tailwind defaults only.</li>
+    <li>Input is local <code>useState</code>; Enter → <code>actions.submit(input)</code> once length matches.</li>
+  </ul>
+  <p><strong>Done when:</strong> the literal M0 deliverable — type a line, see damage land, watch the monster's bar tick down on its own clock.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 7 — Keyboard visualization (initial) <span class="tag playable">playable: type-without-looking aid</span></h3>
+  <p>An <a href="#keyboard">initial on-screen keyboard</a> — planned now so the shared prompt/input seam is
+  right from the start, even though the render is minimal.</p>
+  <ul>
+    <li>Lift <code>input</code> from <code>PlayerPrompt</code> up to <code>BattleScreen</code>; pass <code>prompt</code> + <code>input</code> to both <code>PlayerPrompt</code> and <code>Keyboard</code>.</li>
+    <li><code>content/keyboard-layout.ts</code>: the <strong>full 5-row</strong> QWERTY as data — number row (with <kbd>Backspace</kbd>), the letter rows, <kbd>Enter</kbd>, the modifier keys, and the space bar.</li>
+    <li><code>ui/battle/keyboard.ts</code>: pure <code>keyForChar()</code> and <code>nextKeyHighlights(prompt, input)</code> implementing the three cases (on-track → next ~3 keys; off-track → <kbd>Backspace</kbd> only; complete → <kbd>Enter</kbd>). M0 covers letters + space; the <kbd>Shift</kbd> seam is stubbed for later tiers.</li>
+    <li><code>Keyboard.tsx</code> / <code>Key.tsx</code>: render all five rows with variable key widths; highlighted keys glow in descending brightness (nearest = brightest).</li>
+    <li>Tests for <code>nextKeyHighlights()</code>: on-track at start/mid (incl. duplicate-key-in-window, nearest wins); one wrong char anywhere → only <kbd>Backspace</kbd>; over-typed past the prompt → only <kbd>Backspace</kbd>; fully-correct input → only <kbd>Enter</kbd>.</li>
+  </ul>
+  <p><strong>Done when:</strong> as he types, the coming keys light up in order; the instant he mistypes, everything goes dark except <kbd>Backspace</kbd> until he fixes it; and <kbd>Enter</kbd> lights up once the line is correct and complete.</p>
+</div>
+
+<h2>Out of scope for M0</h2>
+<p>Named here so they don't sneak in — each has its own milestone.</p>
+<ul>
+  <li>Save data / IndexedDB, coins, XP, skill tree — <a href="roadmap.html">M2</a>.</li>
+  <li>Power-ups, hit flashes / shake / sound — <a href="roadmap.html">M3</a>.</li>
+  <li>Hosting, PWA, husky pre-commit, CI deploy gate — <a href="roadmap.html">M4</a>.</li>
+  <li>Any styling beyond "legible" and any image asset — M3 juice / <a href="roadmap.html">M6</a> art.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

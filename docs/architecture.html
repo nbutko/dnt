@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tech & Architecture — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Tech &amp; Architecture</h1>
+  <p class="tagline">Stack, data model, and how it actually gets onto the Chromebook.</p>
+</header>
+<main>
+
+<h2>Stack</h2>
+<table>
+  <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+  <tr><td>Framework</td><td>React + TypeScript, built with Vite</td><td>Fast dev loop, huge ecosystem, TS catches the "damage formula typo" class of bug before it ships</td></tr>
+  <tr><td>Styling</td><td>Tailwind CSS</td><td>A baseline utility framework beats hand-rolled CSS for this project — fast to build/rebalance layouts (HP bars, prompt boxes, skill tree grid) without inventing a naming scheme, and it's the default pairing for Vite + React</td></tr>
+  <tr><td>State</td><td>Three homes, no external state library (see callout)</td><td>Redux/Zustand would be pure overhead — but "just React component state" is the wrong model for the real-time battle, so the split matters</td></tr>
+  <tr><td>Persistence</td><td>IndexedDB (see below)</td><td>No backend needed for a single-player, single-device game — and it leaves a cleaner path to a cloud DB later than <code>localStorage</code> would</td></tr>
+  <tr><td>Packaging</td><td>PWA (manifest + service worker via <code>vite-plugin-pwa</code>)</td><td>Installable "app icon" on the Chromebook, works offline, no app store needed</td></tr>
+</table>
+<div class="callout decision">
+  No backend/server for v1. Everything is a static site. This eliminates an entire category of work
+  (auth, database, hosting a server, cost) for a project with exactly one player.
+</div>
+
+<h3 id="state">State: no Redux, but three distinct homes</h3>
+<p>
+  "State in React components" is right for the save file and the menus, but a <em>battle is a real-time
+  simulation, not a form</em> — the monster's live typing, both HP bars, and both countdowns update many times
+  a second. Pushing that through scattered <code>useState</code>/<code>useEffect</code> tangles the combat math
+  with rendering and makes "do the numbers feel right?" impossible to test in isolation. The fix is not a state
+  library; it's putting each kind of state where it belongs:
+</p>
+<table>
+  <tr><th>Kind</th><th>Example</th><th>Home</th></tr>
+  <tr><td>Simulation / battle</td><td>monster's typed string, HP bars, countdowns</td><td>A framework-agnostic engine (a factory function per <a href="#code-style">no-class</a>) that owns the state and advances via <code>tick(dt)</code>; React reads it through <code>useSyncExternalStore</code></td></tr>
+  <tr><td>Persistent / save</td><td>coins, xp, skillTree, inventory</td><td>React Context + <code>useReducer</code> — cross-component and low-frequency, the textbook Context case (arrives in M2)</td></tr>
+  <tr><td>Ephemeral UI</td><td>the input box text, which screen is up</td><td>Local <code>useState</code> in the component</td></tr>
+</table>
+<div class="callout why">
+  Redux/Zustand really would be overhead — but the reason isn't "the app is small," it's that none of these
+  three problems is the one Redux solves. Context re-renders every consumer on every change (fine for a save
+  file that changes once a battle, pathological for state ticking 60×/sec), which is exactly why the battle
+  lives in an external-store engine instead. Keeping that engine free of React imports is also what lets M0
+  test the combat math headlessly and run a balance simulator over it. See the
+  <a href="m0-implementation.html">M0 implementation plan</a> for the file layout that draws this boundary.
+</div>
+
+<h2 id="code-style">Code style: ESLint + Prettier baseline</h2>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>ESLint base</td><td><code>eslint-config-airbnb</code> + <code>airbnb-typescript</code> (TS support) + <code>eslint-plugin-react</code> / <code>react-hooks</code></td></tr>
+  <tr><td>Line length</td><td>100 characters</td></tr>
+  <tr><td>Semicolons</td><td>none — ASI (Automatic Semicolon Insertion)</td></tr>
+  <tr><td>Indentation</td><td>2 spaces, tabs disallowed</td></tr>
+  <tr><td>Formatter</td><td>Prettier, <code>printWidth: 100</code>, <code>semi: false</code>, <code>tabWidth: 2</code>, <code>useTabs: false</code>; <code>eslint-config-prettier</code> turns off any ESLint stylistic rule that would fight it</td></tr>
+</table>
+<div class="callout why">
+  Prettier is what makes semicolon-free code actually safe, not just shorter. The classic ASI footgun is a
+  line starting with <code>(</code>, <code>[</code>, a backtick, <code>+</code>, or <code>-</code> silently
+  merging with the line above and changing meaning. Prettier detects exactly this and inserts a
+  disambiguating leading <code>;</code> automatically — so ASI safety comes from letting the formatter run,
+  not from writing careful code by hand.
+</div>
+
+<h3>Two custom syntax bans</h3>
+<p>Enforced via ESLint's <code>no-restricted-syntax</code> (no extra plugin needed — it targets AST node types directly):</p>
+<ul>
+  <li><strong>no-function</strong> — ban <code>FunctionDeclaration</code> and <code>FunctionExpression</code>; arrow functions only. Object method shorthand (<code>{ attack() {...} }</code>) doesn't use the literal <code>function</code> keyword, so it's unaffected and stays the idiomatic way to put a method on a plain object.</li>
+  <li><strong>no-class</strong> — ban <code>ClassDeclaration</code> and <code>ClassExpression</code>; use factory functions (a function returning a plain object, closing over any private state) instead of instantiated classes. This only bans <em>authoring</em> classes in our own code — using a class from a library (e.g. whatever <code>idb</code> hands back, <code>new Map()</code>, <code>new Error()</code>) is unaffected.</li>
+</ul>
+
+<h3>Things worth knowing going in</h3>
+<ul>
+  <li><strong>Hoisting changes.</strong> Function declarations hoist; arrow-function <code>const</code>s don't. Any code that assumed "used before defined further down the file" (e.g. mutually recursive helpers) needs reordering under no-function.</li>
+  <li><strong>No generators, no constructor-based patterns.</strong> Arrow functions can't be <code>function*</code> generators and can't be used with <code>new</code>. Not expected to matter here, but if the monster-typing character stream (<a href="game-design.html#monster-ai">Monster typing</a>) ever wants a generator, that's a spot to revisit.</li>
+  <li><strong>Error subclassing needs a factory instead.</strong> The common <code>class MyError extends Error {}</code> pattern is unavailable under no-class; use <code>Object.assign(new Error(message), { code })</code> or similar instead.</li>
+  <li><strong>Costs nothing on the React side.</strong> This project was already going to be function components + hooks, never class components — no-class doesn't fight the framework. <code>eslint-plugin-react-hooks</code> (rules-of-hooks, exhaustive-deps) belongs in the baseline since it catches real hook bugs, not just style.</li>
+  <li><strong>Airbnb's import rules and Vite/TS don't always agree.</strong> <code>import/extensions</code> and <code>import/no-unresolved</code> are tuned for older Node/webpack resolution and can misfire on Vite + TS path resolution — expect a resolver setting or a couple of targeted overrides, not a wholesale disable.</li>
+  <li><strong><code>no-console</code>.</strong> Airbnb bans it outright. Worth relaxing to warn-only (or allowing <code>console.warn</code>/<code>console.error</code>) rather than off — a solo side project benefits from leaving some breadcrumbs in, but shouldn't do so silently.</li>
+  <li><strong>Enforce it, don't just declare it.</strong> Wire ESLint + Prettier into a pre-commit hook (<code>husky</code> + <code>lint-staged</code>) and add a lint step to the GitHub Actions build (see <a href="#hosting">Getting it onto the Chromebook</a>) so a lint failure blocks the deploy — otherwise a "baseline" is just a suggestion nobody's enforcing.</li>
+</ul>
+
+<h2 id="persistence">Save data &amp; persistence</h2>
+<p>One JSON-shaped record, versioned so future shape changes can migrate it:</p>
+<pre><code>{
+  "version": 1,
+  "coins": 120,
+  "xp": 340,
+  "skillTree": { "endurance": 2, "wordsmith": 1, "focus": 0, "luck": 0, "utility": 1 },
+  "inventory": [{ "powerUp": "secondWind", "count": 2 }],
+  "monstersDefeated": ["slime", "goblin"],
+  "stats": { "battlesWon": 7, "battlesLost": 2, "bestWpm": 28 }
+}</code></pre>
+<p>
+  Stored in <strong>IndexedDB</strong> rather than <code>localStorage</code> — via a thin wrapper like
+  <code>idb</code> so the app code never touches IndexedDB's raw callback API directly. Access goes through
+  a small interface, not scattered <code>get</code>/<code>set</code> calls:
+</p>
+<pre><code>interface SaveStore {
+  load(): Promise&lt;SaveData | undefined&gt;;
+  save(data: SaveData): Promise&lt;void&gt;;
+}</code></pre>
+<div class="callout why">
+  IndexedDB over <code>localStorage</code>, specifically for the migration path: its API is already
+  <em>async</em> and works with structured objects, which is exactly the shape a future network call
+  (<code>fetch</code> to a real backend) would have too. If a cloud DB is ever wanted — cross-device sync,
+  a second kid's profile, anything — swapping the <code>SaveStore</code> implementation from an IndexedDB
+  version to a networked one is a localized change behind that one interface, with no rewrite of call sites.
+  <code>localStorage</code>'s synchronous get/set API doesn't have that shape, so every caller would need to
+  change, not just the storage layer.
+</div>
+<div class="callout decision">
+  Still no backend/cloud sync in v1 — this is purely about leaving the door open cheaply, not building it
+  now. See <a href="roadmap.html">Roadmap</a>: this is a post-V1 concern, not a blocker for any milestone.
+</div>
+
+<h2>Data model for content</h2>
+<p>Monsters and text banks are plain data files (JSON or <code>.ts</code> const exports), not hardcoded in components — see <a href="content-plan.html">Content Plan</a>. This keeps "add a monster" or "add ten lines to tier 3" a content edit, not a code change.</p>
+
+<h2 id="hosting">Getting it onto the Chromebook</h2>
+<ol>
+  <li><strong>Host it as a static site.</strong> Push the repo to GitHub, deploy via <strong>GitHub Pages</strong> — free, no new account to create, auto-deploys on every push to <code>main</code> via a GitHub Actions workflow. Result: a stable <code>https://…</code> URL.</li>
+  <li><strong>Open it in Chrome on the Chromebook</strong> and use "Install app" / "Add to Home screen" from the browser menu — because it's a PWA, this pins a real icon to the shelf/app launcher and it opens full-screen like a native app.</li>
+  <li><strong>Offline support</strong> comes for free from the PWA service worker once assets are cached — nice-to-have, not required for v1 since the Chromebook is normally online.</li>
+  <li><strong>No app store, no review process, no cost.</strong> Updates ship the instant you push to <code>main</code> — refreshing the installed app picks up the new build.</li>
+</ol>
+<div class="callout decision">
+  Penciled in: <strong>GitHub Pages</strong>, since a GitHub account already exists — no new sign-up, and
+  it's free. It needs one extra piece Vercel/Netlify don't: a small GitHub Actions workflow to build the
+  Vite app and publish <code>dist/</code> to Pages (a standard, copy-pasteable workflow — a few lines of
+  YAML, not custom infra). Easy to switch to Vercel or Netlify later (see the comparison below) if the
+  GitHub Actions build step ever becomes annoying — nothing about the app itself is host-specific.
+</div>
+
+<h3>What does the hosted URL actually look like?</h3>
+<table>
+  <tr><th>Host</th><th>Default URL shape</th><th>Notes</th></tr>
+  <tr><td>GitHub Pages <span class="tag">current pick</span></td><td><code>https://yourusername.github.io/dnt/</code></td><td>Path-based (repo name in the URL) unless the repo is specifically named <code>yourusername.github.io</code></td></tr>
+  <tr><td>Vercel</td><td><code>https://dnt.vercel.app</code> (project name you pick, or with a random/username suffix if taken)</td><td>Every branch/PR also gets its own preview URL, e.g. <code>https://dnt-git-feature-x-yourname.vercel.app</code></td></tr>
+  <tr><td>Netlify</td><td><code>https://random-words-123abc.netlify.app</code> by default</td><td>Rename to something memorable in site settings, e.g. <code>https://dnt-game.netlify.app</code></td></tr>
+  <tr><td>Cloudflare Pages</td><td><code>https://dnt.pages.dev</code></td><td>Similar model to Vercel/Netlify</td></tr>
+</table>
+<p>
+  Any of these can later have a real custom domain attached (e.g. <code>dungeonsandtyping.com</code>) if
+  ever wanted — a few dollars a year for the domain, a few minutes of DNS setup, no code changes. Not needed
+  to start; the free subdomain is a perfectly stable, bookmarkable/installable URL on its own.
+</p>
+<div class="callout why">
+  Worth knowing: that URL is <strong>public</strong> on the open internet — not listed anywhere or
+  discoverable without the exact link, but not access-controlled either. Fine for this project (it's a game,
+  no personal data beyond a local save file), so no login wall is planned. GitHub Pages itself has no
+  built-in access control on the free tier (unlike Vercel/Netlify, which offer a one-click "password protect
+  this deployment" toggle) — if that ever feels wrong, that toggle is one reason to switch hosts, rather
+  than building real auth.
+</div>
+
+<h2>Non-goals (for now)</h2>
+<ul>
+  <li>Multiplayer / PvP</li>
+  <li>Accounts, login, or cloud sync — deliberately left <em>possible</em> via the IndexedDB
+  <code>SaveStore</code> interface above, but not built for v1</li>
+  <li>Mobile app store packaging (PWA covers "icon on the device")</li>
+  <li>Monetization of any kind</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

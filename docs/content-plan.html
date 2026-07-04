@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Content Plan</h1>
+  <p class="tagline">What he actually types, and what he's fighting.</p>
+</header>
+<main>
+
+<h2>Difficulty tiers</h2>
+<p>
+  Typing content is organized into tiers. The skill tree's "Wordsmith" branch unlocks access to later tiers
+  (longer/harder text); early monsters only ever draw from early tiers. This is also roughly a typing
+  curriculum, borrowed from how sites like typing.com / Keyboarding Without Tears sequence lessons.
+</p>
+<table>
+  <tr><th>Tier</th><th>Focus</th><th>Example</th></tr>
+  <tr><td>1</td><td>Home row letters/pairs</td><td><code>asdf jkl;</code></td></tr>
+  <tr><td>2</td><td>Short common words, lowercase only</td><td><code>the fox ran</code></td></tr>
+  <tr><td>3</td><td>Full lowercase sentences</td><td><code>the dragon hides in the cave</code></td></tr>
+  <tr><td>4</td><td>Capitalization + basic punctuation</td><td><code>Watch out, the slime is sticky!</code></td></tr>
+  <tr><td>5</td><td>Numbers &amp; symbols mixed in</td><td><code>Roll 2d6 + 3 to hit the goblin.</code></td></tr>
+  <tr><td>6</td><td>Longer/compound sentences</td><td><code>The wizard's spell missed, but the knight's sword found its mark.</code></td></tr>
+  <tr><td>7</td><td>Multi-sentence passage (2–4 sentences)</td><td><code>The knight raised her sword. The dragon didn't even blink. Something told her this fight would take a while.</code></td></tr>
+  <tr><td>8</td><td>Full paragraph (~80–150 words)</td><td>a single solid paragraph of narration or dialogue</td></tr>
+  <tr><td>9</td><td>Multi-paragraph passage</td><td>2–3 linked paragraphs</td></tr>
+  <tr><td>10</td><td>Short story excerpt</td><td>a full scene or chapter-length excerpt</td></tr>
+</table>
+
+<div class="callout why">
+  Content should be genuinely fun to read, not filler pangrams — jokes, silly monster trash-talk, game-y
+  flavor text. A 10-year-old will type "The goblin says your shoes are untied" far more willingly than
+  "the quick brown fox." Keep a running bank of these and add to it like adding new levels.
+</div>
+
+<h2>Where the text comes from</h2>
+<h3>Tiers 1–6, for now: a small hand-authored corpus</h3>
+<ul>
+  <li><strong>Hand-authored banks</strong> for launch — a few hundred lines per tier is plenty to start and keeps quality/tone controlled (this is the recommended path for M1–M3; see <a href="roadmap.html">Roadmap</a>).</li>
+  <li>Store banks as simple JSON/TS arrays keyed by tier, so adding content later is a data change, not a code change.</li>
+  <li>Optional later idea: let him submit his own favorite lines (jokes, Minecraft trivia, whatever he's into) into a custom bank — high buy-in, near-zero engineering cost.</li>
+</ul>
+
+<h3>Tiers 7–10, later: public-domain children's literature</h3>
+<p>
+  Once the game reaches the long-form tiers, hand-authoring paragraphs stops being the efficient move — but
+  templated/generated text also isn't necessary. Classic public-domain children's books (<em>Peter Pan</em>,
+  <em>Alice in Wonderland</em>, <em>The Secret Garden</em>, <em>Tom Sawyer</em>, etc., e.g. via Project
+  Gutenberg) already provide a huge body of genuinely well-written, varied long-form text, free to use with
+  no licensing concerns. Chop them into paragraph/scene-length excerpts per tier and there's essentially
+  unlimited tier 7–10 content without writing or generating a word of it.
+</p>
+<div class="callout decision">
+  Resolved: no templated/auto-generated text at any tier. Short tiers (1–6) stay a small curated,
+  game-themed bank written by hand; long tiers (7–10) scale via excerpted public-domain books instead of
+  generation. Both are "real" writing, which matters more for a reading-and-typing tool than infinite
+  variety would.
+</div>
+<div class="callout open">
+  Not needed for the near term (see <a href="roadmap.html">Roadmap</a> M6 — tiers 7–10 are part of the later
+  visual/long-form content pass, not the core M0–M5 build), but worth deciding later: pick excerpt boundaries
+  by hand for readability/pacing, or split
+  mechanically (e.g. every N sentences)? Hand-picking is likely worth the one-time effort for tier 10 in
+  particular, where a short story needs to actually make sense as a battle unfolds across it.
+</div>
+
+<h2 id="roster">Monster roster</h2>
+<p>
+  Monster stats are just data (JSON), so the roster grows without new code. Stats match the simulation in
+  <a href="game-design.html#monster-ai">Monster typing</a>: <code>wpm</code> (speed), <code>accuracy</code>
+  (chance per character it's typed wrong), and <code>attention</code> (mean seconds before it notices a
+  mistake — not a per-character roll, since noticing is time-based). Starting sketch:
+</p>
+<table>
+  <tr><th>Monster</th><th>Tier</th><th>HP</th><th>Text tier</th><th>WPM</th><th>Accuracy</th><th>Attention (s)</th><th>Flavor</th></tr>
+  <tr><td>Slime</td><td>1</td><td>40</td><td>1</td><td>15</td><td>0.75</td><td>1.5</td><td>Slow, and slow to notice its own mistakes — the tutorial fight</td></tr>
+  <tr><td>Goblin</td><td>1</td><td>60</td><td>2</td><td>25</td><td>0.7</td><td>1.0</td><td>Quick but sloppy, and a bit slow to catch it</td></tr>
+  <tr><td>Skeleton</td><td>2</td><td>80</td><td>3</td><td>30</td><td>0.85</td><td>0.8</td><td>Steady, reliable typer</td></tr>
+  <tr><td>Slime King</td><td>2 (boss)</td><td>150</td><td>3</td><td>25</td><td>0.85</td><td>0.6</td><td>First boss — more HP and more careful than a regular Slime, not faster</td></tr>
+  <tr><td>Wraith</td><td>3</td><td>90</td><td>4</td><td>40</td><td>0.85</td><td>0.5</td><td>Fast, and quick to correct — punishes hesitation</td></tr>
+  <tr><td>Dragon</td><td>4 (boss)</td><td>250</td><td>5</td><td>45</td><td>0.9</td><td>0.4</td><td>Long fight, needs the full kit</td></tr>
+</table>
+<div class="callout decision">
+  Difficulty ramps mostly through <em>monster HP and text tier</em>, not absurd monster WPM — the point is
+  to make the player type more/better, not to make the race unwinnable. Early monsters pair a low accuracy
+  with a slow (high-second) attention, so they visibly flub and dawdle over fixing it; later monsters ramp
+  <em>both</em> wpm and attention together, since a fast monster with slow attention would spew a huge
+  correction every time it errs (attention is measured in seconds, so more wpm alone already means more
+  wrong characters typed per mistake — see <a href="game-design.html#monster-ai">Monster typing</a>).
+</div>
+
+<h2>Visual identity</h2>
+<p>
+  Start fully text-based — a text-adventure-style presentation, no images at all. The battle "screen" is
+  just text: a description of the monster, its HP as a bar or number, its live typing rendered character by
+  character (typos and corrections included, per <a href="game-design.html#monster-ai">Monster typing</a>),
+  the player's own prompt/input box, and a simple on-screen keyboard that highlights the next few keys as a
+  touch-typing aid (see the <a href="m0-implementation.html#keyboard">M0 plan</a>). Hits and misses can still
+  read as punchy through text alone (color
+  flash, a shake via CSS transform, a damage number popping up) without a single drawn asset.
+</p>
+<div class="callout decision">
+  No image assets until a later, separate visual-upgrade pass (see <a href="roadmap.html">Roadmap</a> M6).
+  Art is the single most time-consuming, hardest-to-scope part of a game like this — deferring it means the
+  entire core loop (M1–M5) can be built and playtested on nothing but layout and typography, and images get
+  added on top of a proven game rather than gating it.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

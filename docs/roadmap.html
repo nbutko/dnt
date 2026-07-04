@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Roadmap &amp; Milestones</h1>
+  <p class="tagline">Something playable at every step, in build order.</p>
+</header>
+<main>
+
+<p>
+  Each milestone below produces something that can actually be handed to him to try — no milestone is
+  "invisible plumbing only." Scope is deliberately small per step; expand once each layer is proven fun.
+</p>
+
+<div class="milestone">
+  <h3>M0 — Combat math spike <span class="tag playable">playable: yes (barebones)</span></h3>
+  <p>Build the battle math (<a href="game-design.html#damage">damage formula</a>, HP, timers, monster typing
+  simulation) as plain functions with no UI polish — a single unstyled page: one text box, one monster with
+  a health bar, one player health bar. Prove the numbers feel right before investing in any art or animation.</p>
+  <ul>
+    <li>Type a line, see damage happen, see the monster's bar tick down on its own clock.</li>
+    <li>Tune <code>baseDamage</code>, the baseline-WPM time limit, and monster wpm/accuracy/attention until a
+    fight feels winnable-but-tense at ~30-45 seconds.</li>
+  </ul>
+  <p>Detailed build breakdown — file/component layout, state architecture, and stories/tasks — in the
+  <a href="m0-implementation.html">M0 implementation plan</a>.</p>
+</div>
+
+<div class="milestone">
+  <h3>M1 — Playable vertical slice <span class="tag playable">playable: full battle</span></h3>
+  <p>One real UI: prompt display, countdown, HP bars for both sides, win/lose screen. Hardcoded to one
+  monster (Slime) and one text tier. No save data yet — every session starts fresh.</p>
+  <ul>
+    <li>Deliverable: he can sit down, fight the Slime, and see a win or lose screen.</li>
+    <li>This is the first "does this even feel fun" checkpoint — get his reaction before building progression on top.</li>
+  </ul>
+</div>
+
+<div class="milestone">
+  <h3>M2 — Progression loop <span class="tag playable">playable: multi-battle session</span></h3>
+  <p>Add the save file (<a href="architecture.html#persistence">IndexedDB</a>), coins, XP, and a small
+  skill tree (start with 2–3 branches, a few nodes each). Add the rest of the tier-1/2 monster roster
+  (Goblin, Skeleton, Slime King) so there's a sequence of fights, not just one.</p>
+  <ul>
+    <li>Deliverable: play several battles in a row, earn XP, spend it, feel the next fight get slightly easier.</li>
+  </ul>
+</div>
+
+<div class="milestone">
+  <h3>M3 — Power-ups &amp; juice <span class="tag playable">playable: full loop</span></h3>
+  <p>Power-up drops + inventory + in-battle activation. Add "juice" — but entirely text/CSS-based, no image
+  assets yet (see <a href="content-plan.html">Content Plan</a>: text-adventure style first): hit flashes,
+  screen shake via CSS transforms, damage numbers, simple sound effects. Expand text banks to tiers 3–4.</p>
+  <ul>
+    <li>Deliverable: the full loop end to end feels like a game, not a math worksheet — and it gets there
+    without anyone having to draw or source a single image.</li>
+  </ul>
+</div>
+
+<div class="milestone">
+  <h3>M4 — Ship it <span class="tag playable">playable: on his Chromebook, for real</span></h3>
+  <p>Wire up hosting (<a href="architecture.html#hosting">GitHub Pages</a>, via a GitHub Actions build), add the PWA manifest/service worker,
+  install it on the actual Chromebook, and test with the actual keyboard in the actual room he'll play in.</p>
+  <ul>
+    <li>Deliverable: an icon on his Chromebook that opens the game, no laptop/dev-server dependency on your machine.</li>
+  </ul>
+</div>
+
+<div class="milestone">
+  <h3>M5 — Content &amp; balance pass <span class="tag playable">playable: ongoing</span></h3>
+  <p>Playtest with him directly, watch where he struggles or gets bored, retune damage/time constants and
+  the skill tree pacing. Add tier 5–6 content and the remaining roster (Wraith, Dragon), maybe a second boss.</p>
+  <ul>
+    <li>This milestone doesn't really "end" — it's the ongoing content/balance loop once the game exists.</li>
+  </ul>
+</div>
+
+<div class="milestone">
+  <h3>M6 — Visual upgrade <span class="tag playable">playable: stretch, optional</span></h3>
+  <p>Once the text-only game is proven and stable, swap in real monster art/sprites and start pulling in
+  tier 7–10 long-form content (see <a href="content-plan.html">Content Plan</a>: public-domain children's
+  books, excerpted). This is deliberately last and deliberately optional — the game is already complete and
+  playable without it.</p>
+  <ul>
+    <li>Deliverable: the same battles, now with actual monster illustrations instead of text descriptions.</li>
+  </ul>
+</div>
+
+<h2>Suggested build order recap</h2>
+<ol>
+  <li>M0: math spike (no UI)</li>
+  <li>M1: one real battle, one monster</li>
+  <li>M2: save file, XP, skill tree, more monsters</li>
+  <li>M3: power-ups, text/CSS-based animation, sound, more text tiers</li>
+  <li>M4: hosting + PWA + Chromebook install</li>
+  <li>M5: playtest-driven balance and content, forever</li>
+  <li>M6: real art + long-form (tier 7–10) content, whenever it's worth the time</li>
+</ol>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

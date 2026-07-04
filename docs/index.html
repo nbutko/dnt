@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dungeons & Typing — Project Plan</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="page-head">
+  <h1>⌨️ Dungeons & Typing</h1>
+  <p class="tagline">A monster-battle typing trainer for a 10-year-old on a Chromebook.</p>
+</header>
+<main>
+
+<h2>The pitch</h2>
+<p>
+  The player fights a monster by typing. The player and the monster each continuously race their own line
+  of text against their own clock, independently — type yours correctly in time and you land a hit; if the
+  monster finishes its own line in time, it hits back. Bigger/harder text chunks hit harder. Win the battle,
+  earn coins, XP, and power-ups. Spend XP in a skill tree that raises max HP, allowed text length, and
+  time limits, so the game gets harder <em>and</em> the player gets visibly better at typing over time.
+</p>
+
+<p>
+  This is a solo side project for one specific kid, not a product for the world. That should keep scope
+  small and choices simple — favor "works great for him, today" over "scales to a thousand users."
+</p>
+
+<h2>The four planning docs</h2>
+<div class="card-grid">
+  <a class="card" href="game-design.html">
+    <span class="card-title">1. Game Design</span>
+    <span class="card-desc">The battle loop, combat math, HP/timers, XP &amp; skill tree, power-ups. The rules of the game.</span>
+  </a>
+  <a class="card" href="content-plan.html">
+    <span class="card-title">2. Content Plan</span>
+    <span class="card-desc">Difficulty tiers for typing text, where the text comes from, the monster roster.</span>
+  </a>
+  <a class="card" href="architecture.html">
+    <span class="card-title">3. Tech &amp; Architecture</span>
+    <span class="card-desc">Stack choice, data model, save data, and — critically — how this gets onto the Chromebook.</span>
+  </a>
+  <a class="card" href="roadmap.html">
+    <span class="card-title">4. Roadmap &amp; Milestones</span>
+    <span class="card-desc">The order we build things in, with a playable deliverable at every step.</span>
+  </a>
+  <a class="card" href="m0-implementation.html">
+    <span class="card-title">5. M0 Implementation Plan</span>
+    <span class="card-desc">The detailed first-milestone build: file/component layout, state architecture, and stories &amp; tasks.</span>
+  </a>
+</div>
+
+<h2>Guiding principles</h2>
+<ul>
+  <li><strong>Playable early.</strong> The first milestone is a single ugly battle in the browser, not a fully designed game. See <a href="roadmap.html">Roadmap</a>.</li>
+  <li><strong>Typing quality first, game juice second.</strong> If a feature doesn't make him type more, or type harder things, it's decoration — nice, but never blocks a milestone.</li>
+  <li><strong>No accounts, no backend, no login.</strong> One kid, one Chromebook (for now). Progress saves locally. See <a href="architecture.html#persistence">Persistence</a>.</li>
+  <li><strong>Numbers should be easy to retune.</strong> Combat math, difficulty tiers, and skill tree costs all live in a few config files/objects, not scattered through code, so balance can change without a rewrite.</li>
+</ul>
+
+<h2>Status</h2>
+<p>Planning stage — no code yet. Next step is M0: see the detailed
+<a href="m0-implementation.html">M0 implementation plan</a> (build order for the
+<a href="roadmap.html">roadmap</a>'s first milestone).</p>
+
+</main>
+<footer class="page-foot">Dungeons &amp; Typing — internal planning docs.</footer>
+</body>
+</html>

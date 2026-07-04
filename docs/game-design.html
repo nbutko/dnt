@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Design — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Game Design</h1>
+  <p class="tagline">The battle loop, the math behind it, and progression.</p>
+</header>
+<main>
+
+<h2>Core loop: independent attack cycles, not shared rounds</h2>
+<p>
+  There is no shared "round" that both sides wait on. The player and the monster each run their own
+  attack cycle, continuously and independently, for the whole battle:
+</p>
+<ul>
+  <li><strong>Player cycle:</strong> get a prompt + time limit → type it (backspace freely) → attempt
+  submits (see <a href="#submitting">Submitting an attack</a>) → hit or miss resolves immediately →
+  the very next prompt appears right away. No waiting on the monster.</li>
+  <li><strong>Monster cycle:</strong> at the same time, independently, the monster is visibly "typing" its
+  own unrelated prompt against its own clock (see <a href="#monster-ai">Monster typing</a>) → it hits or
+  misses on its own schedule → it immediately starts its next attack.</li>
+</ul>
+<p>
+  Both cycles run in parallel for as long as the battle lasts. A fast, clean typist might land three hits
+  before the monster finishes its first attack; a slow monster might still be correcting a typo while the
+  player is already three prompts ahead. Battle ends the instant either HP bar hits 0 — whichever cycle
+  gets there first.
+</p>
+
+<div class="callout decision">
+  Rounds are per-side, not shared. A shared/lockstep round means the faster side sits idle waiting on the
+  slower one every single exchange — dead time, and it caps the whole battle's pace at the slower typist.
+  Independent cycles keep the player continuously typing (no idle waiting) and make the pace of the fight an
+  emergent result of both sides' actual speed, which reads as a much more dynamic battle.
+</div>
+
+<h3 id="submitting">Submitting an attack</h3>
+<p>
+  Backspacing is always allowed — there's no separate accuracy penalty for using it (see
+  <a href="#damage">Damage</a>: going back to fix a mistake just costs time, which the speed bonus already
+  captures). What matters is what happens when the player presses <strong>Return</strong>:
+</p>
+<ul>
+  <li>The typed string must be <strong>exactly correct</strong> to land the hit. Return is the only way to submit — there's no auto-submit the instant length matches, since prompts may contain in-line line breaks.</li>
+  <li>Return only counts as a submit attempt once the typed input is the <strong>same length</strong> as the target text. If input is shorter than the target, Return is treated as a literal character (so a prompt with an inline line break types unambiguously).</li>
+  <li>Once length matches and Return is pressed: exact match → hit lands; anything else (even one wrong character) → the attack misses. Either way, the next prompt starts immediately — there's no re-attempt on the same prompt.</li>
+</ul>
+<div class="callout decision">
+  Submitting incorrect text is simply not allowed to land a hit — there's no partial credit for "close
+  enough," and no accuracy multiplier softening it. This keeps the mental model simple ("type it right, or
+  it doesn't count") and pushes all of the skill expression into speed, which is easier for a 10-year-old to
+  reason about than a fuzzy accuracy score.
+</div>
+
+<h2 id="damage">Damage</h2>
+<p>Base shape, tunable via a config object rather than hardcoded:</p>
+<pre><code>damage = baseDamage
+       * lengthFactor(text)
+       * speedBonus(timeUsed, timeLimit)
+       * critMultiplier(luck)
+       * powerUpMultiplier</code></pre>
+<ul>
+  <li><strong>lengthFactor</strong> — roughly <code>1 + (charCount - referenceLength) / referenceLength</code>, so a longer prompt swings harder. This is the direct payoff for the skill tree unlocking longer text. Clamp it to a small floor (<code>Math.max(0.25, …)</code>) so a very short prompt well under <code>referenceLength</code> can't drive damage to zero or negative.</li>
+  <li><strong>speedBonus</strong> — multiplier for finishing well under the time limit vs. barely making it. There is no separate accuracy factor: a typo already costs time (notice it, backspace, retype), so sloppy typing is automatically punished by a worse speedBonus rather than by a second penalty. Since an attack can only submit on an exact match anyway (see <a href="#submitting">Submitting an attack</a>), speed is the only axis left to reward.</li>
+  <li><strong>critMultiplier</strong> — rolled per attack against the player's Luck skill stat: a <code>criticalChance</code> to trigger, and a <code>criticalDamageMultiplier</code> applied when it does. See <a href="#skill-tree">skill tree</a>.</li>
+  <li><strong>powerUpMultiplier</strong> — 1.0 normally; things like "Double Strike" set it to 2.0 for one attack. Stacks multiplicatively with a crit if both happen to land on the same swing.</li>
+</ul>
+<p>
+  The monster's damage uses the same shape (minus Luck, which is a player-only stat) with its own
+  <code>baseDamage</code>/text, so difficulty is tuned by monster stats, not a separate rulebook.
+</p>
+
+<h2>HP &amp; timers</h2>
+<table>
+  <tr><th>Stat</th><th>Base (level 1)</th><th>Grows via</th></tr>
+  <tr><td>Player max HP</td><td>100</td><td>Skill tree: Endurance branch</td></tr>
+  <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>Skill tree: Focus branch (more generous multiplier)</td></tr>
+  <tr><td>Max prompt length allowed</td><td>~12 characters</td><td>Skill tree: Wordsmith branch</td></tr>
+  <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content-plan.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
+</table>
+<div class="callout why">
+  Time limit is derived from text length ÷ an assumed baseline typing speed (expressed in WPM — the same unit
+  the monsters use — and converted to chars/sec via the standard 5 chars/word) rather than a flat number, so a
+  skill-tree upgrade to "allow longer text" doesn't accidentally also make attacks impossibly short. That
+  baseline WPM is the actual difficulty knob: <strong>15 WPM</strong> is a realistic beginner rate for the
+  target player, so assuming a baseline at or a touch below his real speed keeps early fights generous. The
+  game then gets harder mainly through longer text and tougher monsters; the Focus branch effectively lowers
+  the assumed baseline (more time) as it levels, keeping the clock fair rather than punishing.
+</div>
+<div class="callout decision">
+  Note: the divisor is a <em>typing speed</em>, not a raw chars/sec figure — a baseline of 15 <strong>WPM</strong>
+  (≈ 1.25 chars/sec), not 15 chars/sec (≈ 180 WPM, pro-typist speed, which would make anything past the 3s floor
+  unplayable for a 10-year-old). Tuning this baseline is a core job of <a href="roadmap.html">Roadmap</a> M0.
+</div>
+
+<h2 id="monster-ai">Monster "typing"</h2>
+<p>
+  The monster's text should actually appear on screen character by character, in real time, typos and all —
+  not an abstract progress bar. That's what makes it read as "the monster is racing you" instead of a hidden
+  dice roll. Each monster has three per-monster stats driving the simulation, plus one shared tuning
+  constant:
+</p>
+<ul>
+  <li><strong>wpm</strong> — mean typing speed. Converted to an average per-character interval, then each
+  character's actual interval is <em>sampled</em> from a distribution around that mean (e.g. a gamma/normal
+  distribution), so the typing has natural, uneven pacing rather than a metronome. The spread of that
+  distribution comes from <code>variance</code> — a single <em>shared</em> constant for v1, not tuned per
+  monster (see <a href="content-plan.html#roster">roster</a>, which has no per-monster variance column for
+  that reason), promotable to a per-monster stat later if some monster should feel distinctly more erratic
+  than others.</li>
+  <li><strong>accuracy</strong> — chance, rolled per character, that the monster types the wrong character
+  instead of the correct one.</li>
+  <li><strong>attention</strong> — mean <em>seconds</em> before the monster notices a mistake, not a
+  per-character roll. This is deliberately time-based rather than character-based: a fast typist and a slow
+  typist with the <em>same</em> attention value should take about the same wall-clock time to notice
+  something's wrong — which means the fast one has already banged out more (wrong) characters in that
+  window, and has more to undo. Speed alone makes mistakes costlier; attention is a separate stat for how
+  quickly a monster catches on regardless of its speed.</li>
+</ul>
+<pre><code>for each character in monster.prompt:
+  interval = sample(mean = 60000 / (wpm * avgWordLength), variance = monster.variance)
+  wait(interval)
+  typed = roll(monster.accuracy) ? correctChar : wrongChar
+
+  if typed is wrong and not already correcting:
+    mistakeStartTime = now
+    noticeDelay = sample(mean = monster.attention, variance = ...) // seconds
+    correcting = true
+
+  if correcting and (now - mistakeStartTime) >= noticeDelay:
+    backspace back to the mistake, retype correctly (costs the time spent typing past it)
+    correcting = false</code></pre>
+<div class="callout why">
+  The <code>wait(interval)</code> above is illustrative — you can't block JavaScript's single thread. The real
+  implementation is <strong>tick-driven</strong>: one loop advances the simulation by a <code>dt</code> (elapsed
+  milliseconds) each frame, and the monster accumulates time toward its next character and toward its
+  <code>noticeDelay</code>. Feeding that loop an injectable clock and a seedable RNG is what makes the whole
+  race reproducible and unit-testable — see the <a href="m0-implementation.html">M0 implementation plan</a>.
+</div>
+<p>
+  The attack succeeds if the monster reaches a fully correct string within its time limit, same rule as the
+  player. The monster's time limit is <strong>its own expected typing time × a slack factor</strong> (~1.75),
+  <em>not</em> the player's formula — a clean, attentive monster finishes comfortably, but a sloppy or
+  slow-to-notice one can run its clock out mid-correction and whiff the attack. (Reusing the player's
+  short budget would leave slow monsters like the Slime unable to <em>ever</em> land a hit.) That slack is a
+  per-battle tuning knob. Because attention is measured in seconds, a monster that's both fast <em>and</em> slow to notice
+  (high wpm, high attention-seconds) is the worst combination — it'll type a wall of extra wrong characters
+  before catching on. That's why stronger/later monsters raise wpm and attention together (see the
+  <a href="content-plan.html#roster">roster</a>): fast <em>and</em> quick to self-correct, rather than fast
+  and sloppy. A monster with low accuracy and slow attention will visibly flub words and scramble to fix
+  them — exactly the kind of race the player should be able to watch and react to (e.g. holding a power-up
+  because the monster is clearly about to whiff).
+</p>
+
+<h2>Progression: coins, XP, skill tree</h2>
+<p>After a won battle: coins (spend on cosmetic stuff / power-up refills), XP (spend on the skill tree), and a chance at a power-up drop.</p>
+<h3 id="skill-tree">Skill tree branches (starting set)</h3>
+<table>
+  <tr><th>Branch</th><th>What it unlocks</th></tr>
+  <tr><td>Endurance</td><td>+ max HP per node</td></tr>
+  <tr><td>Wordsmith</td><td>+ max prompt length the player can be given (higher damage ceiling)</td></tr>
+  <tr><td>Focus</td><td>more generous time-limit multiplier</td></tr>
+  <tr><td>Luck</td><td>+ critical hit chance and/or critical damage multiplier per node (see <a href="#damage">Damage</a>)</td></tr>
+  <tr><td>Utility</td><td>+1 power-up inventory slot per node</td></tr>
+</table>
+<div class="callout decision">
+  Luck replaces the earlier "Precision" branch. Precision existed to soften an accuracy penalty on damage —
+  now that mistakes are purely a time cost (no separate accuracy factor), there's nothing left for it to
+  flatten. A crit-chance branch fills that fifth slot with something that still rewards leveling up without
+  overlapping Focus (time) or Wordsmith (length).
+</div>
+<div class="callout decision">
+  Keep the tree small (4–5 branches, a handful of nodes each) for the first playable version. A sprawling
+  tree is a content/UI project of its own — expand it once the core loop is proven fun. See <a href="roadmap.html">Roadmap</a> M2.
+</div>
+
+<h2>Power-ups</h2>
+<table>
+  <tr><th>Name</th><th>Effect</th></tr>
+  <tr><td>Double Strike</td><td>Next successful attack does 2x damage</td></tr>
+  <tr><td>Second Wind</td><td>Heal player 25% of max HP immediately</td></tr>
+  <tr><td>Slow Time</td><td>+50% time limit on the player's next attack only</td></tr>
+  <tr><td>Ward</td><td>Block the monster's next successful hit entirely</td></tr>
+  <tr><td>Sure Strike</td><td>Guarantees a critical hit on the player's next attack</td></tr>
+</table>
+<p>
+  Power-ups are earned as drops and held in an inventory (size limited by the Utility skill branch). Player
+  chooses when to activate one during a battle — a tap/click, not something that interrupts typing.
+</p>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

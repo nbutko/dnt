@@ -1,3 +1,4 @@
+import { getMonster } from '../../content/monsters'
 import type { DungeonNode as DungeonNodeData, NodeKind } from '../../domain/dungeon'
 import { nodeStateClasses, type NodeFamily, type NodeShape } from '../common/nodeState'
 
@@ -50,6 +51,12 @@ const glyphFor = (node: DungeonNodeData): string => {
 const isRevealedMimic = (node: DungeonNodeData): boolean =>
   node.kind === 'chest' && node.state === 'cleared' && !node.isRealChest
 
+// Which monster a node holds, for its identity label (feedback #8) — but never
+// for a chest, whose real/mimic identity must stay hidden until opened, so a
+// mimic's monsterId can't leak through a caption or tooltip.
+const monsterNameFor = (node: DungeonNodeData): string | undefined =>
+  node.kind !== 'chest' && node.monsterId ? getMonster(node.monsterId).name : undefined
+
 const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
   const style = KIND[node.kind]
   const shape: NodeShape = style.shape === 'circle' ? 'circle' : 'square'
@@ -57,6 +64,12 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
   const clickable = node.state === 'available'
   const glyph = glyphFor(node)
   const glyphSize = style.size >= 56 ? 'text-lg' : 'text-[11px]'
+  const monsterName = monsterNameFor(node)
+  // Plain fight circles carry no structural caption, so they show the monster's
+  // name (feedback #8). The larger named nodes (waypoint/approach/boss) keep
+  // their positional caption and surface the monster on hover instead, so the
+  // graph doesn't get two lines of text under every big node.
+  const caption = style.caption ?? (node.kind === 'fight' ? monsterName : undefined)
 
   return (
     <div className="absolute z-[1] -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y }}>
@@ -64,7 +77,8 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         type="button"
         disabled={!clickable}
         onClick={() => onSelect(node.id)}
-        aria-label={`${node.kind}${style.caption ? ` (${style.caption})` : ''} — ${node.state}`}
+        title={monsterName}
+        aria-label={`${node.kind}${monsterName ? ` (${monsterName})` : ''} — ${node.state}`}
         className={`relative flex items-center justify-center ${
           style.shape === 'circle' ? 'rounded-full' : 'rotate-45 rounded-[4px]'
         } ${classes.container} ${clickable ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}`}
@@ -89,9 +103,9 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
           </span>
         )}
       </button>
-      {style.caption && (
+      {caption && (
         <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 font-mono text-[9px] tracking-wide whitespace-nowrap text-text-dim uppercase">
-          {style.caption}
+          {caption}
         </span>
       )}
     </div>

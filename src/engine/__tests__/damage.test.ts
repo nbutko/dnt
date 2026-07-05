@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CombatConfig } from '../../domain/types'
-import { computeDamage, critMultiplier, lengthFactor, speedBonus } from '../damage'
+import { computeDamage, critMultiplier, lengthFactor, speedBonus, tierGatePenalty } from '../damage'
 import { createRng } from '../rng'
 
 const baseCombat: CombatConfig = {
@@ -100,4 +100,31 @@ describe('computeDamage', () => {
     })
     expect(result.damage).toBeCloseTo(10)
   })
+
+  it('multiplies in tierGatePenalty when under-tiered', () => {
+    const rng = createRng(1)
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: baseCombat,
+      rng,
+      tierGatePenalty: 0.25,
+    })
+    expect(result.damage).toBeCloseTo(10 * 0.25)
+  })
+})
+
+describe('tierGatePenalty', () => {
+  it.each([
+    { servedTier: 8, monsterTextTier: 8, expected: 1 },
+    { servedTier: 10, monsterTextTier: 8, expected: 1 },
+    { servedTier: 6, monsterTextTier: 8, expected: 0.5625 },
+    { servedTier: 4, monsterTextTier: 8, expected: 0.25 },
+  ])(
+    'served $servedTier vs monster $monsterTextTier -> $expected',
+    ({ servedTier, monsterTextTier, expected }) => {
+      expect(tierGatePenalty(servedTier, monsterTextTier)).toBeCloseTo(expected)
+    },
+  )
 })

@@ -1,4 +1,4 @@
-import type { CombatConfig, DamageResult, Rng } from '../domain/types'
+import type { CombatConfig, DamageResult, Rng, TextTier } from '../domain/types'
 
 // Longer prompts hit harder — the direct payoff for the skill tree unlocking
 // longer text. Clamped to a floor so a short prompt can't drive damage to ~0.
@@ -25,6 +25,14 @@ export const critMultiplier = (combat: CombatConfig, rng: Rng): CritResult => {
   return { multiplier: isCrit ? combat.criticalDamageMultiplier : 1, isCrit }
 }
 
+// Punishes fighting above your unlocked Wordsmith tier — the served prompt is
+// already easier (shorter/simpler), but that alone is only a linear discount
+// on damage, which speedBonus can offset. Squaring the tier ratio makes the
+// loss outrun anything speed can buy back (m2-scope.html#wordsmith-gate):
+// 1 at/above the monster's tier, 0.56 at 6/8, 0.25 at 4/8.
+export const tierGatePenalty = (servedTier: TextTier, monsterTextTier: TextTier): number =>
+  servedTier >= monsterTextTier ? 1 : (servedTier / monsterTextTier) ** 2
+
 export interface ComputeDamageParams {
   charCount: number
   timeUsedMs: number
@@ -32,16 +40,25 @@ export interface ComputeDamageParams {
   combat: CombatConfig
   rng: Rng
   powerUpMultiplier?: number
+  tierGatePenalty?: number
 }
 
 export const computeDamage = (params: ComputeDamageParams): DamageResult => {
-  const { charCount, timeUsedMs, timeLimitMs, combat, rng, powerUpMultiplier = 1 } = params
+  const {
+    charCount,
+    timeUsedMs,
+    timeLimitMs,
+    combat,
+    rng,
+    powerUpMultiplier = 1,
+    tierGatePenalty: gatePenalty = 1,
+  } = params
   const lf = lengthFactor(charCount, combat)
   const sb = speedBonus(timeUsedMs, timeLimitMs)
   const { multiplier: cm, isCrit } = critMultiplier(combat, rng)
 
   return {
-    damage: combat.baseDamage * lf * sb * cm * powerUpMultiplier,
+    damage: combat.baseDamage * lf * sb * cm * powerUpMultiplier * gatePenalty,
     isCrit,
     lengthFactor: lf,
     speedBonus: sb,

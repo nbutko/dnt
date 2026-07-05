@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getMonster } from '../../content/monsters'
+import { resolveModifiers } from '../../engine/progression/skill-effects'
+import { useSave } from '../../state/save/SaveProvider'
 import { createBattleStore, type BattleStore } from '../../state/battle-store'
 import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
@@ -124,16 +126,20 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
 }
 
 const BattleScreen = () => {
+  const { save } = useSave()
   const [store, setStore] = useState<BattleStore | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    createBattleStore(M0_MONSTER_ID).then((created) => {
+    const monster = getMonster(M0_MONSTER_ID)
+    const modifiers = resolveModifiers(save.skillTree)
+    createBattleStore(monster, modifiers).then((created) => {
       if (!cancelled) setStore(created)
     })
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one store per mount; a mid-fight skillTree change shouldn't restart the battle.
   }, [])
 
   if (!store) {

@@ -50,6 +50,11 @@ export interface BattleConfig {
   playerPrompts: PromptSource
   monsterPrompts: PromptSource
   rng: Rng
+  // Constant for the whole fight (m2-scope.html#wordsmith-gate) — computed
+  // once by battle-store from the served vs. monster text tier. Defaults to
+  // 1 (no gate) so existing callers/tests that don't know about Wordsmith
+  // are unaffected.
+  tierGatePenalty?: number
 }
 
 export interface PlayerState {

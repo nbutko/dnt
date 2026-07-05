@@ -14,7 +14,7 @@ export interface Battle {
 // game-design.html. It's the only place combat state lives; the UI (Story 5)
 // only ever reads getState()/subscribe() and calls tick()/submitPlayerAttack().
 export const createBattle = (config: BattleConfig): Battle => {
-  const { combat, monster, playerPrompts, monsterPrompts, rng } = config
+  const { combat, monster, playerPrompts, monsterPrompts, rng, tierGatePenalty = 1 } = config
 
   let status: BattleStatus = 'ongoing'
   let playerHp = combat.playerMaxHp
@@ -161,6 +161,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         timeLimitMs: playerTimeLimitMs,
         combat,
         rng,
+        tierGatePenalty,
       })
       monsterHp = Math.max(0, monsterHp - result.damage)
       lastEvent = { side: 'player', kind: 'hit', damage: result.damage }

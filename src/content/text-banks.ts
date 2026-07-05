@@ -14,12 +14,17 @@ const bundledTiers: Partial<Record<TextTier, TierFile>> = {
   2: tier02,
 }
 
+// A gap in bundled content degrades to the nearest easier tier instead of
+// throwing (m2-implementation.html finding A) — a permanent safety net, not
+// just a stopgap until Story 7's seed banks land, since a future tier could
+// always be requested ahead of its content being authored. Tier 1 is always
+// bundled, so there's always at least one candidate at or below any request.
 const loadTier = async (tier: TextTier): Promise<readonly string[]> => {
-  const file = bundledTiers[tier]
-  if (!file) {
-    throw new Error(`No text bank bundled for tier ${tier}`)
-  }
-  return file.lines
+  const bundledAtOrBelow = Object.keys(bundledTiers)
+    .map(Number)
+    .filter((candidate) => candidate <= tier)
+  const resolvedTier = Math.max(...bundledAtOrBelow) as TextTier
+  return bundledTiers[resolvedTier]!.lines
 }
 
 const makePromptSource = async (tier: TextTier, rng: Rng): Promise<PromptSource> => {

@@ -22,8 +22,10 @@ describe('text-banks', () => {
     expect(tier2.length).toBeGreaterThan(0)
   })
 
-  it('rejects an unbundled tier', async () => {
-    await expect(textBank.loadTier(3)).rejects.toThrow()
+  it('falls back to the highest bundled tier at or below an unbundled request', async () => {
+    const tier2 = await textBank.loadTier(2)
+    const tier5 = await textBank.loadTier(5)
+    expect(tier5).toEqual(tier2)
   })
 
   it('makePromptSource returns a picker that always returns a line from the tier', async () => {

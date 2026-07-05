@@ -10,10 +10,17 @@ interface HarnessProps {
   prompt: string
   disabled?: boolean
   paused?: boolean
+  pauseReason?: 'expire' | 'miss'
   onSubmit: (input: string) => void
 }
 
-const Harness = ({ prompt, disabled = false, paused = false, onSubmit }: HarnessProps) => {
+const Harness = ({
+  prompt,
+  disabled = false,
+  paused = false,
+  pauseReason,
+  onSubmit,
+}: HarnessProps) => {
   const [input, setInput] = useState('')
   return (
     <PlayerPrompt
@@ -21,6 +28,7 @@ const Harness = ({ prompt, disabled = false, paused = false, onSubmit }: Harness
       input={input}
       disabled={disabled}
       paused={paused}
+      pauseReason={pauseReason}
       onInputChange={setInput}
       onSubmit={onSubmit}
     />
@@ -47,9 +55,15 @@ describe('PlayerPrompt', () => {
     expect(screen.getByLabelText('Type the prompt')).toBeDisabled()
   })
 
-  it('shows a time-out message instead of the input while paused', () => {
-    render(<Harness prompt="jak" paused onSubmit={vi.fn()} />)
+  it('shows a time-out message instead of the input while paused on an expire', () => {
+    render(<Harness prompt="jak" paused pauseReason="expire" onSubmit={vi.fn()} />)
     expect(screen.getByText('Time Limit Expired. You missed!')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Type the prompt')).not.toBeInTheDocument()
+  })
+
+  it('shows a wrong-text message instead of the input while paused on a miss', () => {
+    render(<Harness prompt="jak" paused pauseReason="miss" onSubmit={vi.fn()} />)
+    expect(screen.getByText('Incorrect Incantation. You missed!')).toBeInTheDocument()
     expect(screen.queryByLabelText('Type the prompt')).not.toBeInTheDocument()
   })
 })

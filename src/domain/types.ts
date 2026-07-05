@@ -66,6 +66,10 @@ export interface PlayerState {
   // prompt is drawn — gives the UI a moment to show "time's up" feedback
   // instead of silently swapping to a new line.
   paused: boolean
+  // Which kind of miss triggered the current pause — undefined when not
+  // paused. Lets the UI show a different message for "ran out of time" vs
+  // "typed the wrong thing" instead of one generic pause message.
+  pauseReason?: 'expire' | 'miss'
 }
 
 export interface MonsterState {

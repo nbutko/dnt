@@ -143,6 +143,37 @@ describe('createBattle', () => {
     expect(state.monster.hp).toBe(steadyMonster.hp)
   })
 
+  it('pauses with a miss event (not an instant new prompt) on wrong text, distinct from a timeout', () => {
+    const rng = createRng(1)
+    const pausingCombat: CombatConfig = { ...combat, missPauseMs: 500 }
+    const battle = createBattle({
+      combat: pausingCombat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+    })
+    const attemptBefore = battle.getState().player.attempt
+
+    battle.submitPlayerAttack('zzz')
+    let state = battle.getState()
+    expect(state.lastEvent).toEqual({ side: 'player', kind: 'miss' })
+    expect(state.player.paused).toBe(true)
+    expect(state.player.pauseReason).toBe('miss')
+    expect(state.player.prompt).toBe('jak')
+    expect(state.player.attempt).toBe(attemptBefore)
+
+    // a resubmit during the pause is ignored, even a would-be exact match
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().monster.hp).toBe(steadyMonster.hp)
+
+    battle.tick(500) // pause elapses -> advances to the next prompt
+    state = battle.getState()
+    expect(state.player.paused).toBe(false)
+    expect(state.player.pauseReason).toBeUndefined()
+    expect(state.player.attempt).toBe(attemptBefore + 1)
+  })
+
   it('wins when the monster HP is driven to 0', () => {
     const rng = createRng(1)
     const oneHpMonster: Monster = { ...steadyMonster, hp: 1 }
@@ -210,6 +241,7 @@ describe('createBattle', () => {
     let state = battle.getState()
     expect(state.lastEvent).toEqual({ side: 'player', kind: 'expire' })
     expect(state.player.paused).toBe(true)
+    expect(state.player.pauseReason).toBe('expire')
     expect(state.player.prompt).toBe('jak')
     expect(state.player.attempt).toBe(attemptBefore)
 

@@ -33,6 +33,7 @@ export const createBattle = (config: BattleConfig): Battle => {
   let playerTimeLimitMs = playerTimeLimitFor(playerPrompt)
   let playerElapsedMs = 0
   let playerPauseRemainingMs = 0
+  let playerPauseReason: 'expire' | 'miss' | undefined
 
   let monsterPromptText = monsterPrompts()
   let monsterTyper = createMonsterTyper(monster, monsterPromptText, rng, combat)
@@ -53,6 +54,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         timeLimitMs: playerTimeLimitMs,
         elapsedMs: playerElapsedMs,
         paused: playerPauseRemainingMs > 0,
+        pauseReason: playerPauseRemainingMs > 0 ? playerPauseReason : undefined,
       },
       monster: {
         id: monster.id,
@@ -110,6 +112,7 @@ export const createBattle = (config: BattleConfig): Battle => {
       if (playerElapsedMs >= playerTimeLimitMs) {
         lastEvent = { side: 'player', kind: 'expire' }
         playerPauseRemainingMs = combat.missPauseMs
+        playerPauseReason = 'expire'
       }
     }
 
@@ -161,15 +164,20 @@ export const createBattle = (config: BattleConfig): Battle => {
       })
       monsterHp = Math.max(0, monsterHp - result.damage)
       lastEvent = { side: 'player', kind: 'hit', damage: result.damage }
-    } else {
-      lastEvent = { side: 'player', kind: 'miss' }
-    }
 
-    // Only draw a new prompt if the battle is still ongoing — otherwise the
-    // UI would show a fresh, never-attempted prompt sitting next to the
-    // win/lose banner instead of the line that actually ended the fight.
-    checkOutcome()
-    if (status === 'ongoing') advancePlayerPrompt()
+      // Only draw a new prompt if the battle is still ongoing — otherwise
+      // the UI would show a fresh, never-attempted prompt sitting next to
+      // the win/lose banner instead of the line that actually ended the
+      // fight.
+      checkOutcome()
+      if (status === 'ongoing') advancePlayerPrompt()
+    } else {
+      // Wrong text at the right length: same visible "you missed" pause as
+      // a timeout, just with a different reason/message (see PlayerPrompt).
+      lastEvent = { side: 'player', kind: 'miss' }
+      playerPauseRemainingMs = combat.missPauseMs
+      playerPauseReason = 'miss'
+    }
 
     rebuildSnapshot()
     notify()

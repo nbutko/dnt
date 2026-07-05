@@ -100,6 +100,7 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
               input={input}
               disabled={state.status !== 'ongoing'}
               paused={state.player.paused}
+              pauseReason={state.player.pauseReason}
               onInputChange={setInput}
               onSubmit={actions.submit}
             />

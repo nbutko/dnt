@@ -654,7 +654,10 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     non-dismissable modal with a <strong>Begin Battle</strong> button first. Root: gate the mimic-chest
     <code>selectNode</code> → battle transition behind a modal in <code>DungeonScreen</code>. (Revealing mimic-ness
     only <em>after</em> the player commits to opening the chest is fine.)
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> tapping a mimic chest sets a reveal-id that gates the fight behind a
+    non-dismissable <code>MimicModal</code> (new, over a reusable <code>ui/common/ModalOverlay</code>);
+    its <strong>Begin Battle</strong> button dispatches the <code>selectNode</code> that starts the fight.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Chest spur can overlap an unrelated path arc.</strong> <em>[medium–hard]</em> (screenshot: chest crossing

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig from '../../config/rewards'
@@ -19,6 +19,7 @@ import HeartsReadout from '../common/HeartsReadout'
 import Legend from '../common/Legend'
 import ResourcePill from '../common/ResourcePill'
 import DungeonGraphView from './DungeonGraph'
+import MimicModal from './MimicModal'
 
 interface DungeonScreenProps {
   tier: number
@@ -40,9 +41,12 @@ const roleForNode = (node: DungeonNode): MonsterRole => {
 const statusLine = (graph: DungeonGraph): string => {
   if (isComplete(graph)) return 'The boss is down — dungeon cleared!'
   if (bossUnlocked(graph)) return 'The Approach is clear — the boss awaits.'
-  if (graph.nodes[graph.approachId].state === 'available') return 'A late path is clear — reach the Approach.'
-  if (graph.nodes[graph.waypointId].state === 'cleared') return 'Past the Waypoint — push toward the Approach.'
-  if (graph.nodes[graph.waypointId].state === 'available') return 'The Waypoint is open — choose a late path.'
+  if (graph.nodes[graph.approachId].state === 'available')
+    return 'A late path is clear — reach the Approach.'
+  if (graph.nodes[graph.waypointId].state === 'cleared')
+    return 'Past the Waypoint — push toward the Approach.'
+  if (graph.nodes[graph.waypointId].state === 'available')
+    return 'The Waypoint is open — choose a late path.'
   return 'Choose a path from the entrance.'
 }
 
@@ -94,6 +98,13 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
   const graphScrollLeft = useRef(0)
 
+  // A mimic chest, once tapped, pauses on a reveal modal before the fight
+  // (feedback #13) — holds the tapped node id until the player hits Begin
+  // Battle. Null the rest of the time.
+  const [mimicRevealId, setMimicRevealId] = useState<string | null>(null)
+  const mimicNode = mimicRevealId ? run.graph.nodes[mimicRevealId] : null
+  const mimicName = mimicNode?.monsterId ? getMonster(mimicNode.monsterId).name : undefined
+
   // A win banks its reward per-kill, immediately (finding C) — so a run that
   // later wipes still earns progress. Defeating the boss unlocks the next tier
   // (and reaches 12 past tier 11, finding D).
@@ -109,14 +120,26 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   }
 
   // Tapping an available node: the real chest opens with no fight, resolving
-  // straight to a win; anything with a monster opens a battle.
+  // straight to a win; a mimic chest reveals itself and waits on the modal
+  // before its fight (feedback #13); anything else opens a battle directly.
   const handleSelect = (id: string): void => {
     const node = run.graph.nodes[id]
     if (node.kind === 'chest' && node.isRealChest) {
       handleWin(node)
       return
     }
+    if (node.kind === 'chest') {
+      setMimicRevealId(id)
+      return
+    }
     dispatch(selectNode(id))
+  }
+
+  // Begin Battle on the mimic modal: commit the tapped chest to a real fight.
+  const handleBeginMimic = (): void => {
+    if (!mimicRevealId) return
+    dispatch(selectNode(mimicRevealId))
+    setMimicRevealId(null)
   }
 
   // A live fight takes over the whole screen (its own Frame) so the dungeon
@@ -136,7 +159,11 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const body =
     outcome === 'ongoing' ? (
       <div className="mt-6">
-        <DungeonGraphView graph={run.graph} onSelectNode={handleSelect} scrollLeftRef={graphScrollLeft} />
+        <DungeonGraphView
+          graph={run.graph}
+          onSelectNode={handleSelect}
+          scrollLeftRef={graphScrollLeft}
+        />
         <Legend shape="circle" showChest />
       </div>
     ) : (
@@ -144,34 +171,39 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     )
 
   return (
-    <Frame>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <button
-            type="button"
-            className="font-mono text-xs text-text-dim hover:text-accent-gold-bright"
-            onClick={() => onNavigate(toMap())}
-          >
-            ← Leave dungeon
-          </button>
-          <h1 className="mt-3 font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
-            {habitatFor(tier)} Dungeon
-          </h1>
-          <p className="mt-1 font-mono text-[11px] text-text-dim">{statusLine(run.graph)}</p>
-        </div>
-        {/* XP/gold above the hearts, so the run's live resources read at a
-            glance next to its live health (feedback #5). */}
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-2.5">
-            <ResourcePill kind="xp" amount={save.xp} />
-            <ResourcePill kind="coins" amount={save.coins} />
+    <>
+      <Frame>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <button
+              type="button"
+              className="font-mono text-xs text-text-dim hover:text-accent-gold-bright"
+              onClick={() => onNavigate(toMap())}
+            >
+              ← Leave dungeon
+            </button>
+            <h1 className="mt-3 font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
+              {habitatFor(tier)} Dungeon
+            </h1>
+            <p className="mt-1 font-mono text-[11px] text-text-dim">{statusLine(run.graph)}</p>
           </div>
-          <HeartsReadout current={run.heartsRemaining} max={modifiers.maxHearts} />
+          {/* XP/gold above the hearts, so the run's live resources read at a
+            glance next to its live health (feedback #5). */}
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2.5">
+              <ResourcePill kind="xp" amount={save.xp} />
+              <ResourcePill kind="coins" amount={save.coins} />
+            </div>
+            <HeartsReadout current={run.heartsRemaining} max={modifiers.maxHearts} />
+          </div>
         </div>
-      </div>
 
-      {body}
-    </Frame>
+        {body}
+      </Frame>
+      {mimicRevealId && mimicName && (
+        <MimicModal monsterName={mimicName} onBegin={handleBeginMimic} />
+      )}
+    </>
   )
 }
 

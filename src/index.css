@@ -20,6 +20,23 @@
   --color-text-primary: #ede1c3;
   --color-text-dim: #a89a7a;
   --color-key-base: rgba(237, 225, 195, 0.06);
+  --color-coin: #c9b892;
+
+  /* cleared/available/locked node-state language (docs/design/README.md —
+     world map tiles, dungeon nodes, and skill-tree nodes all share this
+     unchanged; see ui/common/nodeState.ts). Gold family for regular nodes,
+     danger family only for the boss node + the Urban tier card, which stay
+     red-tinted even while locked. */
+  --color-node-cleared-from: #4a3a12;
+  --color-node-cleared-to: #2a1f08;
+  --color-node-locked: rgba(40, 34, 24, 0.5);
+  --color-node-locked-border: #5a4a30;
+  --color-node-locked-text: #8a7a5a;
+  --color-node-locked-text-dim: #6a5a3a;
+  --color-node-danger-locked: rgba(60, 20, 20, 0.4);
+  --color-node-danger-locked-border: #6a2a2a;
+  --color-node-danger-locked-text: #a86a6a;
+  --color-node-danger-locked-text-dim: #6a4040;
 
   --font-display: 'Cinzel', serif;
   --font-body: 'EB Garamond', serif;

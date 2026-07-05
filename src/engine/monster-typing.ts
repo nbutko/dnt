@@ -47,8 +47,7 @@ export const createMonsterTyper = (
   combat: CombatConfig,
 ): MonsterTyper => {
   const intervalMeanMs = msPerChar(monster.wpm, combat)
-  const timeLimitMs =
-    expectedTypingTimeMs(prompt.length, monster.wpm, combat) * combat.monsterSlack
+  const timeLimitMs = expectedTypingTimeMs(prompt.length, monster.wpm, combat) * monster.slack
 
   let elapsedMs = 0
   let done = false

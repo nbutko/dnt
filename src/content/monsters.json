@@ -8,6 +8,7 @@
     "wpm": 15,
     "accuracy": 0.75,
     "attention": 1.5,
+    "slack": 2.0,
     "flavor": "Slow, and slow to notice its own mistakes — the tutorial fight"
   },
   {
@@ -19,6 +20,7 @@
     "wpm": 25,
     "accuracy": 0.7,
     "attention": 1.0,
+    "slack": 2.4,
     "flavor": "Quick but sloppy, and a bit slow to catch it"
   }
 ]

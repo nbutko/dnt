@@ -40,6 +40,8 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
   }, [state.player.attempt])
 
   const secondsLeft = Math.max(0, state.player.timeLimitMs - state.player.elapsedMs) / 1000
+  const monsterSecondsLeft =
+    Math.max(0, state.monster.timeLimitMs - state.monster.elapsedMs) / 1000
 
   return (
     <div className="mx-auto max-w-[1040px] border-[3px] border-border-gold p-7" style={outerFrameStyle}>
@@ -54,13 +56,29 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
           maxHp={state.monster.maxHp}
           family="danger"
         />
-        <div className="mt-3 rounded border border-border-gold-dim bg-black/30 p-3">
-          <TypedProgress
-            prompt={state.monster.prompt}
-            typed={state.monster.typed}
-            revealRemaining={false}
-            className="text-lg"
-          />
+        <div className="mt-3 flex items-start gap-4">
+          <div className="flex-1 rounded border border-border-gold-dim bg-black/30 p-3">
+            {state.monster.paused ? (
+              <p className="font-mono text-lg text-danger-bright">
+                Time Limit Expired. Attack missed!
+              </p>
+            ) : (
+              <TypedProgress
+                prompt={state.monster.prompt}
+                typed={state.monster.typed}
+                revealRemaining={false}
+                className="text-lg"
+              />
+            )}
+          </div>
+          <div className="w-16 flex-none text-center">
+            <div className="font-display text-[22px] font-bold text-danger-bright">
+              {monsterSecondsLeft.toFixed(1)}
+            </div>
+            <div className="font-mono text-[10px] tracking-wide text-text-dim uppercase">
+              Sec left
+            </div>
+          </div>
         </div>
       </section>
 

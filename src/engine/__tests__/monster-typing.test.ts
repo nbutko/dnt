@@ -12,8 +12,7 @@ const combat: CombatConfig = {
   playerTimeLimitFloorMs: 3000,
   playerReadingBufferMs: 2000,
   playerMaxHp: 100,
-  playerMissPauseMs: 2000,
-  monsterSlack: 1.75,
+  missPauseMs: 2000,
   criticalChance: 0.1,
   criticalDamageMultiplier: 2,
   typingVariance: 0,
@@ -28,6 +27,7 @@ const baseMonster: Monster = {
   wpm: 30,
   accuracy: 1,
   attention: 1,
+  slack: 1.75,
   flavor: 'a test monster',
 }
 
@@ -98,8 +98,8 @@ describe('createMonsterTyper', () => {
   })
 
   it('a tight slack makes the monster blow its time budget', () => {
-    const tightCombat: CombatConfig = { ...combat, monsterSlack: 0.5 }
-    const { typer } = runToCompletion(baseMonster, PROMPT, 3, tightCombat)
+    const tightMonster: Monster = { ...baseMonster, slack: 0.5 }
+    const { typer } = runToCompletion(tightMonster, PROMPT, 3, combat)
     const state = typer.getState()
     expect(state.failed).toBe(true)
     expect(state.done).toBe(false)

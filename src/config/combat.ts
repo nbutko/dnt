@@ -20,9 +20,9 @@ const combatConfig: CombatConfig = {
   // a fresh prompt before typing starts, on top of the typing-time estimate.
   playerReadingBufferMs: 2000,
   playerMaxHp: 100,
-  // How long a "Time Limit Expired" pause holds before the next prompt draws.
-  playerMissPauseMs: 2000,
-  monsterSlack: 1.75,
+  // How long a "Time Limit Expired" pause holds (either side) before the
+  // next prompt draws.
+  missPauseMs: 2000,
   criticalChance: 0.1,
   criticalDamageMultiplier: 2,
   typingVariance: 0.15,

@@ -12,8 +12,7 @@ const combat: CombatConfig = {
   playerTimeLimitFloorMs: 5000,
   playerReadingBufferMs: 0,
   playerMaxHp: 100,
-  playerMissPauseMs: 2000,
-  monsterSlack: 1.75,
+  missPauseMs: 2000,
   criticalChance: 0.1,
   criticalDamageMultiplier: 2,
   typingVariance: 0.15,
@@ -28,6 +27,7 @@ const steadyMonster: Monster = {
   wpm: 20,
   accuracy: 1,
   attention: 2,
+  slack: 1.75,
   flavor: 'a test monster',
 }
 
@@ -195,7 +195,7 @@ describe('createBattle', () => {
       playerBaselineWpm: 1000, // makes the typing-time term negligible
       playerTimeLimitFloorMs: 100,
       playerReadingBufferMs: 0,
-      playerMissPauseMs: 500,
+      missPauseMs: 500,
     }
     const battle = createBattle({
       combat: fastTimeoutCombat,
@@ -225,6 +225,33 @@ describe('createBattle', () => {
     state = battle.getState()
     expect(state.player.paused).toBe(false)
     expect(state.player.attempt).toBe(attemptBefore + 1)
+  })
+
+  it('pauses with a monster miss event instead of instantly drawing a new prompt on its own timeout', () => {
+    const rng = createRng(1)
+    const fastFailMonster: Monster = { ...steadyMonster, slack: 0.001 }
+    const fastPauseCombat: CombatConfig = { ...combat, missPauseMs: 500 }
+    const battle = createBattle({
+      combat: fastPauseCombat,
+      monster: fastFailMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+    })
+
+    battle.tick(50) // the monster's own (tiny) time limit is already blown
+    let state = battle.getState()
+    expect(state.lastEvent).toEqual({ side: 'monster', kind: 'miss' })
+    expect(state.monster.paused).toBe(true)
+    // a timed-out attack never damages the player
+    expect(state.player.hp).toBe(combat.playerMaxHp)
+
+    battle.tick(400) // 100ms of the 500ms pause left
+    expect(battle.getState().monster.paused).toBe(true)
+
+    battle.tick(200) // pause elapses -> a fresh monster typer starts
+    state = battle.getState()
+    expect(state.monster.paused).toBe(false)
   })
 
   it('loses when the player never attacks and the monster keeps landing hits', () => {

@@ -36,6 +36,7 @@ export const createBattle = (config: BattleConfig): Battle => {
 
   let monsterPromptText = monsterPrompts()
   let monsterTyper = createMonsterTyper(monster, monsterPromptText, rng, combat)
+  let monsterPauseRemainingMs = 0
 
   const listeners = new Set<() => void>()
   let snapshot: BattleState
@@ -61,6 +62,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         typed: monsterTyperState.typed,
         timeLimitMs: monsterTyperState.timeLimitMs,
         elapsedMs: monsterTyperState.elapsedMs,
+        paused: monsterPauseRemainingMs > 0,
       },
       lastEvent,
     }
@@ -107,26 +109,34 @@ export const createBattle = (config: BattleConfig): Battle => {
       playerElapsedMs += dtMs
       if (playerElapsedMs >= playerTimeLimitMs) {
         lastEvent = { side: 'player', kind: 'expire' }
-        playerPauseRemainingMs = combat.playerMissPauseMs
+        playerPauseRemainingMs = combat.missPauseMs
       }
     }
 
-    monsterTyper.advance(dtMs)
-    const monsterTyperState = monsterTyper.getState()
-    if (monsterTyperState.done) {
-      const damage = computeMonsterDamage({
-        charCount: monsterPromptText.length,
-        timeUsedMs: monsterTyperState.elapsedMs,
-        timeLimitMs: monsterTyperState.timeLimitMs,
-        combat,
-      })
-      playerHp = Math.max(0, playerHp - damage)
-      lastEvent = { side: 'monster', kind: 'hit', damage }
-      checkOutcome()
-      if (status === 'ongoing') advanceMonsterPrompt()
-    } else if (monsterTyperState.failed) {
-      lastEvent = { side: 'monster', kind: 'miss' }
-      advanceMonsterPrompt()
+    if (monsterPauseRemainingMs > 0) {
+      monsterPauseRemainingMs = Math.max(0, monsterPauseRemainingMs - dtMs)
+      if (monsterPauseRemainingMs === 0 && status === 'ongoing') advanceMonsterPrompt()
+    } else {
+      monsterTyper.advance(dtMs)
+      const monsterTyperState = monsterTyper.getState()
+      if (monsterTyperState.done) {
+        const damage = computeMonsterDamage({
+          charCount: monsterPromptText.length,
+          timeUsedMs: monsterTyperState.elapsedMs,
+          timeLimitMs: monsterTyperState.timeLimitMs,
+          combat,
+        })
+        playerHp = Math.max(0, playerHp - damage)
+        lastEvent = { side: 'monster', kind: 'hit', damage }
+        checkOutcome()
+        if (status === 'ongoing') advanceMonsterPrompt()
+      } else if (monsterTyperState.failed) {
+        // Its own timeout, same as the player's — pause with a visible
+        // "missed" beat before drawing a fresh prompt. See game-design.html
+        // #monster-ai and content/monsters.ts for the per-monster slack.
+        lastEvent = { side: 'monster', kind: 'miss' }
+        monsterPauseRemainingMs = combat.missPauseMs
+      }
     }
 
     rebuildSnapshot()

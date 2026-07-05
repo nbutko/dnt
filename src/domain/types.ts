@@ -21,6 +21,11 @@ export interface Monster {
   wpm: number
   accuracy: number
   attention: number
+  // Its own attack's time limit = expected typing time x slack (see
+  // game-design.html#monster-ai). Per-monster (not a shared constant) since
+  // a "sloppy" monster and a disciplined one need very different slack to
+  // land the same rough miss rate — see content/monsters.json.
+  slack: number
   flavor: string
 }
 
@@ -33,8 +38,7 @@ export interface CombatConfig {
   playerTimeLimitFloorMs: number
   playerReadingBufferMs: number
   playerMaxHp: number
-  playerMissPauseMs: number
-  monsterSlack: number
+  missPauseMs: number
   criticalChance: number
   criticalDamageMultiplier: number
   typingVariance: number
@@ -72,6 +76,9 @@ export interface MonsterState {
   typed: string
   timeLimitMs: number
   elapsedMs: number
+  // True for a brief pause after the monster's own time limit expires,
+  // before its next prompt is drawn — mirrors PlayerState.paused.
+  paused: boolean
 }
 
 export type BattleEventSide = 'player' | 'monster'

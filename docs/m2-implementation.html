@@ -613,7 +613,10 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>ui/dungeon/DungeonNode.tsx</code> can render <code>getMonster(node.monsterId).name</code> as a small
     caption or tooltip; decide a treatment that doesn't clutter a 40px circle (hover tooltip, or a caption under
     only the larger nodes).
-    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Rework (user feedback):</em> long multiword names were a single <code>whitespace-nowrap</code> line that
+    clipped into the path. The caption now wraps at spaces onto centred, balanced lines within a fixed width, and
+    <code>ROW_GAP</code> in <code>graph-layout.ts</code> grew (92→112) so a two-line name clears the row below.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Never serve the same prompt twice in a row.</strong> <em>[medium]</em><br>

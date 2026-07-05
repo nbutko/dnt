@@ -104,7 +104,11 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         )}
       </button>
       {caption && (
-        <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 font-mono text-[9px] tracking-wide whitespace-nowrap text-text-dim uppercase">
+        // Wrap long multiword names onto centred lines instead of one wide,
+        // path-clipping row (feedback #8). A fixed width wraps at spaces (words
+        // stay intact), text-balance evens the two lines, and the taller caption
+        // is what ROW_GAP was widened to clear.
+        <span className="absolute top-full left-1/2 mt-1 w-24 -translate-x-1/2 text-center font-mono text-[9px] leading-tight tracking-wide text-balance text-text-dim uppercase">
           {caption}
         </span>
       )}

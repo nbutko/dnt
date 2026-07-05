@@ -18,7 +18,8 @@ export interface DungeonLayout {
 }
 
 const COL_GAP = 132 // horizontal spacing between graph columns
-const ROW_GAP = 92 // vertical spacing between parallel path rows
+const ROW_GAP = 112 // vertical spacing between parallel path rows — wide enough
+// to clear a two-line wrapped monster-name caption under a fight node (feedback #8)
 const CHEST_DX = 30 // a chest spur hangs down-and-out from its parent…
 const CHEST_DY = 56 // …by this diagonal offset, reading as a dead-end branch
 const PAD = 52 // canvas margin, wide enough to clear the 64px boss + its glow

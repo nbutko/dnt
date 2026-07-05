@@ -12,10 +12,17 @@ export interface TextBank {
   makePromptSource(tier: TextTier, rng: Rng): Promise<PromptSource>
 }
 
+export type MonsterRole = 'regular' | 'boss' | 'mimic'
+
 export interface Monster {
   id: string
   name: string
   tier: number
+  role: MonsterRole
+  // The dungeon habitat this roster entry belongs to (m2-scope.html#dungeon-tiers)
+  // — "Any Habitat" manual entries get reflavored directly into a thin
+  // habitat's roster rather than modeled as a separate generic pool.
+  habitat: string
   hp: number
   textTier: TextTier
   wpm: number

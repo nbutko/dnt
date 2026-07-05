@@ -23,4 +23,13 @@ export const getMonster = (id: string): Monster => {
   return monster
 }
 
+// Story 7/8 lookups the dungeon generator draws from — every tier's roster
+// is a handful of regulars + one boss + one mimic (content/monsters.json),
+// not a pool the generator has to filter/reflavor itself.
+export const byTier = (tier: number): readonly Monster[] =>
+  monsters.filter((monster) => monster.tier === tier)
+
+export const byRole = (tier: number, role: Monster['role']): readonly Monster[] =>
+  monsters.filter((monster) => monster.tier === tier && monster.role === role)
+
 export default monsters

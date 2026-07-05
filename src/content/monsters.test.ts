@@ -1,19 +1,60 @@
 import { describe, expect, it } from 'vitest'
-import { getMonster, listMonsters } from './monsters'
+import { DUNGEON_TIERS } from '../config/dungeon-tiers'
+import { byRole, byTier, getMonster, listMonsters } from './monsters'
+import textBank from './text-banks'
+import type { TextTier } from '../domain/types'
+
+// The generator (Story 8) draws regulars *with repetition* to fill ~30 nodes,
+// so this is a variety floor, not a headcount it must reach — every tier
+// should offer at least a few distinct regular types. Tier 1's grandfathered
+// Slime/Goblin/Skeleton is the minimum in the set.
+const MIN_REGULARS = 3
 
 describe('monsters', () => {
-  it('lists the M0 roster', () => {
-    const roster = listMonsters()
-    expect(roster.map((monster) => monster.id)).toEqual(['slime', 'goblin'])
+  it('keeps the grandfathered tier-1 ids at the front of the roster', () => {
+    const ids = listMonsters().map((monster) => monster.id)
+    expect(ids.slice(0, 2)).toEqual(['slime', 'goblin'])
   })
 
   it('looks up a monster by id', () => {
     const slime = getMonster('slime')
     expect(slime.hp).toBe(40)
     expect(slime.textTier).toBe(1)
+    expect(slime.role).toBe('regular')
   })
 
   it('throws for an unknown id', () => {
-    expect(() => getMonster('dragon')).toThrow()
+    expect(() => getMonster('wyvern')).toThrow()
+  })
+})
+
+describe('seed rosters (Story 7)', () => {
+  it('gives every one of the 11 tiers enough regulars, a boss, and a mimic', () => {
+    for (const { tier } of DUNGEON_TIERS) {
+      const regulars = byRole(tier, 'regular')
+      const bosses = byRole(tier, 'boss')
+      const mimics = byRole(tier, 'mimic')
+      expect(regulars.length, `tier ${tier} regulars`).toBeGreaterThanOrEqual(MIN_REGULARS)
+      expect(bosses.length, `tier ${tier} boss`).toBe(1)
+      expect(mimics.length, `tier ${tier} mimic`).toBe(1)
+    }
+  })
+
+  it('keeps every monster textTier inside its tier band', () => {
+    for (const { tier, textTierRange } of DUNGEON_TIERS) {
+      const [low, high] = textTierRange
+      for (const monster of byTier(tier)) {
+        expect(monster.textTier, `${monster.id} textTier`).toBeGreaterThanOrEqual(low)
+        expect(monster.textTier, `${monster.id} textTier`).toBeLessThanOrEqual(high)
+      }
+    }
+  })
+
+  it('has a loadable, non-empty text bank behind every monster textTier', async () => {
+    const usedTiers = [...new Set<TextTier>(listMonsters().map((monster) => monster.textTier))]
+    const banks = await Promise.all(usedTiers.map((tier) => textBank.loadTier(tier)))
+    banks.forEach((lines, i) => {
+      expect(lines.length, `text tier ${usedTiers[i]}`).toBeGreaterThan(0)
+    })
   })
 })

@@ -14,7 +14,11 @@ export interface DungeonTier {
 // live in monster-manual.json + the scope doc; this file only carries what
 // the world map and dungeon generator need as data.
 export const DUNGEON_TIERS: readonly DungeonTier[] = [
-  { tier: 1, habitat: 'Grassland', wpmRange: [10, 15], textTierRange: [1, 1], rosterPool: 'grassland' },
+  // Widened from the scope doc's [10,15]/[1,1] to actually cover the
+  // grandfathered Slime/Goblin/Skeleton/Slime King roster (content-plan.html
+  // #roster) rather than re-tune already-calibrated M0 content for a
+  // seed-quality pass — see m2-implementation.html Story 7.
+  { tier: 1, habitat: 'Grassland', wpmRange: [10, 30], textTierRange: [1, 3], rosterPool: 'grassland' },
   { tier: 2, habitat: 'Forest', wpmRange: [14, 20], textTierRange: [1, 2], rosterPool: 'forest' },
   { tier: 3, habitat: 'Hill', wpmRange: [19, 26], textTierRange: [2, 2], rosterPool: 'hill' },
   { tier: 4, habitat: 'Coastal', wpmRange: [25, 33], textTierRange: [2, 3], rosterPool: 'coastal' },

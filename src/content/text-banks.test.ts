@@ -14,18 +14,31 @@ const fakeRng = (values: number[]): Rng => {
   }
 }
 
+const ALL_TIERS: TextTier[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 describe('text-banks', () => {
-  it('loads tier 1 and tier 2 as non-empty line lists', async () => {
-    const tier1 = await textBank.loadTier(1)
+  it('loads every seeded tier 1-10 as a non-empty line list', async () => {
+    const banks = await Promise.all(ALL_TIERS.map((tier) => textBank.loadTier(tier)))
+    banks.forEach((lines, i) => {
+      expect(lines.length, `tier ${ALL_TIERS[i]}`).toBeGreaterThan(0)
+    })
+  })
+
+  it('serves each seeded tier its own distinct content, not a fallback', async () => {
+    // Story 7 bundles all 10, so a mid-tier request no longer degrades — tier
+    // 5 gets tier-5 lines, not tier 2's. (The fallback net below still guards
+    // any gap opened by a future, not-yet-authored tier.)
     const tier2 = await textBank.loadTier(2)
-    expect(tier1.length).toBeGreaterThan(0)
-    expect(tier2.length).toBeGreaterThan(0)
+    const tier5 = await textBank.loadTier(5)
+    expect(tier5).not.toEqual(tier2)
   })
 
   it('falls back to the highest bundled tier at or below an unbundled request', async () => {
-    const tier2 = await textBank.loadTier(2)
-    const tier5 = await textBank.loadTier(5)
-    expect(tier5).toEqual(tier2)
+    // No valid TextTier is unbundled today, so force a gap: a tier past the
+    // authored set degrades to tier 10 instead of throwing (finding A).
+    const tier10 = await textBank.loadTier(10)
+    const unbundled = await textBank.loadTier(99 as TextTier)
+    expect(unbundled).toEqual(tier10)
   })
 
   it('makePromptSource returns a picker that always returns a line from the tier', async () => {

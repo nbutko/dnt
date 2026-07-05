@@ -104,12 +104,16 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         )}
       </button>
       {caption && (
-        // Wrap long multiword names onto centred lines instead of one wide,
-        // path-clipping row (feedback #8). A fixed width wraps at spaces (words
-        // stay intact), text-balance evens the two lines, and the taller caption
-        // is what ROW_GAP was widened to clear.
-        <span className="absolute top-full left-1/2 mt-1 w-24 -translate-x-1/2 text-center font-mono text-[9px] leading-tight tracking-wide text-balance text-text-dim uppercase">
-          {caption}
+        // Stack a multiword name one word per centred line, instead of one wide
+        // row that clips the path (feedback #8). A hard break per word is
+        // deterministic — a soft wrap depended on the name being wider than the
+        // caption box, which short two-word names aren't. ROW_GAP was widened to
+        // clear the resulting two-/three-line caption.
+        <span className="absolute top-full left-1/2 mt-1 flex -translate-x-1/2 flex-col items-center font-mono text-[9px] leading-tight tracking-wide text-text-dim uppercase">
+          {caption.split(' ').map((word, index) => (
+            // eslint-disable-next-line react/no-array-index-key -- caption words are positional
+            <span key={index}>{word}</span>
+          ))}
         </span>
       )}
     </div>

@@ -49,4 +49,24 @@ describe('text-banks', () => {
       expect(lines).toContain(source())
     }
   })
+
+  it('every seeded tier has ≥2 lines so no-repeat has an alternative (feedback #9)', async () => {
+    const banks = await Promise.all(ALL_TIERS.map((tier) => textBank.loadTier(tier)))
+    banks.forEach((lines, i) => {
+      expect(lines.length, `tier ${ALL_TIERS[i]}`).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  it('never serves the same line twice in a row (feedback #9)', async () => {
+    // An rng that keeps returning 0 would, under the old with-replacement
+    // sampler, hand back lines[0] forever; the picker must step off it instead.
+    const stuckRng = fakeRng([0])
+    const source = await textBank.makePromptSource(1, stuckRng)
+    let previous = source()
+    for (let i = 0; i < 20; i += 1) {
+      const next = source()
+      expect(next).not.toEqual(previous)
+      previous = next
+    }
+  })
 })

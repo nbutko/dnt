@@ -44,9 +44,23 @@ const loadTier = async (tier: TextTier): Promise<readonly string[]> => {
   return bundledTiers[resolvedTier]!.lines
 }
 
+// A picker that never serves the same line twice in a row (feedback #9). The
+// first draw is uniform over all lines; every later draw samples uniformly over
+// the pool *minus* the last line — mapping the index around the excluded slot,
+// so it consumes exactly one rng value per call and never re-rolls. This relies
+// on every tier having ≥2 lines (guarded by the test); a lone-line tier would
+// have no alternative and just repeats.
 const makePromptSource = async (tier: TextTier, rng: Rng): Promise<PromptSource> => {
   const lines = await loadTier(tier)
-  return () => lines[Math.floor(rng.next() * lines.length)]
+  let lastIndex = -1
+  return () => {
+    if (lines.length === 1) return lines[0]
+    const span = lastIndex < 0 ? lines.length : lines.length - 1
+    const choice = Math.floor(rng.next() * span)
+    const index = lastIndex >= 0 && choice >= lastIndex ? choice + 1 : choice
+    lastIndex = index
+    return lines[index]
+  }
 }
 
 const textBank: TextBank = { loadTier, makePromptSource }

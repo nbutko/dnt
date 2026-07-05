@@ -29,15 +29,26 @@ const KIND: Record<NodeKind, KindStyle> = {
   chest: { size: 22, shape: 'diamond', family: 'gold', ring: false },
 }
 
-// The glyph shown inside a node: the entrance is a "go" marker, a cleared node
-// gets the shared ✓, an unbeaten boss shows a skull; everything else is bare
-// (its shape + state colour already read clearly).
+// The glyph shown inside a node: the entrance is a "go" marker, an unbeaten
+// boss shows a skull, and a cleared node gets the shared ✓ — except a cleared
+// chest, which reveals what it was after the fact (feedback #3): a real chest
+// keeps the ✓, a defeated mimic shows a ✗. Everything else is bare (its shape +
+// state colour already read clearly). Unopened chests stay identical — this
+// only branches once state === 'cleared', so it leaks nothing.
 const glyphFor = (node: DungeonNodeData): string => {
   if (node.kind === 'entrance') return '▸'
-  if (node.state === 'cleared') return '✓'
+  if (node.state === 'cleared') {
+    if (node.kind === 'chest') return node.isRealChest ? '✓' : '✗'
+    return '✓'
+  }
   if (node.kind === 'boss') return '☠'
   return ''
 }
+
+// A cleared mimic's ✗ reads red rather than the chest's gold — the only case
+// where the glyph colour diverges from the node's own state colour.
+const isRevealedMimic = (node: DungeonNodeData): boolean =>
+  node.kind === 'chest' && node.state === 'cleared' && !node.isRealChest
 
 const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
   const style = KIND[node.kind]
@@ -70,9 +81,9 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         )}
         {glyph && (
           <span
-            className={`font-display font-bold ${glyphSize} ${classes.label} ${
-              style.shape === 'diamond' ? '-rotate-45' : ''
-            }`}
+            className={`font-display font-bold ${glyphSize} ${
+              isRevealedMimic(node) ? 'text-danger-bright' : classes.label
+            } ${style.shape === 'diamond' ? '-rotate-45' : ''}`}
           >
             {glyph}
           </span>

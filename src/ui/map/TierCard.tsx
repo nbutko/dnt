@@ -13,21 +13,23 @@ const LOCK_ICON_CLASSES: Record<NodeFamily, { border: string; fill: string }> = 
   danger: { border: 'border-node-danger-locked-text', fill: 'bg-node-danger-locked-text' },
 }
 
-// One 76x92 tier tile on the world map trail (design/README.md §2). Urban
-// (tier 11) uses the danger family so it stays red-tinted even locked, per
-// the same rule as the dungeon graph's boss node.
+// A tier tile on the world map trail (design/README.md §2, widened from the
+// spec's 76px — "Underwater"/"Underdark" don't fit 76px at this font size
+// without overflowing the card). Urban (tier 11) uses the danger family so
+// it stays red-tinted even locked, per the same rule as the dungeon graph's
+// boss node.
 const TierCard = ({ tier, state, onSelect }: TierCardProps) => {
   const family = tier.tier === 11 ? 'danger' : 'gold'
   const classes = nodeStateClasses(state, family)
   const clickable = state !== 'locked'
 
   return (
-    <div className="relative z-[1] flex w-[88px] flex-none flex-col items-center gap-1.5">
+    <div className="relative z-[1] flex w-[108px] flex-none flex-col items-center gap-1.5">
       <button
         type="button"
         disabled={!clickable}
         onClick={onSelect}
-        className={`relative flex h-[92px] w-[76px] flex-col items-center justify-center gap-1 rounded-lg ${classes.container} ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+        className={`relative flex h-[92px] w-[96px] flex-col items-center justify-center gap-1 rounded-lg ${classes.container} ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
       >
         {state === 'cleared' && (
           <span className="absolute -top-2 -right-2 flex h-[18px] w-[18px] items-center justify-center rounded-full border border-border-gold bg-accent-gold-bright font-mono text-[11px] font-bold text-[#2a1a08]">
@@ -42,7 +44,9 @@ const TierCard = ({ tier, state, onSelect }: TierCardProps) => {
             <span className={`-mt-1.5 h-3.5 w-5 rounded-sm ${LOCK_ICON_CLASSES[family].fill}`} />
           </span>
         )}
-        <span className={`px-1 text-center font-display text-xs ${classes.label}`}>{tier.habitat}</span>
+        <span className={`px-1 text-center font-display text-xs whitespace-nowrap ${classes.label}`}>
+          {tier.habitat}
+        </span>
         <span className="font-mono text-[10px] text-text-dim">Tier {tier.tier}</span>
       </button>
     </div>

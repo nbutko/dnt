@@ -1,0 +1,4493 @@
+[
+  {
+    "name": "Aarakocra Aeromancer",
+    "type": "Elemental",
+    "cr": "4",
+    "habitats": [
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Aarakocra Skirmisher",
+    "type": "Elemental",
+    "cr": "1/4",
+    "habitats": [
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Aberrant Cultist",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Aboleth",
+    "type": "Aberration",
+    "cr": "10",
+    "habitats": [
+      "Underdark",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Abominable Yeti",
+    "type": "Monstrosity",
+    "cr": "9",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Adult Black Dragon",
+    "type": "Dragon",
+    "cr": "14",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Adult Blue Dragon",
+    "type": "Dragon",
+    "cr": "16",
+    "habitats": [
+      "Coastal",
+      "Desert"
+    ]
+  },
+  {
+    "name": "Adult Brass Dragon",
+    "type": "Dragon",
+    "cr": "13",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Adult Bronze Dragon",
+    "type": "Dragon",
+    "cr": "15",
+    "habitats": [
+      "Coastal"
+    ]
+  },
+  {
+    "name": "Adult Copper Dragon",
+    "type": "Dragon",
+    "cr": "14",
+    "habitats": [
+      "Hill"
+    ]
+  },
+  {
+    "name": "Adult Gold Dragon",
+    "type": "Dragon",
+    "cr": "17",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Adult Green Dragon",
+    "type": "Dragon",
+    "cr": "15",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Adult Red Dragon",
+    "type": "Dragon",
+    "cr": "17",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Adult Silver Dragon",
+    "type": "Dragon",
+    "cr": "16",
+    "habitats": [
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Adult White Dragon",
+    "type": "Dragon",
+    "cr": "13",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Air Elemental",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Desert",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Allosaurus",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Grassland"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Ancient Black Dragon",
+    "type": "Dragon",
+    "cr": "21",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Ancient Blue Dragon",
+    "type": "Dragon",
+    "cr": "23",
+    "habitats": [
+      "Coastal",
+      "Desert"
+    ]
+  },
+  {
+    "name": "Ancient Brass Dragon",
+    "type": "Dragon",
+    "cr": "20",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Ancient Bronze Dragon",
+    "type": "Dragon",
+    "cr": "22",
+    "habitats": [
+      "Coastal"
+    ]
+  },
+  {
+    "name": "Ancient Copper Dragon",
+    "type": "Dragon",
+    "cr": "21",
+    "habitats": [
+      "Hill"
+    ]
+  },
+  {
+    "name": "Ancient Gold Dragon",
+    "type": "Dragon",
+    "cr": "24",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Ancient Green Dragon",
+    "type": "Dragon",
+    "cr": "22",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Ancient Red Dragon",
+    "type": "Dragon",
+    "cr": "24",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Ancient Silver Dragon",
+    "type": "Dragon",
+    "cr": "23",
+    "habitats": [
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ancient White Dragon",
+    "type": "Dragon",
+    "cr": "20",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Animal Lord",
+    "type": "Celestial",
+    "cr": "20",
+    "habitats": []
+  },
+  {
+    "name": "Animated Armor",
+    "type": "Construct",
+    "cr": "1",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Animated Broom",
+    "type": "Construct",
+    "cr": "1/4",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Animated Flying Sword",
+    "type": "Construct",
+    "cr": "1/4",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Animated Rug of Smothering",
+    "type": "Construct",
+    "cr": "2",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ankheg",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Ankylosaurus",
+    "type": "Beast",
+    "cr": "3",
+    "habitats": [
+      "Grassland"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Ape",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Arcanaloth",
+    "type": "Fiend",
+    "cr": "12",
+    "habitats": [],
+    "tags": [
+      "Yugoloths"
+    ]
+  },
+  {
+    "name": "Arch-hag",
+    "type": "Fey",
+    "cr": "21",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Archelon",
+    "type": "Beast",
+    "cr": "4",
+    "habitats": [
+      "Underwater"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Archmage",
+    "type": "Humanoid",
+    "cr": "12",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Archpriest",
+    "type": "Humanoid",
+    "cr": "12",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Assassin",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Awakened Shrub",
+    "type": "Plant",
+    "cr": "0",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Awakened Tree",
+    "type": "Plant",
+    "cr": "2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Axe Beak",
+    "type": "Monstrosity",
+    "cr": "1/4",
+    "habitats": [
+      "Arctic",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Azer Pyromancer",
+    "type": "Elemental",
+    "cr": "6",
+    "habitats": [
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Azer Sentinel",
+    "type": "Elemental",
+    "cr": "2",
+    "habitats": [
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Baboon",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Badger",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Balor",
+    "type": "Fiend",
+    "cr": "19",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Bandit",
+    "type": "Humanoid",
+    "cr": "1/8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Bandit Captain",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Bandit Crime Lord",
+    "type": "Humanoid",
+    "cr": "11",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Bandit Deceiver",
+    "type": "Humanoid",
+    "cr": "7",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Banshee",
+    "type": "Undead",
+    "cr": "4",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Barbed Devil",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Barlgura",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Basilisk",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Bat",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Mountain",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Bearded Devil",
+    "type": "Fiend",
+    "cr": "3",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Behir",
+    "type": "Monstrosity",
+    "cr": "11",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Beholder",
+    "type": "Aberration",
+    "cr": "13",
+    "habitats": [
+      "Underdark"
+    ],
+    "tags": [
+      "Beholders"
+    ]
+  },
+  {
+    "name": "Beholder Zombie",
+    "type": "Undead",
+    "cr": "5",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ],
+    "tags": [
+      "Beholders"
+    ]
+  },
+  {
+    "name": "Berserker",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Berserker Commander",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Black Bear",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Black Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Black Pudding",
+    "type": "Ooze",
+    "cr": "4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Blink Dog",
+    "type": "Fey",
+    "cr": "1/4",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Blob of Annihilation",
+    "type": "Ooze",
+    "cr": "23",
+    "habitats": [
+      "Any Habitat"
+    ],
+    "tags": [
+      "Titans"
+    ]
+  },
+  {
+    "name": "Blood Hawk",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Blue Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "3",
+    "habitats": [
+      "Coastal",
+      "Desert"
+    ]
+  },
+  {
+    "name": "Blue Slaad",
+    "type": "Aberration",
+    "cr": "7",
+    "habitats": []
+  },
+  {
+    "name": "Boar",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Bone Devil",
+    "type": "Fiend",
+    "cr": "9",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Bone Naga",
+    "type": "Undead",
+    "cr": "4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Brass Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "1",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Brazen Gorgon",
+    "type": "Construct",
+    "cr": "9",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Bronze Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Coastal"
+    ]
+  },
+  {
+    "name": "Brown Bear",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Arctic",
+      "Forest",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Bugbear Stalker",
+    "type": "Fey",
+    "cr": "3",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Bugbear Warrior",
+    "type": "Fey",
+    "cr": "1",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Bulette",
+    "type": "Monstrosity",
+    "cr": "5",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Bulette Pup",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Bullywug Bog Sage",
+    "type": "Fey",
+    "cr": "4",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Bullywug Warrior",
+    "type": "Fey",
+    "cr": "1/4",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Cambion",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Camel",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Carrion Crawler",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Cat",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Centaur Trooper",
+    "type": "Fey",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Centaur Warden",
+    "type": "Fey",
+    "cr": "7",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Chain Devil",
+    "type": "Fiend",
+    "cr": "8",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Chasme",
+    "type": "Fiend",
+    "cr": "6",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Chimera",
+    "type": "Monstrosity",
+    "cr": "6",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Chuul",
+    "type": "Aberration",
+    "cr": "4",
+    "habitats": [
+      "Coastal",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Clay Golem",
+    "type": "Construct",
+    "cr": "9",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Cloaker",
+    "type": "Aberration",
+    "cr": "8",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Cloud Giant",
+    "type": "Giant",
+    "cr": "9",
+    "habitats": [
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Cockatrice",
+    "type": "Monstrosity",
+    "cr": "1/2",
+    "habitats": [
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Cockatrice Regent",
+    "type": "Monstrosity",
+    "cr": "8",
+    "habitats": [
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Colossus",
+    "type": "Construct",
+    "cr": "25",
+    "habitats": [
+      "Any Habitat"
+    ],
+    "tags": [
+      "Titans"
+    ]
+  },
+  {
+    "name": "Commoner",
+    "type": "Humanoid",
+    "cr": "0",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Constrictor Snake",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Copper Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "1",
+    "habitats": [
+      "Hill"
+    ]
+  },
+  {
+    "name": "Couatl",
+    "type": "Celestial",
+    "cr": "4",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Crab",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Crawling Claw",
+    "type": "Undead",
+    "cr": "0",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Crocodile",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Coastal",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Cultist",
+    "type": "Humanoid",
+    "cr": "1/8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Cultist Fanatic",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Cultist Hierophant",
+    "type": "Humanoid",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Cyclops Oracle",
+    "type": "Giant",
+    "cr": "10",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Cyclops Sentry",
+    "type": "Giant",
+    "cr": "6",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Dao",
+    "type": "Elemental",
+    "cr": "11",
+    "habitats": [
+      "Underdark"
+    ],
+    "tags": [
+      "Genies"
+    ]
+  },
+  {
+    "name": "Darkmantle",
+    "type": "Aberration",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Death Cultist",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Death Dog",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Death Knight",
+    "type": "Undead",
+    "cr": "17",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Death Knight Aspirant",
+    "type": "Undead",
+    "cr": "11",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Death Slaad",
+    "type": "Aberration",
+    "cr": "10",
+    "habitats": []
+  },
+  {
+    "name": "Death Tyrant",
+    "type": "Undead",
+    "cr": "14",
+    "habitats": [
+      "Underdark"
+    ],
+    "tags": [
+      "Beholders"
+    ]
+  },
+  {
+    "name": "Deer",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Demilich",
+    "type": "Undead",
+    "cr": "18",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Deva",
+    "type": "Celestial",
+    "cr": "10",
+    "habitats": [],
+    "tags": [
+      "Angels"
+    ]
+  },
+  {
+    "name": "Dire Wolf",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Forest",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Dire Worg",
+    "type": "Fey",
+    "cr": "10",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Displacer Beast",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Djinni",
+    "type": "Elemental",
+    "cr": "11",
+    "habitats": [
+      "Coastal"
+    ],
+    "tags": [
+      "Genies"
+    ]
+  },
+  {
+    "name": "Doppelganger",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Dracolich",
+    "type": "Undead",
+    "cr": "17",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Draft Horse",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Dragon Turtle",
+    "type": "Dragon",
+    "cr": "17",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Dretch",
+    "type": "Fiend",
+    "cr": "1/4",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Drider",
+    "type": "Monstrosity",
+    "cr": "6",
+    "habitats": [
+      "Forest",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Druid",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Dryad",
+    "type": "Fey",
+    "cr": "1",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Dust Mephit",
+    "type": "Elemental",
+    "cr": "1/2",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Eagle",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Coastal",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Earth Elemental",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Efreeti",
+    "type": "Elemental",
+    "cr": "11",
+    "habitats": [
+      "Desert"
+    ],
+    "tags": [
+      "Genies"
+    ]
+  },
+  {
+    "name": "Elemental Cataclysm",
+    "type": "Elemental",
+    "cr": "22",
+    "habitats": [],
+    "tags": [
+      "Titans"
+    ]
+  },
+  {
+    "name": "Elemental Cultist",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Elephant",
+    "type": "Beast",
+    "cr": "4",
+    "habitats": [
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Elk",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Empyrean",
+    "type": "Celestial",
+    "cr": "23",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Empyrean Iota",
+    "type": "Celestial",
+    "cr": "1",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Erinyes",
+    "type": "Fiend",
+    "cr": "12",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Ettercap",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Ettin",
+    "type": "Giant",
+    "cr": "4",
+    "habitats": [
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Faerie Dragon Adult",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Faerie Dragon Youth",
+    "type": "Dragon",
+    "cr": "1",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Fiend Cultist",
+    "type": "Humanoid",
+    "cr": "8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Fire Elemental",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Fire Giant",
+    "type": "Giant",
+    "cr": "9",
+    "habitats": [
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Flameskull",
+    "type": "Undead",
+    "cr": "4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Flaming Skeleton",
+    "type": "Undead",
+    "cr": "3",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Flesh Golem",
+    "type": "Construct",
+    "cr": "5",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Flumph",
+    "type": "Aberration",
+    "cr": "1/8",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Flying Snake",
+    "type": "Monstrosity",
+    "cr": "1/8",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Fomorian",
+    "type": "Giant",
+    "cr": "8",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Frog",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Frost Giant",
+    "type": "Giant",
+    "cr": "8",
+    "habitats": [
+      "Arctic",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Galeb Duhr",
+    "type": "Elemental",
+    "cr": "6",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Gargoyle",
+    "type": "Elemental",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Gas Spore Fungus",
+    "type": "Plant",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Gelatinous Cube",
+    "type": "Ooze",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Ghast",
+    "type": "Undead",
+    "cr": "2",
+    "habitats": [
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ghast Gravecaller",
+    "type": "Undead",
+    "cr": "6",
+    "habitats": [
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ghost",
+    "type": "Undead",
+    "cr": "4",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ghoul",
+    "type": "Undead",
+    "cr": "1",
+    "habitats": [
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Giant Ape",
+    "type": "Beast",
+    "cr": "7",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Giant Axe Beak",
+    "type": "Monstrosity",
+    "cr": "5",
+    "habitats": [
+      "Arctic",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Badger",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Giant Bat",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Giant Boar",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Centipede",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Giant Constrictor Snake",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Crab",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Crocodile",
+    "type": "Beast",
+    "cr": "5",
+    "habitats": [
+      "Coastal",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Giant Eagle",
+    "type": "Celestial",
+    "cr": "1",
+    "habitats": [
+      "Coastal",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Giant Elk",
+    "type": "Celestial",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Fire Beetle",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Giant Frog",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Giant Goat",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Giant Hyena",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Lizard",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Giant Octopus",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Owl",
+    "type": "Celestial",
+    "cr": "1/4",
+    "habitats": [
+      "Arctic",
+      "Forest",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Rat",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Giant Scorpion",
+    "type": "Beast",
+    "cr": "3",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Giant Seahorse",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Shark",
+    "type": "Beast",
+    "cr": "5",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Spider",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Giant Squid",
+    "type": "Beast",
+    "cr": "6",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Giant Toad",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Coastal",
+      "Forest",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Giant Venomous Snake",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Giant Vulture",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Wasp",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Giant Weasel",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Giant Wolf Spider",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Gibbering Mouther",
+    "type": "Aberration",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Githyanki Dracomancer",
+    "type": "Aberration",
+    "cr": "16",
+    "habitats": []
+  },
+  {
+    "name": "Githyanki Knight",
+    "type": "Aberration",
+    "cr": "8",
+    "habitats": []
+  },
+  {
+    "name": "Githyanki Warrior",
+    "type": "Aberration",
+    "cr": "3",
+    "habitats": []
+  },
+  {
+    "name": "Githzerai Monk",
+    "type": "Aberration",
+    "cr": "2",
+    "habitats": []
+  },
+  {
+    "name": "Githzerai Psion",
+    "type": "Aberration",
+    "cr": "12",
+    "habitats": []
+  },
+  {
+    "name": "Githzerai Zerth",
+    "type": "Aberration",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Glabrezu",
+    "type": "Fiend",
+    "cr": "9",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Gladiator",
+    "type": "Humanoid",
+    "cr": "5",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Gnoll Demoniac",
+    "type": "Fiend",
+    "cr": "8",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Gnoll Fang of Yeenoghu",
+    "type": "Fiend",
+    "cr": "4",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Gnoll Pack Lord",
+    "type": "Fiend",
+    "cr": "2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Gnoll Warrior",
+    "type": "Fiend",
+    "cr": "1/2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Goat",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Goblin Boss",
+    "type": "Fey",
+    "cr": "1",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Goblin Hexer",
+    "type": "Fey",
+    "cr": "3",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Goblin Minion",
+    "type": "Fey",
+    "cr": "1/8",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Goblin Warrior",
+    "type": "Fey",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Gold Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "3",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Gorgon",
+    "type": "Construct",
+    "cr": "5",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Goristro",
+    "type": "Fiend",
+    "cr": "17",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Graveyard Revenant",
+    "type": "Undead",
+    "cr": "7",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Gray Ooze",
+    "type": "Ooze",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Gray Slaad",
+    "type": "Aberration",
+    "cr": "9",
+    "habitats": []
+  },
+  {
+    "name": "Green Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Green Hag",
+    "type": "Fey",
+    "cr": "3",
+    "habitats": [
+      "Forest",
+      "Hill",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Green Slaad",
+    "type": "Aberration",
+    "cr": "8",
+    "habitats": []
+  },
+  {
+    "name": "Grell",
+    "type": "Aberration",
+    "cr": "3",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Grick",
+    "type": "Aberration",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Grick Ancient",
+    "type": "Aberration",
+    "cr": "7",
+    "habitats": [
+      "Forest",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Griffon",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Grimlock",
+    "type": "Aberration",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Guard",
+    "type": "Humanoid",
+    "cr": "1/8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Guard Captain",
+    "type": "Humanoid",
+    "cr": "4",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Guardian Naga",
+    "type": "Celestial",
+    "cr": "10",
+    "habitats": [
+      "Desert",
+      "Forest"
+    ]
+  },
+  {
+    "name": "Gulthias Blight",
+    "type": "Plant",
+    "cr": "16",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Half-Dragon",
+    "type": "Dragon",
+    "cr": "5",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Harpy",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Coastal",
+      "Forest",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Haunting Revenant",
+    "type": "Undead",
+    "cr": "10",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Hawk",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Hell Hound",
+    "type": "Fiend",
+    "cr": "3",
+    "habitats": [
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Helmed Horror",
+    "type": "Construct",
+    "cr": "4",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Hezrou",
+    "type": "Fiend",
+    "cr": "8",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Hill Giant",
+    "type": "Giant",
+    "cr": "5",
+    "habitats": [
+      "Hill"
+    ]
+  },
+  {
+    "name": "Hippogriff",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Hippopotamus",
+    "type": "Beast",
+    "cr": "4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Hobgoblin Captain",
+    "type": "Fey",
+    "cr": "3",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Hobgoblin Warlord",
+    "type": "Fey",
+    "cr": "6",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Hobgoblin Warrior",
+    "type": "Fey",
+    "cr": "1/2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Homunculus",
+    "type": "Construct",
+    "cr": "0",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Hook Horror",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Horned Devil",
+    "type": "Fiend",
+    "cr": "11",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Hunter Shark",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Hydra",
+    "type": "Monstrosity",
+    "cr": "8",
+    "habitats": [
+      "Coastal",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Hyena",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Ice Devil",
+    "type": "Fiend",
+    "cr": "14",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Ice Mephit",
+    "type": "Elemental",
+    "cr": "1/2",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Imp",
+    "type": "Fiend",
+    "cr": "1",
+    "habitats": [
+      "Any Habitat"
+    ],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Incubus",
+    "type": "Fiend",
+    "cr": "4",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Intellect Devourer",
+    "type": "Aberration",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Invisible Stalker",
+    "type": "Elemental",
+    "cr": "6",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Iron Golem",
+    "type": "Construct",
+    "cr": "16",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Jackal",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Jackalwere",
+    "type": "Fiend",
+    "cr": "1/2",
+    "habitats": [
+      "Desert",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Juvenile Shadow Dragon",
+    "type": "Dragon",
+    "cr": "4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Kenku",
+    "type": "Monstrosity",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Killer Whale",
+    "type": "Beast",
+    "cr": "3",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Knight",
+    "type": "Humanoid",
+    "cr": "3",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Kobold Warrior",
+    "type": "Dragon",
+    "cr": "1/8",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Kraken",
+    "type": "Monstrosity",
+    "cr": "23",
+    "habitats": [
+      "Underwater"
+    ],
+    "tags": [
+      "Titans"
+    ]
+  },
+  {
+    "name": "Kuo-toa",
+    "type": "Aberration",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Kuo-toa Archpriest",
+    "type": "Aberration",
+    "cr": "6",
+    "habitats": [
+      "Coastal",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Kuo-toa Monitor",
+    "type": "Aberration",
+    "cr": "3",
+    "habitats": [
+      "Coastal",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Kuo-toa Whip",
+    "type": "Aberration",
+    "cr": "1",
+    "habitats": [
+      "Coastal",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Lacedon Ghoul",
+    "type": "Undead",
+    "cr": "1",
+    "habitats": [
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Lamia",
+    "type": "Fiend",
+    "cr": "4",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Larva",
+    "type": "Fiend",
+    "cr": "0",
+    "habitats": []
+  },
+  {
+    "name": "Lemure",
+    "type": "Fiend",
+    "cr": "0",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Lich",
+    "type": "Undead",
+    "cr": "21",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Lion",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Lizard",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Lizardfolk Geomancer",
+    "type": "Elemental",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Lizardfolk Sovereign",
+    "type": "Elemental",
+    "cr": "4",
+    "habitats": [
+      "Forest",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Mage",
+    "type": "Humanoid",
+    "cr": "6",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Mage Apprentice",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Magma Mephit",
+    "type": "Elemental",
+    "cr": "1/2",
+    "habitats": []
+  },
+  {
+    "name": "Magmin",
+    "type": "Elemental",
+    "cr": "1/2",
+    "habitats": []
+  },
+  {
+    "name": "Mammoth",
+    "type": "Beast",
+    "cr": "6",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Manes",
+    "type": "Fiend",
+    "cr": "1/8",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Manes Vaporspawn",
+    "type": "Fiend",
+    "cr": "1",
+    "habitats": []
+  },
+  {
+    "name": "Manticore",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Grassland",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Marid",
+    "type": "Elemental",
+    "cr": "11",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ],
+    "tags": [
+      "Genies"
+    ]
+  },
+  {
+    "name": "Marilith",
+    "type": "Fiend",
+    "cr": "16",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Mastiff",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Forest",
+      "Hill",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Medusa",
+    "type": "Monstrosity",
+    "cr": "6",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Merfolk Skirmisher",
+    "type": "Elemental",
+    "cr": "1/8",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Merfolk Wavebender",
+    "type": "Elemental",
+    "cr": "6",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Merrow",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Mezzoloth",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": [],
+    "tags": [
+      "Yugoloths"
+    ]
+  },
+  {
+    "name": "Mimic",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Mind Flayer",
+    "type": "Aberration",
+    "cr": "7",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Mind Flayer Arcanist",
+    "type": "Aberration",
+    "cr": "11",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Minotaur Skeleton",
+    "type": "Undead",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Minotaur of Baphomet",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Modron Duodrone",
+    "type": "Construct",
+    "cr": "1/4",
+    "habitats": []
+  },
+  {
+    "name": "Modron Monodrone",
+    "type": "Construct",
+    "cr": "0",
+    "habitats": []
+  },
+  {
+    "name": "Modron Pentadrone",
+    "type": "Construct",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Modron Quadrone",
+    "type": "Construct",
+    "cr": "1",
+    "habitats": []
+  },
+  {
+    "name": "Modron Tridrone",
+    "type": "Construct",
+    "cr": "1/2",
+    "habitats": []
+  },
+  {
+    "name": "Mud Mephit",
+    "type": "Elemental",
+    "cr": "1/4",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Mule",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Desert",
+      "Hill",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Mummy",
+    "type": "Undead",
+    "cr": "3",
+    "habitats": [
+      "Desert",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Mummy Lord",
+    "type": "Undead",
+    "cr": "15",
+    "habitats": [
+      "Desert",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Myconid Adult",
+    "type": "Plant",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Myconid Sovereign",
+    "type": "Plant",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Myconid Spore Servant",
+    "type": "Plant",
+    "cr": "1",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Myconid Sprout",
+    "type": "Plant",
+    "cr": "0",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Nalfeshnee",
+    "type": "Fiend",
+    "cr": "13",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Needle Blight",
+    "type": "Plant",
+    "cr": "1/4",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Night Hag",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": []
+  },
+  {
+    "name": "Nightmare",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Noble",
+    "type": "Humanoid",
+    "cr": "1/8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Noble Prodigy",
+    "type": "Humanoid",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Nothic",
+    "type": "Aberration",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Nycaloth",
+    "type": "Fiend",
+    "cr": "9",
+    "habitats": [],
+    "tags": [
+      "Yugoloths"
+    ]
+  },
+  {
+    "name": "Ochre Jelly",
+    "type": "Ooze",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Octopus",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Ogre",
+    "type": "Giant",
+    "cr": "2",
+    "habitats": [
+      "Arctic",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Ogre Zombie",
+    "type": "Undead",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Ogrillon Ogre",
+    "type": "Giant",
+    "cr": "1",
+    "habitats": [
+      "Arctic",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Oni",
+    "type": "Fiend",
+    "cr": "7",
+    "habitats": [
+      "Forest",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Otyugh",
+    "type": "Aberration",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Owl",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Arctic",
+      "Forest",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Owlbear",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Panther",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Pegasus",
+    "type": "Celestial",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Performer",
+    "type": "Humanoid",
+    "cr": "1/2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Performer Legend",
+    "type": "Humanoid",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Performer Maestro",
+    "type": "Humanoid",
+    "cr": "6",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Peryton",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Phase Spider",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Piercer",
+    "type": "Aberration",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Piranha",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Pirate",
+    "type": "Humanoid",
+    "cr": "1",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Pirate Admiral",
+    "type": "Humanoid",
+    "cr": "12",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Pirate Captain",
+    "type": "Humanoid",
+    "cr": "6",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Pit Fiend",
+    "type": "Fiend",
+    "cr": "20",
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Pixie",
+    "type": "Fey",
+    "cr": "1/4",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Pixie Wonderbringer",
+    "type": "Fey",
+    "cr": "5",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Planetar",
+    "type": "Celestial",
+    "cr": "16",
+    "habitats": [],
+    "tags": [
+      "Angels"
+    ]
+  },
+  {
+    "name": "Plesiosaurus",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Polar Bear",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Poltergeist",
+    "type": "Undead",
+    "cr": "2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Pony",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Grassland",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Priest",
+    "type": "Humanoid",
+    "cr": "2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Priest Acolyte",
+    "type": "Humanoid",
+    "cr": "1/4",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Primeval Owlbear",
+    "type": "Monstrosity",
+    "cr": "7",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Pseudodragon",
+    "type": "Dragon",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Hill",
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Psychic Gray Ooze",
+    "type": "Ooze",
+    "cr": "1",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Pteranodon",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Coastal",
+      "Grassland",
+      "Mountain"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Purple Worm",
+    "type": "Monstrosity",
+    "cr": "15",
+    "habitats": [
+      "Desert",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Quaggoth",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Quaggoth Thonot",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Quasit",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Questing Knight",
+    "type": "Humanoid",
+    "cr": "12",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Rakshasa",
+    "type": "Fiend",
+    "cr": "13",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Rat",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Raven",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Hill",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Red Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "4",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Red Slaad",
+    "type": "Aberration",
+    "cr": "5",
+    "habitats": []
+  },
+  {
+    "name": "Reef Shark",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Remorhaz",
+    "type": "Monstrosity",
+    "cr": "11",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Revenant",
+    "type": "Undead",
+    "cr": "5",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Rhinoceros",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Riding Horse",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Grassland",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Roc",
+    "type": "Monstrosity",
+    "cr": "11",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Desert",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Roper",
+    "type": "Aberration",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Rust Monster",
+    "type": "Monstrosity",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Saber-Toothed Tiger",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Arctic",
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Sahuagin Baron",
+    "type": "Fiend",
+    "cr": "5",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Sahuagin Priest",
+    "type": "Fiend",
+    "cr": "2",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Sahuagin Warrior",
+    "type": "Fiend",
+    "cr": "1/2",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Salamander",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Salamander Fire Snake",
+    "type": "Elemental",
+    "cr": "1",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Salamander Inferno Master",
+    "type": "Elemental",
+    "cr": "15",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Satyr",
+    "type": "Fey",
+    "cr": "1/2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Satyr Revelmaster",
+    "type": "Fey",
+    "cr": "6",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Scarecrow",
+    "type": "Construct",
+    "cr": "1",
+    "habitats": [
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Scorpion",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Scout",
+    "type": "Humanoid",
+    "cr": "1/2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Scout Captain",
+    "type": "Humanoid",
+    "cr": "3",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Sea Hag",
+    "type": "Fey",
+    "cr": "2",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Seahorse",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Shadow",
+    "type": "Undead",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Shadow Demon",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Shadow Dragon",
+    "type": "Dragon",
+    "cr": "13",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Shambling Mound",
+    "type": "Plant",
+    "cr": "5",
+    "habitats": [
+      "Forest",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Shield Guardian",
+    "type": "Construct",
+    "cr": "7",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Shrieker Fungus",
+    "type": "Plant",
+    "cr": "0",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Silver Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Skeleton",
+    "type": "Undead",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Slaad Tadpole",
+    "type": "Aberration",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Smoke Mephit",
+    "type": "Elemental",
+    "cr": "1/4",
+    "habitats": []
+  },
+  {
+    "name": "Solar",
+    "type": "Celestial",
+    "cr": "21",
+    "habitats": [],
+    "tags": [
+      "Angels"
+    ]
+  },
+  {
+    "name": "Spectator",
+    "type": "Aberration",
+    "cr": "3",
+    "habitats": [
+      "Underdark"
+    ],
+    "tags": [
+      "Beholders"
+    ]
+  },
+  {
+    "name": "Specter",
+    "type": "Undead",
+    "cr": "1",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Sphinx of Lore",
+    "type": "Celestial",
+    "cr": "11",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Sphinx of Secrets",
+    "type": "Celestial",
+    "cr": "8",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Sphinx of Valor",
+    "type": "Celestial",
+    "cr": "17",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Sphinx of Wonder",
+    "type": "Celestial",
+    "cr": "1",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Spider",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Spined Devil",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": [],
+    "tags": [
+      "Devils"
+    ]
+  },
+  {
+    "name": "Spirit Naga",
+    "type": "Fiend",
+    "cr": "8",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Sprite",
+    "type": "Fey",
+    "cr": "1/4",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Spy",
+    "type": "Humanoid",
+    "cr": "1",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Spy Master",
+    "type": "Humanoid",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Steam Mephit",
+    "type": "Elemental",
+    "cr": "1/8",
+    "habitats": []
+  },
+  {
+    "name": "Stirge",
+    "type": "Monstrosity",
+    "cr": "1/8",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Stone Giant",
+    "type": "Giant",
+    "cr": "7",
+    "habitats": [
+      "Hill",
+      "Mountain",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Stone Golem",
+    "type": "Construct",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Storm Giant",
+    "type": "Giant",
+    "cr": "13",
+    "habitats": [
+      "Coastal",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Succubus",
+    "type": "Fiend",
+    "cr": "4",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Bats",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Mountain",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Crawling Claws",
+    "type": "Undead",
+    "cr": "3",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Swarm of Dretches",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Swarm of Insects",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Larvae",
+    "type": "Fiend",
+    "cr": "1",
+    "habitats": []
+  },
+  {
+    "name": "Swarm of Lemures",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": []
+  },
+  {
+    "name": "Swarm of Piranhas",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Swarm of Rats",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Ravens",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Hill",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Stirges",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Swarm of Venomous Snakes",
+    "type": "Beast",
+    "cr": "2",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Tarrasque",
+    "type": "Monstrosity",
+    "cr": "30",
+    "habitats": [
+      "Urban"
+    ],
+    "tags": [
+      "Titans"
+    ]
+  },
+  {
+    "name": "Thri-kreen Marauder",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Thri-kreen Psion",
+    "type": "Monstrosity",
+    "cr": "8",
+    "habitats": [
+      "Desert",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Tiger",
+    "type": "Beast",
+    "cr": "1",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Tough",
+    "type": "Humanoid",
+    "cr": "1/2",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Tough Boss",
+    "type": "Humanoid",
+    "cr": "4",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Treant",
+    "type": "Plant",
+    "cr": "9",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Tree Blight",
+    "type": "Plant",
+    "cr": "7",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Triceratops",
+    "type": "Beast",
+    "cr": "5",
+    "habitats": [
+      "Grassland"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Troglodyte",
+    "type": "Monstrosity",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Troll",
+    "type": "Giant",
+    "cr": "5",
+    "habitats": [
+      "Arctic",
+      "Forest",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Troll Limb",
+    "type": "Giant",
+    "cr": "1/2",
+    "habitats": []
+  },
+  {
+    "name": "Twig Blight",
+    "type": "Plant",
+    "cr": "1/8",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Tyrannosaurus Rex",
+    "type": "Beast",
+    "cr": "8",
+    "habitats": [
+      "Grassland"
+    ],
+    "tags": [
+      "Dinosaurs"
+    ]
+  },
+  {
+    "name": "Ultroloth",
+    "type": "Fiend",
+    "cr": "13",
+    "habitats": [],
+    "tags": [
+      "Yugoloths"
+    ]
+  },
+  {
+    "name": "Umber Hulk",
+    "type": "Monstrosity",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Unicorn",
+    "type": "Celestial",
+    "cr": "5",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Vampire",
+    "type": "Undead",
+    "cr": "13",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Vampire Familiar",
+    "type": "Humanoid",
+    "cr": "3",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Vampire Nightbringer",
+    "type": "Undead",
+    "cr": "8",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Vampire Spawn",
+    "type": "Undead",
+    "cr": "5",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Vampire Umbral Lord",
+    "type": "Undead",
+    "cr": "15",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Venomous Snake",
+    "type": "Beast",
+    "cr": "1/8",
+    "habitats": [
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Grassland",
+      "Hill",
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Vine Blight",
+    "type": "Plant",
+    "cr": "1/2",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Violet Fungus",
+    "type": "Plant",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Violet Fungus Necrohulk",
+    "type": "Plant",
+    "cr": "7",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Vrock",
+    "type": "Fiend",
+    "cr": "6",
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Vulture",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Desert",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Warhorse",
+    "type": "Beast",
+    "cr": "1/2",
+    "habitats": [
+      "Urban"
+    ]
+  },
+  {
+    "name": "Warhorse Skeleton",
+    "type": "Undead",
+    "cr": "1/2",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Warrior Commander",
+    "type": "Humanoid",
+    "cr": "10",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Warrior Infantry",
+    "type": "Humanoid",
+    "cr": "1/8",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Warrior Veteran",
+    "type": "Humanoid",
+    "cr": "3",
+    "habitats": [
+      "Any Habitat"
+    ]
+  },
+  {
+    "name": "Water Elemental",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Coastal",
+      "Swamp",
+      "Underwater"
+    ]
+  },
+  {
+    "name": "Water Weird",
+    "type": "Elemental",
+    "cr": "3",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Weasel",
+    "type": "Beast",
+    "cr": "0",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Werebear",
+    "type": "Monstrosity",
+    "cr": "5",
+    "habitats": [
+      "Arctic",
+      "Forest",
+      "Hill"
+    ],
+    "tags": [
+      "Lycanthropes"
+    ]
+  },
+  {
+    "name": "Wereboar",
+    "type": "Monstrosity",
+    "cr": "4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ],
+    "tags": [
+      "Lycanthropes"
+    ]
+  },
+  {
+    "name": "Wererat",
+    "type": "Monstrosity",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Urban"
+    ],
+    "tags": [
+      "Lycanthropes"
+    ]
+  },
+  {
+    "name": "Weretiger",
+    "type": "Monstrosity",
+    "cr": "4",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Grassland"
+    ],
+    "tags": [
+      "Lycanthropes"
+    ]
+  },
+  {
+    "name": "Werewolf",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Forest",
+      "Hill"
+    ],
+    "tags": [
+      "Lycanthropes"
+    ]
+  },
+  {
+    "name": "White Dragon Wyrmling",
+    "type": "Dragon",
+    "cr": "2",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Wight",
+    "type": "Undead",
+    "cr": "3",
+    "habitats": [
+      "Desert",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Will-o'-Wisp",
+    "type": "Undead",
+    "cr": "2",
+    "habitats": [
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Winged Kobold",
+    "type": "Dragon",
+    "cr": "1/4",
+    "habitats": [
+      "Arctic",
+      "Coastal",
+      "Desert",
+      "Forest",
+      "Hill",
+      "Mountain",
+      "Swamp",
+      "Underdark",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Winter Wolf",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Wolf",
+    "type": "Beast",
+    "cr": "1/4",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Worg",
+    "type": "Monstrosity",
+    "cr": "1/2",
+    "habitats": [
+      "Forest",
+      "Grassland",
+      "Hill"
+    ]
+  },
+  {
+    "name": "Wraith",
+    "type": "Undead",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Wyvern",
+    "type": "Dragon",
+    "cr": "6",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Xorn",
+    "type": "Elemental",
+    "cr": "5",
+    "habitats": [
+      "Underdark"
+    ]
+  },
+  {
+    "name": "Yeti",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Yochlol",
+    "type": "Fiend",
+    "cr": null,
+    "habitats": [],
+    "tags": [
+      "Demons"
+    ]
+  },
+  {
+    "name": "Young Black Dragon",
+    "type": "Dragon",
+    "cr": "7",
+    "habitats": [
+      "Swamp"
+    ]
+  },
+  {
+    "name": "Young Blue Dragon",
+    "type": "Dragon",
+    "cr": "9",
+    "habitats": [
+      "Coastal",
+      "Desert"
+    ]
+  },
+  {
+    "name": "Young Brass Dragon",
+    "type": "Dragon",
+    "cr": "6",
+    "habitats": [
+      "Desert"
+    ]
+  },
+  {
+    "name": "Young Bronze Dragon",
+    "type": "Dragon",
+    "cr": "8",
+    "habitats": [
+      "Coastal"
+    ]
+  },
+  {
+    "name": "Young Copper Dragon",
+    "type": "Dragon",
+    "cr": "7",
+    "habitats": [
+      "Hill"
+    ]
+  },
+  {
+    "name": "Young Gold Dragon",
+    "type": "Dragon",
+    "cr": "10",
+    "habitats": [
+      "Forest",
+      "Grassland"
+    ]
+  },
+  {
+    "name": "Young Green Dragon",
+    "type": "Dragon",
+    "cr": "8",
+    "habitats": [
+      "Forest"
+    ]
+  },
+  {
+    "name": "Young Red Dragon",
+    "type": "Dragon",
+    "cr": "10",
+    "habitats": [
+      "Hill",
+      "Mountain"
+    ]
+  },
+  {
+    "name": "Young Remorhaz",
+    "type": "Monstrosity",
+    "cr": "6",
+    "habitats": [
+      "Arctic"
+    ]
+  },
+  {
+    "name": "Young Silver Dragon",
+    "type": "Dragon",
+    "cr": "9",
+    "habitats": [
+      "Mountain",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Young White Dragon",
+    "type": "Dragon",
+    "cr": "6",
+    "habitats": []
+  },
+  {
+    "name": "Yuan-ti Abomination",
+    "type": "Monstrosity",
+    "cr": "7",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Yuan-ti Infiltrator",
+    "type": "Monstrosity",
+    "cr": "1",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Yuan-ti Malison",
+    "type": "Monstrosity",
+    "cr": "3",
+    "habitats": [
+      "Desert",
+      "Forest",
+      "Swamp",
+      "Urban"
+    ]
+  },
+  {
+    "name": "Zombie",
+    "type": "Undead",
+    "cr": "1/4",
+    "habitats": [
+      "Underdark",
+      "Urban"
+    ]
+  }
+]

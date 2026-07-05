@@ -672,6 +672,20 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     is the biggest one — a candidate to fold into M3 if it grows.
     <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
+  <li>
+    <strong>A hung/failed IndexedDB open leaves the whole app blank.</strong> <em>[medium]</em><br>
+    <code>SaveProvider</code> gates the entire UI on the save load — <code>if (!hydrated) return null</code>
+    (<code>state/save/SaveProvider.tsx</code>) — and <code>loadSave()</code> awaits <code>openDB('dnt-save')</code>
+    (<code>state/save/save-storage.ts</code>). If that open never resolves, nothing ever paints and there's no error
+    (the request just sits at <code>readyState: 'pending'</code>, firing no success/error/blocked event), so the kid
+    sees a permanent black screen with no way to recover. Observed on the <code>localhost:5173</code> origin while
+    <code>127.0.0.1:5173</code> (a separate origin, separate store) rendered fine — a wedged Chrome IndexedDB store,
+    not a code bug, but the app should survive it. Fix: race the load against a timeout (and catch rejections) and fall
+    back to <code>defaultSave()</code> so play continues in-memory, ideally with a small "couldn't load your save"
+    notice; consider a one-click "reset save / clear site data" escape hatch. Files:
+    <code>state/save/SaveProvider.tsx</code>, <code>state/save/save-storage.ts</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  </li>
 </ol>
 
 </main>

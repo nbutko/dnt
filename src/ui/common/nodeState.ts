@@ -26,7 +26,10 @@ const GOLD: Record<NodeVisualState, NodeStateClasses> = {
     label: 'text-accent-gold-bright',
   },
   locked: {
-    container: 'border border-dashed border-node-locked-border bg-node-locked opacity-55',
+    // Solid (not translucent) background — locked nodes sit over a
+    // connector line (world map trail, dungeon graph edges) and must fully
+    // occlude it rather than let it bleed through.
+    container: 'border border-dashed border-node-locked-border bg-node-locked-solid',
     label: 'text-node-locked-text',
   },
 }
@@ -43,7 +46,7 @@ const DANGER: Record<NodeVisualState, NodeStateClasses> = {
   },
   locked: {
     container:
-      'border border-dashed border-node-danger-locked-border bg-node-danger-locked opacity-60',
+      'border border-dashed border-node-danger-locked-border bg-node-danger-locked-solid',
     label: 'text-node-danger-locked-text',
   },
 }

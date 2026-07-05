@@ -26,7 +26,7 @@ const Legend = ({ shape = 'square', showChest = false }: LegendProps) => {
       </span>
       <span className="flex items-center gap-1.5">
         <span
-          className={`h-3 w-3 border border-dashed border-node-locked-border bg-node-locked ${shapeClass}`}
+          className={`h-3 w-3 border border-dashed border-node-locked-border bg-node-locked-solid ${shapeClass}`}
         />
         Locked
       </span>

@@ -29,14 +29,22 @@
      red-tinted even while locked. */
   --color-node-cleared-from: #4a3a12;
   --color-node-cleared-to: #2a1f08;
+  /* Translucent — only for locked one-offs that don't sit over a connector
+     line (e.g. the Shop hub card). */
   --color-node-locked: rgba(40, 34, 24, 0.5);
   --color-node-locked-border: #5a4a30;
   --color-node-locked-text: #8a7a5a;
   --color-node-locked-text-dim: #6a5a3a;
-  --color-node-danger-locked: rgba(60, 20, 20, 0.4);
   --color-node-danger-locked-border: #6a2a2a;
   --color-node-danger-locked-text: #a86a6a;
   --color-node-danger-locked-text-dim: #6a4040;
+  /* Opaque equivalents — node tiles that sit over a connector line (world
+     map trail, dungeon graph) must fully occlude it regardless of state, so
+     they can't use a translucent background there (a transparent tile lets
+     the line bleed through and cross the habitat text). Same hue, alpha
+     flattened to 1. */
+  --color-node-locked-solid: #241d14;
+  --color-node-danger-locked-solid: #2a1615;
 
   --font-display: 'Cinzel', serif;
   --font-body: 'EB Garamond', serif;

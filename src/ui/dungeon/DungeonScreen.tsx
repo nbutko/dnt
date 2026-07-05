@@ -18,7 +18,7 @@ import Frame from '../common/Frame'
 import Legend from '../common/Legend'
 import StatusReadout from '../common/StatusReadout'
 import DungeonGraphView from './DungeonGraph'
-import MimicModal from './MimicModal'
+import EncounterModal from './EncounterModal'
 import RewardModal from './RewardModal'
 
 interface DungeonScreenProps {
@@ -35,6 +35,53 @@ const roleForNode = (node: DungeonNode): MonsterRole => {
   if (node.kind === 'boss') return 'boss'
   if (node.kind === 'chest') return 'mimic'
   return 'regular'
+}
+
+// Node kinds whose monster is hidden until you commit — they reveal in a modal
+// before the fight instead of dropping you straight in (mimic was feedback #13;
+// waypoint/approach/boss added in round-2 #C). A plain fight circle already
+// shows its monster, so it isn't gated. (A real chest is intercepted earlier —
+// it has no fight — so the only chest reaching here is a mimic.)
+const REVEAL_KINDS = new Set<DungeonNode['kind']>(['chest', 'waypoint', 'approach', 'boss'])
+
+interface RevealCopy {
+  headline: string
+  subtext: string
+  danger: boolean
+}
+
+// The reveal-modal copy for a hidden encounter, by node kind. A mimic keeps its
+// "it was a Mimic!" surprise (the specific monster is named only in the subtext);
+// the chokepoints and boss name the monster in the headline (round-2 #C).
+const revealCopy = (node: DungeonNode, name: string): RevealCopy => {
+  switch (node.kind) {
+    case 'chest':
+      return {
+        headline: 'You encountered a Mimic!',
+        subtext: `The chest springs open with teeth — a ${name} was lying in wait.`,
+        danger: true,
+      }
+    case 'waypoint':
+      return {
+        headline: `You encountered a ${name}!`,
+        subtext: 'A guardian bars the waypoint — beat it to open the late paths.',
+        danger: false,
+      }
+    case 'approach':
+      return {
+        headline: `You encountered a ${name}!`,
+        subtext: 'The last guard before the boss — clear the approach.',
+        danger: false,
+      }
+    case 'boss':
+      return {
+        headline: `You encountered the ${name}!`,
+        subtext: 'The dungeon boss itself — defeat it to claim the tier.',
+        danger: true,
+      }
+    default:
+      return { headline: `You encountered a ${name}!`, subtext: '', danger: false }
+  }
 }
 
 // What the reward modal (feedback #1) is banking, captured at win time so the
@@ -121,12 +168,13 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
   const graphScrollLeft = useRef(0)
 
-  // A mimic chest, once tapped, pauses on a reveal modal before the fight
-  // (feedback #13) — holds the tapped node id until the player hits Begin
-  // Battle. Null the rest of the time.
-  const [mimicRevealId, setMimicRevealId] = useState<string | null>(null)
-  const mimicNode = mimicRevealId ? run.graph.nodes[mimicRevealId] : null
-  const mimicName = mimicNode?.monsterId ? getMonster(mimicNode.monsterId).name : undefined
+  // A hidden encounter (mimic chest, or a ?-glyph waypoint/approach/boss), once
+  // tapped, pauses on a reveal modal before the fight (feedback #13, round-2 #C)
+  // — holds the tapped node id until the player hits Begin Battle. Null the rest
+  // of the time.
+  const [revealId, setRevealId] = useState<string | null>(null)
+  const revealNode = revealId ? run.graph.nodes[revealId] : null
+  const revealName = revealNode?.monsterId ? getMonster(revealNode.monsterId).name : undefined
 
   // A win/real-chest resolves INTO this reward modal (feedback #1/#12): the win
   // is banked immediately, but the run isn't advanced until the player confirms
@@ -167,26 +215,27 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   }
 
   // Tapping an available node: the real chest opens with no fight, resolving
-  // straight to a win; a mimic chest reveals itself and waits on the modal
-  // before its fight (feedback #13); anything else opens a battle directly.
+  // straight to a win; a hidden encounter (mimic chest, or the ?-glyph
+  // waypoint/approach/boss) reveals itself and waits on the modal before its
+  // fight (feedback #13, round-2 #C); a plain fight opens a battle directly.
   const handleSelect = (id: string): void => {
     const node = run.graph.nodes[id]
     if (node.kind === 'chest' && node.isRealChest) {
       handleWin(node)
       return
     }
-    if (node.kind === 'chest') {
-      setMimicRevealId(id)
+    if (REVEAL_KINDS.has(node.kind)) {
+      setRevealId(id)
       return
     }
     dispatch(selectNode(id))
   }
 
-  // Begin Battle on the mimic modal: commit the tapped chest to a real fight.
-  const handleBeginMimic = (): void => {
-    if (!mimicRevealId) return
-    dispatch(selectNode(mimicRevealId))
-    setMimicRevealId(null)
+  // Begin Battle on the reveal modal: commit the tapped node to its fight.
+  const handleBeginReveal = (): void => {
+    if (!revealId) return
+    dispatch(selectNode(revealId))
+    setRevealId(null)
   }
 
   const body =
@@ -258,9 +307,19 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
           onConfirm={handleRewardConfirm}
         />
       )}
-      {mimicRevealId && mimicName && (
-        <MimicModal monsterName={mimicName} onBegin={handleBeginMimic} />
-      )}
+      {revealNode &&
+        revealName &&
+        (() => {
+          const copy = revealCopy(revealNode, revealName)
+          return (
+            <EncounterModal
+              headline={copy.headline}
+              subtext={copy.subtext}
+              danger={copy.danger}
+              onBegin={handleBeginReveal}
+            />
+          )
+        })()}
     </>
   )
 }

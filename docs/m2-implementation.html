@@ -775,7 +775,15 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     through it (like the mimic gate) instead of dispatching <code>selectNode</code> straight to battle; add the
     <code>?</code> in <code>DungeonNode.glyphFor</code>. Files: <code>ui/dungeon/MimicModal.tsx</code> (→ shared),
     <code>DungeonScreen.tsx</code>, <code>DungeonNode.tsx</code>.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> <code>MimicModal</code> became a shared <code>EncounterModal</code> (headline + subtext + a
+    gold/red tone). <code>glyphFor</code> now renders <code>?</code> on an unbeaten waypoint/approach (the boss keeps
+    its <code>☠</code>, user's call), and those nodes no longer leak their monster via the hover tooltip — only plain
+    fight circles show a name. <code>DungeonScreen</code> gates waypoint/approach/boss (and the mimic chest) behind the
+    reveal modal via a shared <code>REVEAL_KINDS</code> set + a <code>revealCopy(node, name)</code> helper: the mimic
+    keeps its "it was a Mimic!" surprise (monster named in the subtext), while the chokepoints and boss name the
+    monster in the headline, each with its own subtext. Begin Battle fires on click or Enter (autofocused). The
+    modal→battle flow is for User to verify in-browser.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
 </ol>
 

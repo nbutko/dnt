@@ -31,11 +31,13 @@ const KIND: Record<NodeKind, KindStyle> = {
 }
 
 // The glyph shown inside a node: the entrance is a "go" marker, an unbeaten
-// boss shows a skull, and a cleared node gets the shared ✓ — except a cleared
-// chest, which reveals what it was after the fact (feedback #3): a real chest
-// keeps the ✓, a defeated mimic shows a ✗. Everything else is bare (its shape +
-// state colour already read clearly). Unopened chests stay identical — this
-// only branches once state === 'cleared', so it leaks nothing.
+// boss shows a skull, an unbeaten waypoint/approach shows a ? (its monster is
+// hidden until you select it — round-2 #C), and a cleared node gets the shared
+// ✓ — except a cleared chest, which reveals what it was after the fact
+// (feedback #3): a real chest keeps the ✓, a defeated mimic shows a ✗.
+// Everything else is bare (its shape + state colour already read clearly).
+// Unopened chests stay identical — this only branches once state === 'cleared',
+// so it leaks nothing.
 const glyphFor = (node: DungeonNodeData): string => {
   if (node.kind === 'entrance') return '▸'
   if (node.state === 'cleared') {
@@ -43,6 +45,7 @@ const glyphFor = (node: DungeonNodeData): string => {
     return '✓'
   }
   if (node.kind === 'boss') return '☠'
+  if (node.kind === 'waypoint' || node.kind === 'approach') return '?'
   return ''
 }
 
@@ -64,12 +67,13 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
   const clickable = node.state === 'available'
   const glyph = glyphFor(node)
   const glyphSize = style.size >= 56 ? 'text-lg' : 'text-[11px]'
-  const monsterName = monsterNameFor(node)
-  // Plain fight circles carry no structural caption, so they show the monster's
-  // name (feedback #8). The larger named nodes (waypoint/approach/boss) keep
-  // their positional caption and surface the monster on hover instead, so the
-  // graph doesn't get two lines of text under every big node.
-  const caption = style.caption ?? (node.kind === 'fight' ? monsterName : undefined)
+  // The monster name is exposed (as a caption and a hover tooltip) only where
+  // it's meant to be seen: a plain fight circle, which has no structural caption
+  // (feedback #8). Waypoint/approach/boss hide their monster behind a ? and a
+  // click-reveal modal (round-2 #C), so their tooltip stays generic — no peeking
+  // before you commit.
+  const shownName = node.kind === 'fight' ? monsterNameFor(node) : undefined
+  const caption = style.caption ?? shownName
 
   return (
     <div className="absolute z-[1] -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y }}>
@@ -77,8 +81,8 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         type="button"
         disabled={!clickable}
         onClick={() => onSelect(node.id)}
-        title={monsterName}
-        aria-label={`${node.kind}${monsterName ? ` (${monsterName})` : ''} — ${node.state}`}
+        title={shownName}
+        aria-label={`${node.kind}${shownName ? ` (${shownName})` : ''} — ${node.state}`}
         className={`relative flex items-center justify-center ${
           style.shape === 'circle' ? 'rounded-full' : 'rotate-45 rounded-[4px]'
         } ${classes.container} ${clickable ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}`}

@@ -77,3 +77,21 @@ body {
 .scroll-x-subtle::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent-gold);
 }
+
+/* The player's typing caret (feedback #10). Now that the separate input echo
+   row is gone and the real <input> is visually hidden, this drawn caret is the
+   only "you type here" cue — a hard blink (step, not fade) reads as a text
+   cursor rather than a pulsing decoration. */
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret-blink {
+  animation: caret-blink 1s step-end infinite;
+}

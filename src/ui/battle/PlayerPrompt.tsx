@@ -22,13 +22,15 @@ const PAUSE_MESSAGES = {
 // feeding it. See game-design.html#submitting.
 //
 // `input` is lifted to BattleScreen (Story 7) rather than owned here, since
-// Keyboard needs it too, alongside `prompt`. Two lines are rendered: the big
-// target-prompt-with-progress line (TypedProgress) a 10-year-old reads under
-// time pressure, and a small dim "live input echo" below it that's the
-// actual focused control — see docs/design/visual-spec.html#type.
+// Keyboard needs it too, alongside `prompt`. Only ONE line is rendered: the
+// big target-prompt-with-progress line (TypedProgress) a 10-year-old reads and
+// types over, with a blinking caret marking where they are. The real <input>
+// stays in the DOM (visually hidden via `sr-only`) so keystrokes and focus
+// still flow through it — but it's no longer echoed as a second, duplicate
+// `> …` line below the prompt, which was confusing (feedback #10).
 //
 // While `paused` (a brief window after a timeout or a wrong-text miss, see
-// engine/battle.ts), both lines are replaced with an explicit "you missed"
+// engine/battle.ts), the prompt line is replaced with an explicit "you missed"
 // message — worded differently per `pauseReason` — instead of silently
 // swapping to the next prompt.
 const PlayerPrompt = ({
@@ -48,35 +50,37 @@ const PlayerPrompt = ({
 
   if (paused) {
     return (
-      <div className="flex flex-col gap-1">
-        <p className="font-mono text-lg text-danger-bright">
-          {PAUSE_MESSAGES[pauseReason ?? 'expire']}
-        </p>
-        <p aria-hidden="true" className="font-mono text-[13px] text-text-dim">
-          &gt;
-        </p>
-      </div>
+      <p className="font-mono text-lg text-danger-bright">
+        {PAUSE_MESSAGES[pauseReason ?? 'expire']}
+      </p>
     )
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <TypedProgress prompt={prompt} typed={input} revealRemaining className="text-lg" />
-      <div className="flex items-center gap-1 font-mono text-[13px] text-text-dim">
-        <span aria-hidden="true">&gt;</span>
-        <input
-          className="flex-1 border-none bg-transparent outline-none disabled:opacity-50"
-          value={input}
-          disabled={disabled}
-          onChange={(event) => onInputChange(event.target.value)}
-          onKeyDown={handleKeyDown}
-          aria-label="Type the prompt"
-          // This is the game's one always-relevant control; the kid should be
-          // able to type on load without clicking first.
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
-        />
-      </div>
+    <div className="relative">
+      <TypedProgress
+        prompt={prompt}
+        typed={input}
+        revealRemaining
+        blinkCaret={!disabled}
+        className="text-lg"
+      />
+      {/* The real control, kept in the DOM (and focusable) but visually hidden:
+          the TypedProgress line above is now the sole on-screen typing surface
+          (feedback #10). `sr-only` still receives keystrokes, focus, and the
+          autofocus below. */}
+      <input
+        className="sr-only"
+        value={input}
+        disabled={disabled}
+        onChange={(event) => onInputChange(event.target.value)}
+        onKeyDown={handleKeyDown}
+        aria-label="Type the prompt"
+        // This is the game's one always-relevant control; the kid should be
+        // able to type on load without clicking first.
+        // eslint-disable-next-line jsx-a11y/no-autofocus
+        autoFocus
+      />
     </div>
   )
 }

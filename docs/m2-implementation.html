@@ -622,7 +622,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>&gt; …</code> echo line below. Show just the single overlaid line (like the monster's
     <code>TypedProgress</code>) with a blinking caret, and keep the real <code>&lt;input&gt;</code> in the DOM but
     visually hidden so typing/focus still work. Root: <code>ui/battle/PlayerPrompt.tsx</code> renders both.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Typing multiple spaces appears to delete the prompt text.</strong> <em>[medium; likely tied to #10]</em><br>
@@ -632,7 +632,10 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     the remaining prompt. Needs a repro + a decision on how off-track/whitespace input renders (e.g. clamp the typed
     overlay to prompt length, or render wrong chars inline without shifting the untyped remainder). Fixing #10 reshapes
     this surface, so triage the two together. Files: <code>TypedProgress.tsx</code>, <code>PlayerPrompt.tsx</code>.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Decision:</em> at each reached position render the prompt's own char (recoloured by
+    match), not the keystroke — the target line stays fully on screen and fixed; over-typed chars trail
+    after it in red. Covered by <code>TypedProgress.test.tsx</code>.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Reward modal on a win / chest claim.</strong> <em>[medium — batch with #1]</em><br>

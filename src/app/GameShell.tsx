@@ -13,18 +13,23 @@ const GameShell = () => {
 
   return (
     <SaveProvider>
-      {(() => {
-        switch (screen.name) {
-          case 'map':
-            return <WorldMapScreen onNavigate={setScreen} />
-          case 'inn':
-            return <InnScreen onNavigate={setScreen} />
-          case 'dungeon':
-            return <DungeonScreen tier={screen.tier} onNavigate={setScreen} />
-          default:
-            return null
-        }
-      })()}
+      {/* Page padding so the double-border Frame always insets from the
+          viewport edge instead of bleeding off the top or clipping left/right
+          on a narrow window (feedback #2). */}
+      <div className="min-h-screen p-4 sm:p-6">
+        {(() => {
+          switch (screen.name) {
+            case 'map':
+              return <WorldMapScreen onNavigate={setScreen} />
+            case 'inn':
+              return <InnScreen onNavigate={setScreen} />
+            case 'dungeon':
+              return <DungeonScreen tier={screen.tier} onNavigate={setScreen} />
+            default:
+              return null
+          }
+        })()}
+      </div>
     </SaveProvider>
   )
 }

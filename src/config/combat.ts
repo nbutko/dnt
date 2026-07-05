@@ -19,7 +19,18 @@ const combatConfig: CombatConfig = {
   // Flat headroom added to every player time limit for reading/reacting to
   // a fresh prompt before typing starts, on top of the typing-time estimate.
   playerReadingBufferMs: 2000,
-  playerMaxHp: 100,
+  // Landed via engine/sim/explore.test.ts (a disposable sweep, same
+  // methodology as baseDamage/slack above) against a simulated player who
+  // times out a fraction of their prompts instead of ever mistyping them.
+  // At the old value of 100, the monster's own slow attack cycle meant even
+  // a player who timed out on *every* prompt took ~140-200s to actually
+  // lose, and a 30% timeout rate barely dented the player's win rate. 40
+  // makes a 100%-timeout loss land in ~60-90s (still slower than a clean
+  // ~30-45s win, but no longer absurd), and puts the Goblin's breakeven
+  // right around the requested "~30% of phrases missed" — the easier Slime
+  // is more forgiving (breakeven closer to ~45-50%), which is fine for the
+  // tutorial fight.
+  playerMaxHp: 40,
   // How long a "Time Limit Expired" pause holds (either side) before the
   // next prompt draws.
   missPauseMs: 2000,

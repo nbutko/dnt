@@ -690,7 +690,12 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     back to <code>defaultSave()</code> so play continues in-memory, ideally with a small "couldn't load your save"
     notice; consider a one-click "reset save / clear site data" escape hatch. Files:
     <code>state/save/SaveProvider.tsx</code>, <code>state/save/save-storage.ts</code>.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> <code>SaveProvider</code> now races <code>loadSave()</code> against a 4s timeout and
+    catches rejections — whichever settles first wins, so a slow-but-working load still gets real data, but a
+    hung/failed open falls back to <code>defaultSave()</code> and the app comes up instead of gating blank.
+    Covered by <code>SaveProvider.test.tsx</code> (a never-settling load still paints). (Deferred the optional
+    "couldn't load" notice / reset-save escape hatch — not needed to unblock the blank screen.)
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
 </ol>
 

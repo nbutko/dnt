@@ -13,6 +13,7 @@
     "presubmit": "npm run lint && npm run build && npm run test"
   },
   "dependencies": {
+    "idb": "^8.0.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
@@ -36,6 +37,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "4.6.2",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
     "prettier": "^3.9.4",
     "tailwindcss": "^4.3.2",

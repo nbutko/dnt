@@ -1,14 +1,19 @@
 import { useMemo } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
+import rewardsConfig from '../../config/rewards'
 import { getMonster } from '../../content/monsters'
+import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
+import type { MonsterRole } from '../../domain/types'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
 import { createRng } from '../../engine/rng'
 import { resolveModifiers } from '../../engine/progression/skill-effects'
+import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
 import { resolveFight, selectNode } from '../../state/dungeon-run/dungeon-run-reducer'
 import DungeonRunProvider, { useDungeonRun } from '../../state/dungeon-run/DungeonRunProvider'
+import { award, recordDefeat, unlockTier } from '../../state/save/save-reducer'
 import { useSave } from '../../state/save/SaveProvider'
-import type { DungeonGraph } from '../../domain/dungeon'
+import BattleScreen from '../battle/BattleScreen'
 import Frame from '../common/Frame'
 import HeartsReadout from '../common/HeartsReadout'
 import Legend from '../common/Legend'
@@ -22,6 +27,14 @@ interface DungeonScreenProps {
 const habitatFor = (tier: number): string =>
   DUNGEON_TIERS.find((entry) => entry.tier === tier)?.habitat ?? `Tier ${tier}`
 
+// The reward role for a node: the boss node pays a boss reward, a mimic chest a
+// mimic reward, and every other fight (regular, waypoint, approach) a regular.
+const roleForNode = (node: DungeonNode): MonsterRole => {
+  if (node.kind === 'boss') return 'boss'
+  if (node.kind === 'chest') return 'mimic'
+  return 'regular'
+}
+
 // One-line "where you are" status for the header (design/README.md §3).
 const statusLine = (graph: DungeonGraph): string => {
   if (isComplete(graph)) return 'The boss is down — dungeon cleared!'
@@ -33,7 +46,8 @@ const statusLine = (graph: DungeonGraph): string => {
 }
 
 // Full-frame banner shown when the run ends either way — the ephemeral run is
-// discarded by leaving the screen (finding E), so both paths just go home.
+// discarded by leaving the screen (finding E), so both paths just go home. XP
+// and coins were already banked per-kill, so nothing is lost on a wipe.
 interface RunEndBannerProps {
   won: boolean
   onLeave: () => void
@@ -50,8 +64,8 @@ const RunEndBanner = ({ won, onLeave }: RunEndBannerProps) => (
     </p>
     <p className="mt-3 text-text-dim">
       {won
-        ? 'The boss falls. Your rewards are already banked.'
-        : 'Your hearts ran out. The dungeon collapses behind you.'}
+        ? 'The boss falls, and the next tier opens on the map. Your rewards are banked.'
+        : 'Your hearts ran out. The dungeon collapses — but the XP you earned is yours to keep.'}
     </p>
     <button
       type="button"
@@ -63,80 +77,66 @@ const RunEndBanner = ({ won, onLeave }: RunEndBannerProps) => (
   </div>
 )
 
-// STORY 10 stand-in for the real battle (wired in Story 11). Lets the graph's
-// transitions be exercised end-to-end in a browser before the battle screen is
-// hooked up.
-interface FightStubProps {
-  monsterName: string
-  onWin: () => void
-  onLose: () => void
-}
-
-const FightStub = ({ monsterName, onWin, onLose }: FightStubProps) => (
-  <div className="mt-10 text-center">
-    <p className="font-display text-xl text-accent-gold-bright">Fighting {monsterName}…</p>
-    <p className="mt-2 text-text-dim">(placeholder — the real battle screen lands in Story 11)</p>
-    <div className="mt-6 flex justify-center gap-4">
-      <button
-        type="button"
-        onClick={onWin}
-        className="rounded border border-accent-gold px-4 py-2 font-mono text-sm text-accent-gold-bright hover:brightness-110"
-      >
-        Win
-      </button>
-      <button
-        type="button"
-        onClick={onLose}
-        className="rounded border border-danger px-4 py-2 font-mono text-sm text-danger-bright hover:brightness-110"
-      >
-        Lose
-      </button>
-    </div>
-  </div>
-)
-
 interface DungeonRunViewProps {
   tier: number
-  maxHearts: number
   onNavigate: (screen: Screen) => void
 }
 
-const DungeonRunView = ({ tier, maxHearts, onNavigate }: DungeonRunViewProps) => {
+const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const { run, outcome, dispatch } = useDungeonRun()
+  const { save, dispatch: saveDispatch } = useSave()
+  const modifiers = resolveModifiers(save.skillTree)
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
 
-  // Tapping an available node: the real chest opens with no fight, so it
-  // resolves straight to a win; anything with a monster opens a battle.
+  // A win banks its reward per-kill, immediately (finding C) — so a run that
+  // later wipes still earns progress. Defeating the boss unlocks the next tier
+  // (and reaches 12 past tier 11, finding D).
+  const handleWin = (node: DungeonNode): void => {
+    const reward =
+      node.kind === 'chest' && node.isRealChest
+        ? rewardForChest(tier, rewardsConfig)
+        : rewardForKill(tier, roleForNode(node), rewardsConfig)
+    saveDispatch(award(reward.coins, reward.xp))
+    if (node.monsterId) saveDispatch(recordDefeat(node.monsterId))
+    if (node.kind === 'boss') saveDispatch(unlockTier(tier + 1))
+    dispatch(resolveFight('win', node.id))
+  }
+
+  // Tapping an available node: the real chest opens with no fight, resolving
+  // straight to a win; anything with a monster opens a battle.
   const handleSelect = (id: string): void => {
     const node = run.graph.nodes[id]
     if (node.kind === 'chest' && node.isRealChest) {
-      dispatch(resolveFight('win', id))
+      handleWin(node)
       return
     }
     dispatch(selectNode(id))
   }
 
-  const renderBody = () => {
-    if (outcome !== 'ongoing') {
-      return <RunEndBanner won={outcome === 'complete'} onLeave={() => onNavigate(toMap())} />
-    }
-    if (activeNode) {
-      return (
-        <FightStub
-          monsterName={getMonster(activeNode.monsterId!).name}
-          onWin={() => dispatch(resolveFight('win', activeNode.id))}
-          onLose={() => dispatch(resolveFight('lose', activeNode.id))}
-        />
-      )
-    }
+  // A live fight takes over the whole screen (its own Frame) so the dungeon
+  // header doesn't double-border around it.
+  if (activeNode && activeNode.monsterId && outcome === 'ongoing') {
     return (
+      <BattleScreen
+        monster={getMonster(activeNode.monsterId)}
+        modifiers={modifiers}
+        onResult={(result) =>
+          result === 'win' ? handleWin(activeNode) : dispatch(resolveFight('lose', activeNode.id))
+        }
+      />
+    )
+  }
+
+  const body =
+    outcome === 'ongoing' ? (
       <div className="mt-6">
         <DungeonGraphView graph={run.graph} onSelectNode={handleSelect} />
         <Legend shape="circle" showChest />
       </div>
+    ) : (
+      <RunEndBanner won={outcome === 'complete'} onLeave={() => onNavigate(toMap())} />
     )
-  }
 
   return (
     <Frame>
@@ -154,10 +154,10 @@ const DungeonRunView = ({ tier, maxHearts, onNavigate }: DungeonRunViewProps) =>
           </h1>
           <p className="mt-1 font-mono text-[11px] text-text-dim">{statusLine(run.graph)}</p>
         </div>
-        <HeartsReadout current={run.heartsRemaining} max={maxHearts} />
+        <HeartsReadout current={run.heartsRemaining} max={modifiers.maxHearts} />
       </div>
 
-      {renderBody()}
+      {body}
     </Frame>
   )
 }
@@ -180,7 +180,7 @@ const DungeonScreen = ({ tier, onNavigate }: DungeonScreenProps) => {
 
   return (
     <DungeonRunProvider params={params}>
-      <DungeonRunView tier={tier} maxHearts={maxHearts} onNavigate={onNavigate} />
+      <DungeonRunView tier={tier} onNavigate={onNavigate} />
     </DungeonRunProvider>
   )
 }

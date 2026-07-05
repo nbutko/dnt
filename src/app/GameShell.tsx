@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import SaveProvider from '../state/save/SaveProvider'
-import BattleScreen from '../ui/battle/BattleScreen'
 import DungeonScreen from '../ui/dungeon/DungeonScreen'
 import InnScreen from '../ui/inn/InnScreen'
 import WorldMapScreen from '../ui/map/WorldMapScreen'
@@ -22,19 +21,6 @@ const GameShell = () => {
             return <InnScreen onNavigate={setScreen} />
           case 'dungeon':
             return <DungeonScreen tier={screen.tier} onNavigate={setScreen} />
-          case 'battle':
-            return (
-              <div>
-                <button
-                  type="button"
-                  className="mx-auto mb-2 block font-mono text-xs text-text-dim hover:text-accent-gold-bright"
-                  onClick={() => setScreen(toMap())}
-                >
-                  ← Back to map
-                </button>
-                <BattleScreen />
-              </div>
-            )
           default:
             return null
         }

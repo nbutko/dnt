@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getMonster } from '../../content/monsters'
-import { resolveModifiers } from '../../engine/progression/skill-effects'
-import { useSave } from '../../state/save/SaveProvider'
+import type { Monster } from '../../domain/types'
+import type { PlayerModifiers } from '../../domain/progression'
 import { createBattleStore, type BattleStore } from '../../state/battle-store'
 import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
@@ -12,16 +12,19 @@ import Keyboard from './Keyboard'
 import PlayerPrompt from './PlayerPrompt'
 import TypedProgress from './TypedProgress'
 
-const M0_MONSTER_ID = 'slime' // M0/M1 hardcode one monster; the roster grows in M2.
+// The battle's outcome, in the dungeon-run's vocabulary — a clean 'win'|'lose'
+// so callers don't have to translate the engine's 'won'|'lost' status.
+export type BattleResultKind = 'win' | 'lose'
 
 interface ReadyBattleScreenProps {
   store: BattleStore
+  onResult: (result: BattleResultKind) => void
 }
 
 // "Vertical Duel" layout (docs/design/visual-spec.html#layout): title, then
 // monster panel (top), a VS divider, then the player's own panel (bottom) —
 // HP, prompt, live input, countdown, and the keyboard.
-const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
+const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   const { state, actions } = useBattle(store)
   useGameLoop(actions.tick, state.status === 'ongoing')
   const monsterInfo = getMonster(state.monster.id)
@@ -118,6 +121,13 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
         {state.status !== 'ongoing' && (
           <div className="mt-4">
             <BattleResult status={state.status} />
+            <button
+              type="button"
+              onClick={() => onResult(state.status === 'won' ? 'win' : 'lose')}
+              className="mx-auto mt-4 block rounded border border-border-gold px-5 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"
+            >
+              Continue →
+            </button>
           </div>
         )}
       </section>
@@ -125,28 +135,35 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
   )
 }
 
-const BattleScreen = () => {
-  const { save } = useSave()
+interface BattleScreenProps {
+  monster: Monster
+  modifiers: PlayerModifiers
+  onResult: (result: BattleResultKind) => void
+}
+
+// Launched by the dungeon screen for one tapped node. The served text tier and
+// the damage gate come from `modifiers` (Story 6), computed once when the store
+// is built; on finish, `onResult` hands the outcome back so the dungeon can
+// resolve the fight and bank rewards.
+const BattleScreen = ({ monster, modifiers, onResult }: BattleScreenProps) => {
   const [store, setStore] = useState<BattleStore | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    const monster = getMonster(M0_MONSTER_ID)
-    const modifiers = resolveModifiers(save.skillTree)
     createBattleStore(monster, modifiers).then((created) => {
       if (!cancelled) setStore(created)
     })
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one store per mount; a mid-fight skillTree change shouldn't restart the battle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one store per mount; a mid-fight monster/modifier change shouldn't restart the battle.
   }, [])
 
   if (!store) {
     return <p className="p-8 text-text-dim">Loading battle…</p>
   }
 
-  return <ReadyBattleScreen store={store} />
+  return <ReadyBattleScreen store={store} onResult={onResult} />
 }
 
 export default BattleScreen

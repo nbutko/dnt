@@ -720,6 +720,58 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
   </li>
 </ol>
 
+<h2 id="feedback-2">Post-playtest feedback — round 2</h2>
+<p>
+  From the second hands-on play (2026-07-05), after the round-1 fixes landed. Same convention: ordered
+  <strong>easiest → hardest</strong>, each noting symptom, root cause + files, and fix. One commit per item with a
+  check-in between (no batching).
+</p>
+<ol style="list-style-type: upper-alpha">
+  <li>
+    <strong>Enter should confirm "Return to map" on a cleared/failed run.</strong> <em>[easy]</em><br>
+    On the run-end banner, pressing <code>Return</code> did nothing — you had to click the button. Root: the reward and
+    mimic modals autofocus their button so Enter fires natively, but <code>RunEndBanner</code> in
+    <code>ui/dungeon/DungeonScreen.tsx</code> did not. Fix: autofocus the <strong>Return to map</strong> button.
+    <br><em>Done:</em> added <code>autoFocus</code> to the banner's button, so a bare Enter returns to the map.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <!-- A: autofocus is a browser behavior; left for user in-browser verify -->
+
+  </li>
+  <li>
+    <strong>A hyphenated monster name breaks mid-word in the caption.</strong> <em>[easy]</em><br>
+    On Coastal, <code>KUO-TOA WHIP</code> wraps after the hyphen so <code>KUO-</code>/<code>TOA</code> land on two lines,
+    while <code>Yuan-Ti Malison</code> is fine. Root: the round-1 caption fix (#8) splits the name on spaces and renders
+    each word in its own flex-column span; the browser can still break inside a span at the hyphen, and the flex item
+    shrinks to that min-content width when its sibling word is short (<code>WHIP</code>). A longer sibling
+    (<code>MALISON</code>) keeps the column wide enough that <code>Yuan-Ti</code> never squeezes. Fix: each word span
+    is <code>whitespace-nowrap</code> so a word (hyphen and all) never breaks internally; the space break between words
+    stays. Files: <code>ui/dungeon/DungeonNode.tsx</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  </li>
+  <li>
+    <strong>Grassland monster names should match the monster manual.</strong> <em>[easy]</em><br>
+    The regular <code>Goblin</code> and <code>Slime</code> aren't real manual entries. Per the manual
+    (<code>docs/monster-manual.json</code>): <code>Goblin → Goblin Minion</code> (CR 1/8, Fey), and slimes are oozes so
+    <code>Slime → Gray Ooze</code> (CR 1/2, the easiest ooze). <code>Skeleton</code> is already a real entry — leave it.
+    Display-name only; ids and combat stats are unchanged (config stays at committed values). Files:
+    <code>content/monsters.json</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  </li>
+  <li>
+    <strong>Waypoint/Approach/Boss should hide their monster behind a <code>?</code> and reveal it on select.</strong>
+    <em>[medium]</em><br>
+    Waypoint and Approach show no monster (correct — they shouldn't preview), but they read as blank circles. Give them
+    a <code>?</code> glyph inside (like the boss's skull), and make selecting a Waypoint, Approach, <em>or</em> Boss pop
+    a reveal modal ("You encountered a <em>XXX</em>!") the way a mimic chest does, with its own subtext per node type,
+    and <strong>Begin Battle</strong> on click or Enter. Root: generalize <code>ui/dungeon/MimicModal.tsx</code> into a
+    shared encounter-reveal modal; route the waypoint/approach/boss branch of <code>DungeonScreen.handleSelect</code>
+    through it (like the mimic gate) instead of dispatching <code>selectNode</code> straight to battle; add the
+    <code>?</code> in <code>DungeonNode.glyphFor</code>. Files: <code>ui/dungeon/MimicModal.tsx</code> (→ shared),
+    <code>DungeonScreen.tsx</code>, <code>DungeonNode.tsx</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  </li>
+</ol>
+
 </main>
 <footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
 </body>

@@ -94,6 +94,10 @@ const RunEndBanner = ({ won, onLeave }: RunEndBannerProps) => (
     <button
       type="button"
       onClick={onLeave}
+      // Autofocused so a bare Enter returns to the map, matching the reward/mimic
+      // modals — otherwise Enter on the run-end banner did nothing (round-2 #A).
+      // eslint-disable-next-line jsx-a11y/no-autofocus
+      autoFocus
       className="mt-6 rounded border border-border-gold px-4 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"
     >
       Return to map

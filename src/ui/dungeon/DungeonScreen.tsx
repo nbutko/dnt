@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig from '../../config/rewards'
@@ -90,6 +90,10 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
 
+  // Survives the battle (which unmounts the graph) so the graph re-mounts at the
+  // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
+  const graphScrollLeft = useRef(0)
+
   // A win banks its reward per-kill, immediately (finding C) — so a run that
   // later wipes still earns progress. Defeating the boss unlocks the next tier
   // (and reaches 12 past tier 11, finding D).
@@ -132,7 +136,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const body =
     outcome === 'ongoing' ? (
       <div className="mt-6">
-        <DungeonGraphView graph={run.graph} onSelectNode={handleSelect} />
+        <DungeonGraphView graph={run.graph} onSelectNode={handleSelect} scrollLeftRef={graphScrollLeft} />
         <Legend shape="circle" showChest />
       </div>
     ) : (

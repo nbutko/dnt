@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react'
 import type { DungeonGraph as DungeonGraphData } from '../../domain/dungeon'
 import { layoutDungeon } from './graph-layout'
 import DungeonNode from './DungeonNode'
@@ -6,6 +6,10 @@ import DungeonNode from './DungeonNode'
 interface DungeonGraphProps {
   graph: DungeonGraphData
   onSelectNode: (id: string) => void
+  // Persists the horizontal scroll offset across the battle (feedback #7). A
+  // fight unmounts this component, so the owner keeps the offset in a ref: we
+  // write it on scroll and restore it when the graph re-mounts.
+  scrollLeftRef?: MutableRefObject<number>
 }
 
 // Edge colours (design/README.md §3): an edge is solid gold only when its
@@ -23,8 +27,16 @@ const EDGE_LOCKED = '#5a4a30'
 // The branch graph (image 3b): an absolutely-positioned <svg> edge layer (z0)
 // under the positioned node <div>s (z1). Layout is a pure function of the
 // graph, so this component just draws the points it's handed.
-const DungeonGraph = ({ graph, onSelectNode }: DungeonGraphProps) => {
+const DungeonGraph = ({ graph, onSelectNode, scrollLeftRef }: DungeonGraphProps) => {
   const { positions, width, height } = useMemo(() => layoutDungeon(graph), [graph])
+
+  // Restore the saved offset on mount (before paint, so there's no flash at 0).
+  // Aliased to a local so writing `.current` isn't a param-property reassign.
+  const savedScroll = scrollLeftRef
+  const containerRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (containerRef.current && savedScroll) containerRef.current.scrollLeft = savedScroll.current
+  }, [savedScroll])
 
   const edges = useMemo(
     () =>
@@ -42,7 +54,13 @@ const DungeonGraph = ({ graph, onSelectNode }: DungeonGraphProps) => {
   )
 
   return (
-    <div className="scroll-x-subtle overflow-x-auto py-2">
+    <div
+      ref={containerRef}
+      onScroll={(event) => {
+        if (savedScroll) savedScroll.current = event.currentTarget.scrollLeft
+      }}
+      className="scroll-x-subtle overflow-x-auto py-2"
+    >
       <div className="relative mx-auto" style={{ width, height }}>
         <svg className="absolute top-0 left-0 z-0" width={width} height={height} aria-hidden>
           {edges.map((edge) => (

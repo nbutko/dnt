@@ -20,6 +20,7 @@ import Legend from '../common/Legend'
 import ResourcePill from '../common/ResourcePill'
 import DungeonGraphView from './DungeonGraph'
 import MimicModal from './MimicModal'
+import RewardModal from './RewardModal'
 
 interface DungeonScreenProps {
   tier: number
@@ -35,6 +36,25 @@ const roleForNode = (node: DungeonNode): MonsterRole => {
   if (node.kind === 'boss') return 'boss'
   if (node.kind === 'chest') return 'mimic'
   return 'regular'
+}
+
+// What the reward modal (feedback #1) is banking, captured at win time so the
+// modal can show the gain and the new running total without re-reading save
+// mid-render. `nodeId` is what its Continue resolves once confirmed.
+interface RewardView {
+  nodeId: string
+  title: string
+  xpGained: number
+  coinsGained: number
+  xpTotal: number
+  coinsTotal: number
+}
+
+// The reward modal's heading, by what was just beaten/opened.
+const rewardTitle = (node: DungeonNode): string => {
+  if (node.kind === 'boss') return 'Boss Defeated!'
+  if (node.kind === 'chest') return 'Treasure Claimed!'
+  return 'Victory!'
 }
 
 // One-line "where you are" status for the header (design/README.md §3).
@@ -105,18 +125,42 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const mimicNode = mimicRevealId ? run.graph.nodes[mimicRevealId] : null
   const mimicName = mimicNode?.monsterId ? getMonster(mimicNode.monsterId).name : undefined
 
+  // A win/real-chest resolves INTO this reward modal (feedback #1/#12): the win
+  // is banked immediately, but the run isn't advanced until the player confirms
+  // the modal — so its single Continue press doubles as the battle's continue.
+  const [reward, setReward] = useState<RewardView | null>(null)
+
   // A win banks its reward per-kill, immediately (finding C) — so a run that
   // later wipes still earns progress. Defeating the boss unlocks the next tier
-  // (and reaches 12 past tier 11, finding D).
+  // (and reaches 12 past tier 11, finding D). The graph isn't advanced here: we
+  // stash the reward + pre/post totals and let the modal's confirm do it, so the
+  // player sees what they earned first (feedback #1).
   const handleWin = (node: DungeonNode): void => {
-    const reward =
+    const amount =
       node.kind === 'chest' && node.isRealChest
         ? rewardForChest(tier, rewardsConfig)
         : rewardForKill(tier, roleForNode(node), rewardsConfig)
-    saveDispatch(award(reward.coins, reward.xp))
+    saveDispatch(award(amount.coins, amount.xp))
     if (node.monsterId) saveDispatch(recordDefeat(node.monsterId))
     if (node.kind === 'boss') saveDispatch(unlockTier(tier + 1))
-    dispatch(resolveFight('win', node.id))
+    // save.xp/coins here are the pre-award totals (this render's snapshot), so
+    // adding the gain gives the post total to display alongside it.
+    setReward({
+      nodeId: node.id,
+      title: rewardTitle(node),
+      xpGained: amount.xp,
+      coinsGained: amount.coins,
+      xpTotal: save.xp + amount.xp,
+      coinsTotal: save.coins + amount.coins,
+    })
+  }
+
+  // The reward modal's Continue: now advance the run and close the modal — one
+  // press back to the graph (feedback #12).
+  const handleRewardConfirm = (): void => {
+    if (!reward) return
+    dispatch(resolveFight('win', reward.nodeId))
+    setReward(null)
   }
 
   // Tapping an available node: the real chest opens with no fight, resolving
@@ -142,20 +186,6 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     setMimicRevealId(null)
   }
 
-  // A live fight takes over the whole screen (its own Frame) so the dungeon
-  // header doesn't double-border around it.
-  if (activeNode && activeNode.monsterId && outcome === 'ongoing') {
-    return (
-      <BattleScreen
-        monster={getMonster(activeNode.monsterId)}
-        modifiers={modifiers}
-        onResult={(result) =>
-          result === 'win' ? handleWin(activeNode) : dispatch(resolveFight('lose', activeNode.id))
-        }
-      />
-    )
-  }
-
   const body =
     outcome === 'ongoing' ? (
       <div className="mt-6">
@@ -170,8 +200,20 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       <RunEndBanner won={outcome === 'complete'} onLeave={() => onNavigate(toMap())} />
     )
 
-  return (
-    <>
+  // A live fight takes over the whole screen (its own Frame) so the dungeon
+  // header doesn't double-border around it. On a win it stays mounted while the
+  // reward modal overlays it (a win doesn't clear activeNodeId until the modal's
+  // Continue resolves the fight), so the modals below sit over either screen.
+  const screen =
+    activeNode && activeNode.monsterId && outcome === 'ongoing' ? (
+      <BattleScreen
+        monster={getMonster(activeNode.monsterId)}
+        modifiers={modifiers}
+        onResult={(result) =>
+          result === 'win' ? handleWin(activeNode) : dispatch(resolveFight('lose', activeNode.id))
+        }
+      />
+    ) : (
       <Frame>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -200,6 +242,21 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
 
         {body}
       </Frame>
+    )
+
+  return (
+    <>
+      {screen}
+      {reward && (
+        <RewardModal
+          title={reward.title}
+          xpGained={reward.xpGained}
+          coinsGained={reward.coinsGained}
+          xpTotal={reward.xpTotal}
+          coinsTotal={reward.coinsTotal}
+          onConfirm={handleRewardConfirm}
+        />
+      )}
       {mimicRevealId && mimicName && (
         <MimicModal monsterName={mimicName} onBegin={handleBeginMimic} />
       )}

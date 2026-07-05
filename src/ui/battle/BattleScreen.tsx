@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getMonster } from '../../content/monsters'
 import type { Monster } from '../../domain/types'
 import type { PlayerModifiers } from '../../domain/progression'
@@ -35,6 +35,19 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   useEffect(() => {
     setInput('')
   }, [state.player.attempt])
+
+  // A win resolves straight into the dungeon's reward modal (feedback #1/#12):
+  // hand the result up the moment the monster falls, with no intermediate
+  // "Continue" button, so the modal's single Continue is the only press. A loss
+  // still gets the in-battle end panel below (there's no reward to show). The
+  // ref makes this fire exactly once even as `onResult` gets new identities.
+  const resultSent = useRef(false)
+  useEffect(() => {
+    if (state.status === 'won' && !resultSent.current) {
+      resultSent.current = true
+      onResult('win')
+    }
+  }, [state.status, onResult])
 
   const secondsLeft = Math.max(0, state.player.timeLimitMs - state.player.elapsedMs) / 1000
   const monsterSecondsLeft =
@@ -118,12 +131,19 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
           />
         </div>
 
-        {state.status !== 'ongoing' && (
+        {/* Loss only: a win hands straight up to the reward modal (above), which
+            carries its own Continue. A defeat has nothing to reward, so it keeps
+            the in-battle end panel and its Continue back to the run. */}
+        {state.status === 'lost' && (
           <div className="mt-4">
             <BattleResult status={state.status} />
             <button
               type="button"
-              onClick={() => onResult(state.status === 'won' ? 'win' : 'lose')}
+              onClick={() => onResult('lose')}
+              // Autofocused so a bare Enter confirms the loss too (feedback #1) —
+              // the typing input is gone/disabled, so this is the keydown target.
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
               className="mx-auto mt-4 block rounded border border-border-gold px-5 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"
             >
               Continue →

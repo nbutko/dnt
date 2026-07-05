@@ -539,7 +539,10 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     force a dismiss-then-Enter two-step that's worse than the status quo. So the win/real-chest path's Enter goes
     through the modal's confirm; only the loss path (no reward modal) needs the plain Enter-to-continue. Design the two
     together.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> a win auto-hands up the instant the monster falls (no in-battle Continue) into the reward
+    modal, whose autofocused Continue confirms on Enter and advances the run — one press. The loss panel's Continue
+    is now autofocused too, so a bare Enter confirms it. Modal + Enter covered by <code>RewardModal.test.tsx</code>.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Outer frame needs a gutter from the viewport edge.</strong> <em>[easy]</em><br>
@@ -646,7 +649,13 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <br><strong>Batch with #1:</strong> the modal's confirm (its button, and Enter) must double as the battle's
     "continue" — one press returns to the graph, never dismiss-then-continue. So this and #1 are one piece of work:
     a win/real-chest resolves into the reward modal, and confirming it is what advances the run.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> new <code>ui/dungeon/RewardModal.tsx</code> (over the shared <code>ModalOverlay</code>) shows
+    +gained and the new total for XP and coins. <code>DungeonScreen.handleWin</code> banks the reward and stashes the
+    pre/post totals + node id; the modal's Continue is what dispatches <code>resolveFight('win')</code> to advance.
+    <code>BattleScreen</code> hands a win up the instant it happens so the fight resolves straight into the modal (no
+    intermediate Continue). Content covered by <code>RewardModal.test.tsx</code>; the full battle→modal→graph flow is
+    for User to verify in-browser.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>"You encountered a Mimic!" modal before a mimic fight.</strong> <em>[medium]</em><br>

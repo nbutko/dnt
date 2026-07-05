@@ -8,11 +8,15 @@ interface DungeonGraphProps {
   onSelectNode: (id: string) => void
 }
 
-// Edge colours (design/README.md §3): a walkable edge (leading into a cleared
-// or available node) is solid gold; an edge into a locked node is a dim dashed
-// line. SVG stroke attributes can't read the Tailwind @theme vars, so the two
-// literals live here — they mirror --color-accent-gold-bright / --color-node-
-// locked-border in index.css.
+// Edge colours (design/README.md §3): an edge is solid gold only when its
+// SOURCE node is cleared — a road you actually walked — and dim dashed
+// otherwise (feedback #4). Keying off the source (not the target) stops a
+// cleared chokepoint like the Waypoint from lighting up every incoming edge,
+// including ones from still-locked paths you never took. The entrance is
+// auto-cleared, so the first-move edges glow from the start. SVG stroke
+// attributes can't read the Tailwind @theme vars, so the two literals live
+// here — they mirror --color-accent-gold-bright / --color-node-locked-border in
+// index.css.
 const EDGE_WALKABLE = '#e8c766'
 const EDGE_LOCKED = '#5a4a30'
 
@@ -30,8 +34,8 @@ const DungeonGraph = ({ graph, onSelectNode }: DungeonGraphProps) => {
         return node.edges.flatMap((targetId) => {
           const to = positions.get(targetId)
           if (!to) return []
-          const walkable = graph.nodes[targetId].state !== 'locked'
-          return [{ key: `${node.id}->${targetId}`, from, to, walkable }]
+          const walked = node.state === 'cleared'
+          return [{ key: `${node.id}->${targetId}`, from, to, walkable: walked }]
         })
       }),
     [graph, positions],

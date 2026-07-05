@@ -520,6 +520,145 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
   equals leaving, by design.</li>
 </ul>
 
+<h2 id="feedback">Post-playtest feedback checklist</h2>
+<p>
+  Collected from the first hands-on play of the wired M2 loop (2026-07-05). Ordered <strong>easiest → hardest</strong>
+  to address, so we can knock out the cheap wins first. None are started yet — this is the triage list. Each item
+  notes the symptom, the likely root cause + files to touch, and a fix sketch. A few are UX additions rather than
+  bugs; some of the layout ones may slip into M3 if they need a real redesign.
+</p>
+<ol>
+  <li>
+    <strong>Enter should confirm the end-of-battle "Continue".</strong> <em>[easy — but batch with #12]</em><br>
+    When a battle ends, pressing <code>Return</code> should do the same as clicking <strong>Continue →</strong>.
+    Root: in <code>ui/battle/BattleScreen.tsx</code> the typing <code>&lt;input&gt;</code> unmounts once the fight is
+    over, so there's no keydown target. Fix: on <code>state.status !== 'ongoing'</code>, listen for Enter at the
+    window/document level (or autofocus the Continue button so its native Enter fires) and call <code>onResult</code>.
+    <br><strong>Batch with #12:</strong> once a win shows a reward modal, that modal <em>is</em> the end-of-win
+    surface, so a single Enter must both dismiss the modal <em>and</em> continue — building this independently would
+    force a dismiss-then-Enter two-step that's worse than the status quo. So the win/real-chest path's Enter goes
+    through the modal's confirm; only the loss path (no reward modal) needs the plain Enter-to-continue. Design the two
+    together.
+  </li>
+  <li>
+    <strong>Outer frame needs a gutter from the viewport edge.</strong> <em>[easy]</em><br>
+    The double-border box bleeds off the top and clips left/right on a narrow window — it should sit slightly inset
+    from all edges. Root: <code>ui/common/Frame.tsx</code> uses <code>mx-auto</code> + a fixed <code>maxWidth</code>
+    but no vertical margin and no horizontal min-gutter, and the shell has no page padding. Fix: wrap the screens in a
+    padded full-height container (e.g. <code>p-4 sm:p-6</code> in <code>app/GameShell.tsx</code>) and give
+    <code>Frame</code> a small <code>my</code>; make sure the width rule collapses <em>below</em> the border on small
+    screens rather than overflowing.
+  </li>
+  <li>
+    <strong>Reveal real-vs-mimic on <em>cleared</em> chests.</strong> <em>[easy]</em><br>
+    After a chest node is resolved, show a gold ✓ for the real chest and a red ✗ over a defeated mimic, so the player
+    learns which was which after the fact. This leaks nothing — the chest is already opened. Root:
+    <code>ui/dungeon/DungeonNode.tsx</code> <code>glyphFor()</code> currently shows ✓ for <em>any</em> cleared node;
+    branch on <code>node.isRealChest</code> for cleared chests and render a danger-coloured ✗ for mimics. (The
+    unopened state must stay identical — only change the <em>cleared</em> chest glyph.)
+  </li>
+  <li>
+    <strong>A cleared chokepoint lights up <em>every</em> incoming edge, not just the path you walked.</strong>
+    <em>[easy]</em> (screenshot: waypoint with all 4 early paths glowing gold)<br>
+    Because the Waypoint is <code>cleared</code>, every early-path edge into it renders solid gold — even from paths
+    that are still locked and were never traversed. Root: <code>ui/dungeon/DungeonGraph.tsx</code> computes
+    <code>walkable = graph.nodes[targetId].state !== 'locked'</code> (based on the <em>target</em>). Change the rule to
+    <strong>solid iff the edge's <em>source</em> node is <code>cleared</code></strong> (a road you actually walked);
+    everything else dashed. The entrance is auto-cleared, so the first-move edges still glow correctly.
+  </li>
+  <li>
+    <strong>Show XP &amp; gold on the dungeon and world map.</strong> <em>[easy]</em><br>
+    Put the coin/XP readout next to the hearts in the dungeon header, and on the world-map header too. Root: reuse
+    <code>ui/common/ResourcePill.tsx</code> (already used in the Inn) in <code>ui/dungeon/DungeonScreen.tsx</code> and
+    <code>ui/map/WorldMapScreen.tsx</code>.
+  </li>
+  <li>
+    <strong>Chunky scrollbar chrome (world map <em>and</em> dungeon view).</strong> <em>[easy–medium]</em>
+    (screenshot: grey bar under the tier trail)<br>
+    The horizontal overflow is <em>legitimate</em> — the content really is wider than the container (confirmed on
+    inspection: it doesn't fit), so a scrollbar <em>should</em> be there; it just appears/disappears with viewport
+    width, which read as "sometimes." The actual problem is only that the default OS scrollbar looks chunky and out of
+    place. Seen on the world-map tier trail (<code>ui/map/TierTrail.tsx</code> <code>overflow-x-auto</code>)
+    <strong>and</strong> in the dungeon graph's scroll container (<code>ui/dungeon/DungeonGraph.tsx</code>
+    <code>overflow-x-auto</code>) — so style <em>both</em>. Prefer extracting a shared scroll-container component (or a
+    shared utility class) that renders the scrollbar thin/subtle (or overlay-style) so the two stay consistent. (Not
+    an overflow bug — don't chase the width math.)
+  </li>
+  <li>
+    <strong>Preserve horizontal scroll position when returning from a fight.</strong> <em>[medium]</em><br>
+    After a battle the graph re-mounts scrolled back to 0, so you have to hunt for the next node again. Root: the
+    battle early-returns in <code>DungeonRunView</code>, unmounting <code>DungeonGraph</code> and dropping the scroll
+    container's offset. Fix: either lift the scroll offset into state (save on scroll, restore on mount via a ref) or
+    keep the graph mounted (hidden) while the battle overlays it. Files: <code>ui/dungeon/DungeonScreen.tsx</code>,
+    <code>DungeonGraph.tsx</code>.
+  </li>
+  <li>
+    <strong>Nodes should tell you which monster they are.</strong> <em>[medium]</em><br>
+    Fight circles should hint their monster (a short name/label now, an icon later). Constraint: <strong>chests must
+    stay identical</strong> real-or-mimic, so only fight/waypoint/approach/boss get an identity. Root:
+    <code>ui/dungeon/DungeonNode.tsx</code> can render <code>getMonster(node.monsterId).name</code> as a small
+    caption or tooltip; decide a treatment that doesn't clutter a 40px circle (hover tooltip, or a caption under
+    only the larger nodes).
+  </li>
+  <li>
+    <strong>Never serve the same prompt twice in a row.</strong> <em>[medium]</em><br>
+    The next prompt should exclude the one just typed. Root: <code>content/text-banks.ts</code>
+    <code>makePromptSource</code> samples uniformly <em>with</em> replacement. Track the last line and re-roll (or pick
+    from pool-minus-last). This implies <strong>every tier needs ≥2 lines</strong> — audit
+    <code>content/text/tier-*.json</code> and add a schema/test assertion so a single-line tier can't regress this.
+  </li>
+  <li>
+    <strong>Hide the input box; show the typed text only over the prompt.</strong> <em>[medium]</em><br>
+    Right now the typed text shows up twice — as progress overlaid on the prompt <em>and</em> as the dim
+    <code>&gt; …</code> echo line below. Show just the single overlaid line (like the monster's
+    <code>TypedProgress</code>) with a blinking caret, and keep the real <code>&lt;input&gt;</code> in the DOM but
+    visually hidden so typing/focus still work. Root: <code>ui/battle/PlayerPrompt.tsx</code> renders both.
+  </li>
+  <li>
+    <strong>Typing multiple spaces appears to delete the prompt text.</strong> <em>[medium; likely tied to #10]</em><br>
+    Hammering the space bar looks like it eats characters out of the target prompt, and backspace puts them back —
+    very confusing to a kid. Root: when the input diverges from the prompt, <code>TypedProgress</code>
+    (<code>revealRemaining</code>) overlays typed chars onto the prompt and the extra/whitespace chars visually consume
+    the remaining prompt. Needs a repro + a decision on how off-track/whitespace input renders (e.g. clamp the typed
+    overlay to prompt length, or render wrong chars inline without shifting the untyped remainder). Fixing #10 reshapes
+    this surface, so triage the two together. Files: <code>TypedProgress.tsx</code>, <code>PlayerPrompt.tsx</code>.
+  </li>
+  <li>
+    <strong>Reward modal on a win / chest claim.</strong> <em>[medium — batch with #1]</em><br>
+    After a battle win or opening the real chest, pop a modal showing what you earned: <strong>gained</strong> and new
+    <strong>total</strong> for both XP and gold. Root: new modal component wired into the win/chest branches of
+    <code>DungeonScreen.handleWin</code> (it already computes the reward; it'd also need the pre/post save totals).
+    Reuse <code>ResourcePill</code>. Files: new <code>ui/…/RewardModal.tsx</code>, <code>DungeonScreen.tsx</code>.
+    <br><strong>Batch with #1:</strong> the modal's confirm (its button, and Enter) must double as the battle's
+    "continue" — one press returns to the graph, never dismiss-then-continue. So this and #1 are one piece of work:
+    a win/real-chest resolves into the reward modal, and confirming it is what advances the run.
+  </li>
+  <li>
+    <strong>"You encountered a Mimic!" modal before a mimic fight.</strong> <em>[medium]</em><br>
+    Opening a chest that turns out to be a mimic currently drops you straight into battle — jarring. Show a
+    non-dismissable modal with a <strong>Begin Battle</strong> button first. Root: gate the mimic-chest
+    <code>selectNode</code> → battle transition behind a modal in <code>DungeonScreen</code>. (Revealing mimic-ness
+    only <em>after</em> the player commits to opening the chest is fine.)
+  </li>
+  <li>
+    <strong>Chest spur can overlap an unrelated path arc.</strong> <em>[medium–hard]</em> (screenshot: chest crossing
+    an edge)<br>
+    Root: <code>ui/dungeon/graph-layout.ts</code> hangs every chest at a fixed <code>+30, ±58</code> diagonal from its
+    parent, which can land on a neighbouring row's edge or a converging arc. Fix: pick the spur's side/length by where
+    there's free space (avoid nearby edges/nodes), or reserve dedicated chest lanes. Add an overlap check to the layout
+    test.
+  </li>
+  <li>
+    <strong>Path nodes overlap arcs from other paths.</strong> <em>[hard]</em> (screenshot: Mountain late-fan)<br>
+    On some late-fan configs the edges converging on the Approach (and diverging from the Waypoint) pass under nodes of
+    other rows, because paths of unequal length all join a single Approach column with straight lines. Root:
+    <code>ui/dungeon/graph-layout.ts</code> column/row assignment + straight edges. Options: right-align each late path
+    so its last node shares the Approach-adjacent column (short paths get leading slack instead of trailing), and/or
+    route edges around nodes, and/or widen row spacing. Needs a small layout redesign with overlap unit tests, so this
+    is the biggest one — a candidate to fold into M3 if it grows.
+  </li>
+</ol>
+
 </main>
 <footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
 </body>

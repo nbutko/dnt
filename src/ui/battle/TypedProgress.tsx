@@ -17,14 +17,17 @@ interface TypedProgressProps {
 // actually typed shows, per game-design.html#monster-ai ("appear on screen
 // character by character, in real time").
 //
-// At each reached position we render the PROMPT's own character, coloured by
-// whether the player's keystroke there matched — not the typed character
-// (feedback #11). That keeps the target line fully on screen and fixed in
-// place: hammering the space bar or typing garbage just reddens letters in
-// place instead of visibly eating the untyped remainder (spaces are invisible,
-// so swapping them in used to look like the prompt was being deleted). Anything
-// typed PAST the end of the prompt has no target char to sit on, so it trails
-// after the line in red — clear "too many characters" feedback.
+// At each reached position: a correct keystroke shows the target character in
+// the normal colour, but a WRONG one shows the character the player actually
+// typed, in red (feedback #10) — so a mistake reads as a mistake instead of
+// silently showing the expected letter. A wrong space would be invisible, so it
+// renders as a red underscore. Because every reached position still puts
+// exactly one glyph on screen, the monospace line stays fixed in width and the
+// dimmed remainder never appears "eaten" (the original #11 concern). Anything
+// typed PAST the end of the prompt has no target to sit on, so it trails after
+// the line in red — clear "too many characters" feedback.
+const wrongGlyph = (typedChar: string): string => (typedChar === ' ' ? '_' : typedChar)
+
 const TypedProgress = ({
   prompt,
   typed,
@@ -36,19 +39,23 @@ const TypedProgress = ({
   const overtyped = typed.slice(prompt.length)
   return (
     <p className={`font-mono ${className}`}>
-      {prompt
+      {typed
         .slice(0, overlayLen)
         .split('')
-        .map((char, index) => {
-          const key = `${index}-${char}`
-          const isCorrect = typed[index] === char
+        .map((typedChar, index) => {
+          const key = `${index}-${typedChar}`
+          const isCorrect = typedChar === prompt[index]
           return (
             <span key={key} className={isCorrect ? 'text-text-primary' : 'text-danger-bright'}>
-              {char}
+              {isCorrect ? prompt[index] : wrongGlyph(typedChar)}
             </span>
           )
         })}
-      {overtyped && <span className="text-danger-bright">{overtyped}</span>}
+      {overtyped && (
+        <span className="text-danger-bright">
+          {overtyped.split('').map(wrongGlyph).join('')}
+        </span>
+      )}
       <span
         className={`inline-block w-px h-[1em] align-middle bg-accent-gold-bright ${
           blinkCaret ? 'caret-blink' : ''

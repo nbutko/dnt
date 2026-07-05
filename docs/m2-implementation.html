@@ -629,7 +629,11 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>&gt; …</code> echo line below. Show just the single overlaid line (like the monster's
     <code>TypedProgress</code>) with a blinking caret, and keep the real <code>&lt;input&gt;</code> in the DOM but
     visually hidden so typing/focus still work. Root: <code>ui/battle/PlayerPrompt.tsx</code> renders both.
-    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Rework (user feedback):</em> the overlay showed the <em>prompt's</em> char at a wrong position, so a mistake
+    looked correct and a mis-typed space was invisible. Now a wrong keystroke shows the character the player
+    <em>actually typed</em>, in red — and a wrong space renders as a red underscore (<code>_</code>). Correct chars
+    still show the target letter in the normal colour. Covered by <code>TypedProgress.test.tsx</code>.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Typing multiple spaces appears to delete the prompt text.</strong> <em>[medium; likely tied to #10]</em><br>
@@ -639,8 +643,8 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     the remaining prompt. Needs a repro + a decision on how off-track/whitespace input renders (e.g. clamp the typed
     overlay to prompt length, or render wrong chars inline without shifting the untyped remainder). Fixing #10 reshapes
     this surface, so triage the two together. Files: <code>TypedProgress.tsx</code>, <code>PlayerPrompt.tsx</code>.
-    <br><em>Decision:</em> at each reached position render the prompt's own char (recoloured by
-    match), not the keystroke — the target line stays fully on screen and fixed; over-typed chars trail
+    <br><em>Decision:</em> render exactly one glyph per reached position (a wrong space becomes an underscore — see
+    #10), so the monospace line stays fixed in width and the dimmed remainder is never "eaten"; over-typed chars trail
     after it in red. Covered by <code>TypedProgress.test.tsx</code>.
     <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>

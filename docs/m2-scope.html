@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M2 Scope: Progression Loop — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M2 Scope: The Progression Loop</h1>
+  <p class="tagline">World map, dungeons, hearts, and the skill tree — the metagame that turns single battles into a game.</p>
+</header>
+<main>
+
+<p>
+  <a href="roadmap.html">M0 and M1</a> answered "does one battle feel good?" M2 answers "what happens
+  between battles?" — the loop that makes him come back and fight a second, tenth, hundredth monster. This
+  doc defines that metagame concretely enough to build: the world map, what the 11 dungeons actually are,
+  how a dungeon's branching paths get generated, the hearts/lives system, and how the Inn and skill tree
+  work, plus how the skill tree's Wordsmith branch gates dungeon-tier difficulty (see <a href="#wordsmith-gate">below</a>).
+  Power-ups and the Shop's item list are explicitly <strong>not</strong> this milestone — that's
+  <a href="roadmap.html">Roadmap</a> M3 — and neither is any art (M6).
+</p>
+
+<div class="callout decision">
+  Everything here is data-driven the same way monsters already are (see <a href="content-plan.html#roster">Content
+  Plan</a>): dungeon tiers, path generation parameters, and skill tree costs are config/content, not
+  hardcoded logic, so balance changes stay a data edit.
+</div>
+
+<h2 id="world-map">The world map</h2>
+<p>
+  This is the screen he sees on launch (once a save exists). Text/CSS only, same visual-restraint rule as
+  battles (see <a href="content-plan.html">Content Plan</a>) — no images until M6. It shows:
+</p>
+<ul>
+  <li><strong>The Inn</strong> — always available. Restores hearts to full and opens the skill tree (see
+  <a href="#inn">below</a>).</li>
+  <li><strong>The Shop</strong> — visible but locked (greyed out, "Coming soon") for the whole of M2. Its
+  items are an M3 concern, alongside power-ups generally; the map slot exists now so the layout doesn't
+  shift later.</li>
+  <li><strong>11 dungeons</strong>, one per habitat (see <a href="#dungeon-tiers">below</a>), shown in a
+  fixed left-to-right/top-to-bottom order matching their tier. Each shows: habitat name, tier number, a lock
+  icon if not yet unlocked, and a small "cleared" mark once its boss has been beaten at least once.</li>
+</ul>
+<div class="callout decision">
+  A dungeon stays visitable and replayable forever after it's first cleared — clearing tier 3 doesn't remove
+  it from the map. Every visit regenerates a fresh random layout (see <a href="#dungeon-structure">Dungeon
+  structure</a>), so early dungeons remain a legitimate (if low-yield) place to grind XP/coins even once
+  he's progressed well past them.
+</div>
+<p>
+  <strong>Unlock rule:</strong> dungeon tier 1 is unlocked from a fresh save. Tier <em>N</em>+1 unlocks
+  permanently the first time tier <em>N</em>'s boss is defeated. Save data only needs one number for this —
+  <code>highestUnlockedTier</code> — not a per-dungeon flag set, since unlocks are strictly sequential (see
+  <a href="#save-data">Save data</a>).
+</p>
+
+<h2 id="dungeon-tiers">The 11 dungeons: habitats as a difficulty ladder</h2>
+<p>
+  <a href="monster-manual.json">monster-manual.json</a> tags every monster with a real D&amp;D 5e challenge
+  rating (CR) and one or more habitats. Excluding the catch-all <code>"Any Habitat"</code> tag, exactly 11
+  named habitats remain — a perfect fit for 11 dungeon tiers. <code>"Any Habitat"</code> monsters (bandits,
+  cultists, mages, golems, liches...) aren't a 12th dungeon; they're a shared filler pool any dungeon can
+  draw from and reflavor, exactly as many habitats will need to do at the high end where native monsters
+  thin out.
+</p>
+<p>
+  The difficulty order below isn't the habitats' natural median CR (every habitat has plenty of CR-0
+  critters) — it's chosen so each habitat's <em>highest available native CR</em> comfortably covers the
+  boss it needs to produce at that point in the ladder. Underdark sits before Underwater because it has
+  the deeper native bench in the CR 9–15 band (Aboleth, Behir, Mind Flayer Arcanist, Beholder), with a
+  reflavored-epic <strong>Dracolich</strong> capping it off; Underwater's own native ceiling — the
+  <strong>Kraken</strong> at CR 23 — is high enough to hold it back a tier further. Urban is the outlier at
+  the very top: because it's tagged on the Tarrasque (CR 30, the single highest CR in the whole manual — a
+  monster that famously flattens cities), "Urban" stops meaning "the cozy starting town" and becomes "the
+  ruined, cultist-infested metropolis" for the finale. The Inn/Shop hub is a separate, un-raidable place on
+  the map — it is not the Urban dungeon.
+</p>
+<table>
+  <tr><th>Tier</th><th>Habitat</th><th>Regular CR</th><th>Boss CR</th><th>WPM range</th><th>Text tier</th><th>Example regulars</th><th>Example boss</th></tr>
+  <tr><td>1</td><td>Grassland</td><td>0 – 1/4</td><td>~1</td><td>10–15</td><td>1</td><td>Cat, Deer, Goat, Hawk, Jackal</td><td>Goblin Boss</td></tr>
+  <tr><td>2</td><td>Forest</td><td>1/4 – 1/2</td><td>~3</td><td>14–20</td><td>1–2</td><td>Boar, Elk, Giant Frog, Giant Owl, Kenku</td><td>Displacer Beast</td></tr>
+  <tr><td>3</td><td>Hill</td><td>1/2 – 1</td><td>~4</td><td>19–26</td><td>2</td><td>Giant Goat, Gnoll Warrior, Hobgoblin Warrior, Worg</td><td>Ettin</td></tr>
+  <tr><td>4</td><td>Coastal</td><td>1 – 2</td><td>~4</td><td>25–33</td><td>2–3</td><td>Giant Eagle, Giant Toad, Harpy, Kuo-toa Whip, Pirate</td><td>Chuul</td></tr>
+  <tr><td>5</td><td>Desert</td><td>2 – 3</td><td>~6</td><td>32–41</td><td>3</td><td>Giant Scorpion, Gnoll Pack Lord, Ogre, Hobgoblin Captain</td><td>Medusa</td></tr>
+  <tr><td>6</td><td>Swamp</td><td>3 – 5</td><td>~8</td><td>39–49</td><td>3–4</td><td>Green Hag, Mummy, Wight, Yuan-ti Malison</td><td>Hydra</td></tr>
+  <tr><td>7</td><td>Mountain</td><td>5 – 7</td><td>~9</td><td>46–57</td><td>4–5</td><td>Bulette, Troll, Earth Elemental, Azer Pyromancer</td><td>Fire Giant</td></tr>
+  <tr><td>8</td><td>Arctic</td><td>5 – 7</td><td>~8</td><td>54–65</td><td>5–6</td><td>Giant Axe Beak, Werebear, Mammoth, Young Remorhaz</td><td>Frost Giant</td></tr>
+  <tr><td>9</td><td>Underdark</td><td>9 – 15</td><td>~17</td><td>62–74</td><td>6–7</td><td>Aboleth, Cyclops Oracle, Behir, Mind Flayer Arcanist, Beholder</td><td>Dracolich</td></tr>
+  <tr><td>10</td><td>Underwater</td><td>10 – 23</td><td>~23</td><td>72–86</td><td>7–8</td><td>Marid, Storm Giant, Dragon Turtle, + 2 reflavored Any-habitat</td><td>Kraken</td></tr>
+  <tr><td>11</td><td>Urban</td><td>13 – 30</td><td>~30</td><td>85–100</td><td>8–10</td><td>Rakshasa, Vampire, Vampire Umbral Lord, Adult Silver Dragon, Ancient Silver Dragon</td><td>Tarrasque</td></tr>
+</table>
+<div class="callout why">
+  WPM scales the full 10 → 100 across the ladder (tier 1's floor is the same 10 WPM "generous beginner"
+  reference used elsewhere; tier 11's ceiling is a genuinely fast typist) — a full order of magnitude, so
+  the late game demands real, earned speed, not just more HP to chip through.
+</div>
+<div class="callout why">
+  Each tier is a <em>range</em>, not a single number, on both WPM and text tier — per the brief, this is
+  what makes a dungeon feel like it ramps internally (later encounters within tier 7 are tougher than the
+  first one you meet) while still reading as a clear step up from tier 6 as a whole. Ranges deliberately
+  overlap by one text tier with their neighbors so the ramp is continuous rather than a wall.
+</div>
+<div class="callout decision">
+  Boss CR is a target, not a hard formula. Mechanically, "significantly harder than the dungeon" is enforced
+  by the boss's actual stats — noticeably higher HP, WPM, and text tier than anything else in that dungeon,
+  tuned the same way <a href="content-plan.html#roster">existing bosses</a> already are. The CR column is
+  purely a <em>name-picking</em> guide, and at the low end of the scale (tiers 1-4) CR fractions compress too
+  much to matter — "Goblin Boss" (CR 1) reads as a real boss next to CR-1/4 trash even though the number gap
+  looks small on paper. Picking a recognizable boss-coded monster matters more than hitting an exact CR
+  window.
+</div>
+<div class="callout why">
+  Widening Underwater's band to CR 10–23 (rather than a tight one-tier slice) surfaces real native options —
+  Marid, Storm Giant, Dragon Turtle, and the Kraken as boss — but it's still the thinnest habitat overall (30
+  entries total in the manual, fewest of any), so 2 of its 5 example regulars are reflavored Any-Habitat
+  humanoids ("Drowned Cultist," "Sunken Bandit" rather than a literal Cultist/Bandit). The brief explicitly
+  allows this — it's exactly the situation the Any-Habitat pool exists for. Actual name/flavor authoring for
+  all 11 rosters is content work, not scope work — see <a href="roadmap.html">Roadmap</a> M5, same split
+  as the rest of the roster.
+</div>
+<p>
+  The existing <a href="content-plan.html#roster">Slime / Goblin / Skeleton / Slime King</a> roster becomes
+  the concrete Tier 1 (Grassland) roster for now — reskinned generic critters rather than manual entries,
+  which is fine since Tier 1 is the tutorial and doesn't need manual-accurate flavor yet. Wraith and Dragon
+  don't fit Grassland's CR band at all; they're reserved as placeholders and get reassigned to an
+  appropriate tier (Wraith to Underdark-ish, Dragon to a late-tier boss) during the M5 content pass rather
+  than forced into this table today.
+</p>
+
+<h2 id="wordsmith-gate">Wordsmith gating: dungeon tier vs. unlocked text tier</h2>
+<p>
+  Every monster already carries a fixed <code>textTier</code> stat (see the
+  <a href="content-plan.html">Content Plan</a>'s tier table) — that's the prompt difficulty the
+  dungeon's design "wants" the player to be typing against that monster. Separately, the player has their
+  own currently-unlocked max text tier, raised by the <strong>Wordsmith</strong> skill tree branch. These
+  don't have to match, and the brief is explicit about what happens when they don't: the player isn't
+  blocked from a fight they're under-leveled for, they're just handed an easier prompt <em>and</em> punished
+  for it on damage, non-linearly:
+</p>
+<pre><code>servedTier = min(monster.textTier, player.wordsmithMaxTier)
+
+tierGatePenalty =
+  servedTier &gt;= monster.textTier ? 1
+                                  : (servedTier / monster.textTier) ** 2
+</code></pre>
+<p>
+  <code>tierGatePenalty</code> is a new multiplier on the existing
+  <a href="game-design.html#damage">damage formula</a>: <code>damage = baseDamage * lengthFactor(text) *
+  speedBonus * critMultiplier * powerUpMultiplier * tierGatePenalty</code>. It's constant for the whole fight
+  against a given monster, since a monster's <code>textTier</code> doesn't change mid-battle.
+</p>
+<div class="callout why">
+  The penalty has to be non-linear (squared, not 1:1) or it's not actually a gate. <code>lengthFactor</code>
+  already makes a shorter/easier prompt hit softer, roughly proportionally — if that were the <em>only</em>
+  effect, a player two tiers underwater could compensate by just typing more short prompts per minute, since
+  <code>speedBonus</code> can offset a linear loss. Squaring the tier ratio makes the loss outrun anything
+  speed can buy back: a player capped 2 tiers below a tier-8 monster (6/8) does <code>0.56x</code>; 4 tiers
+  under (4/8) does <code>0.25x</code>. That's the brief's "not sufficient to type lots of smaller things
+  really fast" — realistically clearing a dungeon requires <em>both</em> raising Wordsmith to close the gap
+  <em>and</em> actually typing well once it's closed, not one substituting for the other.
+</div>
+<p>
+  <strong>Wordsmith branch (revised):</strong> 5 nodes, each unlocking 2 more text tiers on top of the tier-1
+  base every player starts with:
+</p>
+<table>
+  <tr><th>Wordsmith node</th><th>Unlocks up to</th></tr>
+  <tr><td>(none)</td><td>Text tier 1</td></tr>
+  <tr><td>1</td><td>Text tier 2</td></tr>
+  <tr><td>2</td><td>Text tier 4</td></tr>
+  <tr><td>3</td><td>Text tier 6</td></tr>
+  <tr><td>4</td><td>Text tier 8</td></tr>
+  <tr><td>5</td><td>Text tier 10 (full access)</td></tr>
+</table>
+<div class="callout decision">
+  Replaces the old "+ max prompt length per node" framing (see <a href="game-design.html#skill-tree">Game
+  Design</a>, updated to match) with unlocking whole text tiers directly — length was already just one axis
+  of what a text tier means (see the <a href="content-plan.html">Content Plan</a>'s tier table:
+  capitalization, punctuation, numbers, and paragraph structure all ramp in too), so gating the tier
+  directly is both simpler and more accurate than gating a character count. 5 nodes covering 10 tiers two at
+  a time keeps the branch small, matching every other branch.
+</div>
+<div class="callout why">
+  Note this doesn't gate which dungeons are <em>enterable</em> — that's still purely the sequential
+  boss-clear rule (see <a href="#world-map">World map</a>). A player could walk into tier 9 the moment it
+  unlocks with only tier-2 Wordsmith and take a swing at everything in it; they just won't do enough damage
+  to realistically win. That keeps the two progression systems (dungeon access vs. typing-content access)
+  independent and both legible, rather than needing a second "you must be this Wordsmith level to enter"
+  rule bolted on top.
+</div>
+
+<h2 id="dungeon-structure">Dungeon structure: generating the branching paths</h2>
+<p>
+  Constraints from the brief: multiple branching paths converging on one boss; branches differ in monster
+  count; the shortest path to the boss is ~7-10 monsters; total monsters across every branch (not counting
+  mimics) is ~30; 3-5 treasure chests scattered across branches, exactly one real, the rest mimics; keep the
+  generation rules simple enough to actually implement and to render as a small map.
+</p>
+<p>A layered "hub and spoke, twice" shape satisfies all of that without needing a general graph editor:</p>
+<pre><code>Entrance
+  |-- path A (2-4 monsters)
+  |-- path B (2-4 monsters)      &lt;- 2-4 parallel early paths, all
+  \-- path C (2-4 monsters)         open/available from the start
+         |
+         v
+     Waypoint            &lt;- single node; opens the moment ANY
+         |                  one early path is fully cleared
+         v
+  |-- path D (3-5 monsters)
+  |-- path E (3-5 monsters)      &lt;- 2-4 parallel late paths, all
+  \-- path F (3-5 monsters)         open the instant the waypoint clears
+         |
+         v
+      Approach            &lt;- single node; every open late path
+         |                   funnels into it
+         v
+       BOSS               &lt;- unlocks the instant Approach clears
+</code></pre>
+<ul>
+  <li><strong>Early segment:</strong> 2-4 paths fan out directly from the entrance, each 2-4 monsters long,
+  all simultaneously available — the player can freely interleave fighting across them (per the brief:
+  "if multiple paths are clear you can choose any available monster next").</li>
+  <li><strong>Waypoint:</strong> a single required fight all early paths feed into. It becomes available the
+  moment the <em>fastest</em> early path is cleared — the other early paths don't need to be finished, but
+  stay clearable afterward for players who want to 100% the dungeon before pushing on.</li>
+  <li><strong>Late segment:</strong> same fan-out shape again after the waypoint, 2-4 paths of 3-5 monsters
+  each.</li>
+  <li><strong>Approach:</strong> a single convergence node all late paths feed into, gating the boss. This
+  is what keeps "does the boss unlock yet?" a one-node check regardless of how tangled the rest of the map
+  got.</li>
+  <li><strong>Shortest path</strong> to the boss = shortest early path + waypoint + shortest late path +
+  approach, which the generator should keep landing in the 7-10 range (e.g. early lengths 2-4, late lengths
+  3-5 gives a minimum of 2+1+3+1 = 7).</li>
+  <li><strong>Total monsters</strong> (excluding mimics) sums every path plus the waypoint and approach node
+  — tune path counts/lengths per segment until this lands around 30 (a 26-34 band is fine; exact tuning is
+  a playtesting knob, same spirit as <a href="game-design.html#damage">damage constants</a>).</li>
+</ul>
+<div class="callout decision">
+  Two fan-out stages (not a fully general branching DAG) is the "keep it simple and clean" call. It still
+  delivers real choice — which early path first, whether to clear side branches before pushing on — without
+  needing a graph-layout algorithm smart enough to avoid ugly crossings. It also makes the boss-unlock and
+  dungeon-completion checks trivial: exactly two chokepoint nodes (Waypoint, Approach) instead of an
+  arbitrary reachability computation over the whole graph.
+</div>
+<p>
+  <strong>Node states:</strong> locked (nothing upstream cleared yet — not shown as fightable), available
+  (an upstream node is cleared, or it's an entrance node — can be attempted now), cleared (defeated, stays
+  visible on the map but can't be re-fought this run). Losing a fight doesn't clear the node — see
+  <a href="#hearts">Hearts</a>.
+</p>
+
+<h3 id="chests">Treasure chests and mimics</h3>
+<p>
+  3-5 chest nodes are attached as single dead-end spurs off of regular path nodes (never on the Waypoint or
+  Approach chokepoints), scattered across both segments so no one branch hoards all of them. Exactly one,
+  chosen at random per dungeon generation, is the real chest (a reward — coins/XP now, real loot once the
+  Shop/items exist in M3); the rest are mimics. A mimic looks identical to a real chest until opened, at
+  which point it's a fight (same as any monster — reuse the manual's <code>Mimic</code> entry, CR 2,
+  reflavored per habitat) and a loss costs a heart exactly like losing to a regular monster.
+</p>
+
+<h2 id="hearts">Hearts: the meta-level lives system</h2>
+<p>
+  Hearts sit <em>above</em> individual-battle HP (see <a href="game-design.html#damage">Damage</a>/HP,
+  which is unchanged) — they're the run-level lives system that makes a whole dungeon attempt succeed or
+  fail, the same role they play in something like Zelda.
+</p>
+<ul>
+  <li><strong>Start:</strong> 1 heart, from a fresh save.</li>
+  <li><strong>Losing a battle</strong> (player HP hits 0 against any monster, mimic included) costs exactly
+  1 heart. The monster's HP resets to full and the node stays "available" (not cleared) — the player lands
+  back at the map view and can retry that same fight or pick a different available node instead.</li>
+  <li><strong>Hitting 0 hearts</strong> ends the run immediately: return to the world map at the Inn, and
+  the entire dungeon (graph, cleared nodes, everything) is discarded. Next visit to that dungeon regenerates
+  a brand-new random layout.</li>
+  <li><strong>Leaving voluntarily</strong> (a "Leave Dungeon" option, available anytime) also discards the
+  current run's progress and returns to the world map — but does <em>not</em> restore hearts, since only
+  visiting the Inn does that. Only losing all hearts forces the trip to the Inn specifically.</li>
+  <li><strong>Gaining more max hearts</strong> comes from the skill tree (see <a href="#inn">below</a>) —
+  the brief's "add more through an experience tree." Recovering spent hearts <em>mid-run</em> without
+  visiting the Inn is reserved for a future item (a "Heart Potion" drop/shop item) — that's an M3 concern,
+  noted here only as a hook so that milestone knows where it plugs in.</li>
+</ul>
+<div class="callout why">
+  Resetting the monster's HP and leaving the node "available" (rather than sending the player all the way
+  back to the entrance) keeps a heart-loss from feeling like a full run wipe — it's "try that fight again or
+  go a different way," which stays fair for a 10-year-old still building typing speed, while the run-ending
+  case (0 hearts) still carries real weight since the whole dungeon layout gets thrown away.
+</div>
+
+<h2 id="inn">The Inn: heart recovery and the skill tree</h2>
+<p>
+  Visiting the Inn restores hearts to full (current max) and opens the skill tree screen where XP is spent.
+  The skill tree keeps its <a href="game-design.html#skill-tree">existing 5 branches</a> — Endurance,
+  Wordsmith, Focus, Luck, Utility — with one addition: <strong>Endurance</strong> now has 4 nodes instead of
+  a flat "+HP per node," with the top two granting hearts:
+</p>
+<table>
+  <tr><th>Endurance node</th><th>Grants</th></tr>
+  <tr><td>1</td><td>+20 max HP</td></tr>
+  <tr><td>2</td><td>+20 max HP</td></tr>
+  <tr><td>3</td><td>+1 max heart</td></tr>
+  <tr><td>4</td><td>+1 max heart</td></tr>
+</table>
+<p>
+  That caps max hearts at 3 (1 base + 2 nodes) for now — a small, clearly-tunable number rather than a big
+  new branch, consistent with <a href="game-design.html#skill-tree">keeping the tree small</a> for the
+  first playable version.
+</p>
+<div class="callout decision">
+  Folded into Endurance rather than adding a 6th branch. Hearts and per-battle HP are both "how much beating
+  can I take before something resets," so they read as one theme to a 10-year-old, and it keeps the tree at
+  5 branches instead of sprawling — see <a href="game-design.html#skill-tree">Game Design</a>, updated to
+  match.
+</div>
+
+<h2 id="shop">The Shop</h2>
+<p>
+  Visible on the world map, but locked for the entirety of M2 — clicking it shows something like "The
+  shopkeeper hasn't arrived yet." Its item list, purchasing flow, and inventory are an M3 concern, alongside
+  power-ups generally (see <a href="roadmap.html">Roadmap</a>). It's on the map now purely so the layout
+  is stable before M3 adds content to it.
+</p>
+
+<h2 id="xp-coins">XP &amp; coins: sources and sinks</h2>
+<table>
+  <tr><th>Source</th><th>Earns</th></tr>
+  <tr><td>Defeating a regular monster</td><td>Coins + XP scaled by dungeon tier</td></tr>
+  <tr><td>Defeating a dungeon boss</td><td>A larger coin/XP bonus, plus the permanent tier-unlock the first time</td></tr>
+  <tr><td>Opening the real treasure chest</td><td>A coin/XP bonus (no fight)</td></tr>
+</table>
+<p>The only sink in M2 is the skill tree at the Inn. Coins accumulate against the Shop's eventual (M3) item
+list — nothing to spend them on yet beyond that.</p>
+<div class="callout decision">
+  A dungeon boss's first-ever clear grants <em>no</em> extra one-time bonus beyond the recurring per-kill/
+  boss coin+XP rewards and the permanent next-tier unlock. The unlock itself is the reward for a first
+  clear; a separate bonus on top would just be a number that doesn't change how the game plays.
+</div>
+
+<h2 id="save-data">Save data changes</h2>
+<p>
+  Extends the <a href="architecture.html#persistence">existing SaveData record</a> with the new
+  persistent metagame fields:
+</p>
+<pre><code>{
+  "version": 2,
+  "coins": 120,
+  "xp": 340,
+  "skillTree": { "endurance": 2, "wordsmith": 1, "focus": 0, "luck": 0, "utility": 1 },
+  "hearts": { "max": 2 },
+  "highestUnlockedTier": 3,
+  "monstersDefeated": ["slime", "goblin"],
+  "stats": { "battlesWon": 7, "battlesLost": 2, "bestWpm": 28 }
+}</code></pre>
+<div class="callout decision">
+  Deliberately <em>not</em> persisted: the in-progress dungeon graph, which nodes are cleared, current
+  hearts remaining mid-run, etc. That state is meant to be thrown away on death/leave/re-visit by design
+  (see <a href="#hearts">Hearts</a>) — persisting it would fight the "dungeon regenerates every visit" rule
+  rather than support it. If he closes the Chromebook mid-dungeon, reopening it can just treat that the same
+  as leaving — simplest possible behavior, and consistent with the rest of the design.
+</div>
+
+<h2>Open questions</h2>
+<div class="callout open">
+  Exact per-tier tuning (path counts/lengths that reliably land ~30 monsters and a 7-10 shortest path, the
+  precise WPM/HP numbers per monster) needs a real playtesting pass once this is built — treat every number
+  in the <a href="#dungeon-tiers">tier table</a> and <a href="#dungeon-structure">structure section</a> as a
+  starting point, same as the M0 combat constants were.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

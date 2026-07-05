@@ -89,14 +89,23 @@
 <h2 id="persistence">Save data &amp; persistence</h2>
 <p>One JSON-shaped record, versioned so future shape changes can migrate it:</p>
 <pre><code>{
-  "version": 1,
+  "version": 2,
   "coins": 120,
   "xp": 340,
   "skillTree": { "endurance": 2, "wordsmith": 1, "focus": 0, "luck": 0, "utility": 1 },
+  "hearts": { "max": 2 },
+  "highestUnlockedTier": 3,
   "inventory": [{ "powerUp": "secondWind", "count": 2 }],
   "monstersDefeated": ["slime", "goblin"],
   "stats": { "battlesWon": 7, "battlesLost": 2, "bestWpm": 28 }
 }</code></pre>
+<div class="callout decision">
+  <code>hearts</code>/<code>highestUnlockedTier</code> added in M2 (see the
+  <a href="m2-scope.html#save-data">M2 scope doc</a>). Deliberately <em>not</em> in this record: the
+  in-progress dungeon graph, cleared nodes, or hearts remaining mid-run — that state is meant to be thrown
+  away on death/leave/re-visit by design, so persisting it would fight the game's own rules rather than
+  support them.
+</div>
 <p>
   Stored in <strong>IndexedDB</strong> rather than <code>localStorage</code> — via a thin wrapper like
   <code>idb</code> so the app code never touches IndexedDB's raw callback API directly. Access goes through

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
+.dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(255,255,255,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#c9a227;color:#1c0f0a;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 15px/1.2 system-ui,sans-serif;color:#ede1c3}
+.dv-tsub{font:400 12px/1.4 system-ui,sans-serif;color:#a8967a;margin:2px 0 0}
+.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(255,255,255,.12);color:#ede1c3;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.3 system-ui,sans-serif;color:rgba(237,225,195,.65)}
+.dv-card{max-width:100%;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.5);overflow:hidden}
+.dv-opt:target .dv-oid{background:#c9a227;color:#1c0f0a}
+.dv-next{margin:24px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(237,225,195,.45)}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t4">4</a>
+  <div><span class="dv-tname">Inn — skill tree &amp; XP spending</span>
+  <p class="dv-tsub">Same tokens as <a class="dv-oid" href="#3a">3a</a>/<a class="dv-oid" href="#3b">3b</a>. 5 branches per <a href="#" style="color:inherit;text-decoration:underline">game design</a>/<a href="#" style="color:inherit;text-decoration:underline">M2 scope</a>: Endurance (4 nodes, HP+hearts), Wordsmith (5 nodes, text tiers), Focus/Luck/Utility (3 nodes each here, illustrative counts). Bottom node in each branch is cheapest; must be bought before the next unlocks.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a> Branch columns, buy-next-node interaction</div>
+<div class="dv-card" style="width:1080px">
+<div style="width:1080px;min-height:520px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);padding:28px;box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#a89a7a">&larr; World Map</div>
+    <div style="font-family:'Cinzel',serif;font-size:22px;letter-spacing:.12em;color:#e8c766;text-transform:uppercase">The Inn — Skill Tree</div>
+    <div style="display:flex;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#e8c766;border:1px solid #7a5a22;border-radius:14px;padding:4px 12px;background:#1c1608">220 XP</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#c9b892;border:1px solid #7a5a22;border-radius:14px;padding:4px 12px;background:#1c1608">340 coins</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:18px;justify-content:center;align-items:flex-end">
+
+    <div style="width:190px;border:2px solid #7a5a22;border-radius:8px;padding:14px 12px 18px;background:rgba(59,18,32,.25);display:flex;flex-direction:column;align-items:center">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px;text-align:center">ENDURANCE</div>
+
+      <div style="display:flex;flex-direction:column-reverse;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2a1a08;font-weight:700">✓</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#c9b892">+20 max HP</div>
+        </div>
+        <div style="width:2px;height:22px;background:#c9a227"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2a1a08;font-weight:700">✓</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#c9b892">+20 max HP</div>
+        </div>
+        <div style="width:2px;height:22px;background:#c9a227"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700">180</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#e8c766">+1 max heart</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+1 max heart</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:190px;border:2px solid #7a5a22;border-radius:8px;padding:14px 12px 18px;background:rgba(59,18,32,.25);display:flex;flex-direction:column;align-items:center">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px;text-align:center">WORDSMITH</div>
+      <div style="display:flex;flex-direction:column-reverse;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2a1a08;font-weight:700">✓</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#c9b892">Text tier 2</div>
+        </div>
+        <div style="width:2px;height:22px;background:#c9a227"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700">140</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#e8c766">Text tier 4</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">Text tier 6</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">Text tier 8</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">Text tier 10</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:190px;border:2px solid #7a5a22;border-radius:8px;padding:14px 12px 18px;background:rgba(59,18,32,.25);display:flex;flex-direction:column;align-items:center">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px;text-align:center">FOCUS</div>
+      <div style="display:flex;flex-direction:column-reverse;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700">90</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#e8c766">+10% time limit</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+20% time limit</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+35% time limit</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:190px;border:2px solid #7a5a22;border-radius:8px;padding:14px 12px 18px;background:rgba(59,18,32,.25);display:flex;flex-direction:column;align-items:center">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px;text-align:center">LUCK</div>
+      <div style="display:flex;flex-direction:column-reverse;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2a1a08;font-weight:700">✓</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#c9b892">+3% crit chance</div>
+        </div>
+        <div style="width:2px;height:22px;background:#c9a227"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700">150</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#e8c766">+3% crit chance</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+25% crit dmg</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:190px;border:2px solid #7a5a22;border-radius:8px;padding:14px 12px 18px;background:rgba(59,18,32,.25);display:flex;flex-direction:column;align-items:center">
+      <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px;text-align:center">UTILITY</div>
+      <div style="display:flex;flex-direction:column-reverse;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700">80</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#e8c766">+1 power-up slot</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+1 power-up slot</div>
+        </div>
+        <div style="width:2px;height:22px;background:#5a4a30"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">?</div>
+          <div style="font-family:'EB Garamond',serif;font-size:11px;color:#6a5a3a">+1 power-up slot</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display:flex;gap:18px;justify-content:center;margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89a7a">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:1px solid #c9a227"></div>Purchased</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:#1c1608;border:1px solid #e8c766"></div>Buyable now (cost shown, tap to spend)</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:rgba(40,34,24,.5);border:1px dashed #5a4a30"></div>Locked until prior node bought</div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show what happens after buying the 180 XP heart node" · "add a confirm-spend tooltip on the buyable node" · "start the Claude Code handoff package"</p>
+</section>
+
+<section class="dv-turn" id="t3">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t3">3</a>
+  <div><span class="dv-tname">M2 metagame — world map &amp; dungeon-graph mocks</span>
+  <p class="dv-tsub">Low-art continuation of the <a class="dv-oid" href="#2a">2a</a> direction — same palette/type tokens, everything below is CSS shapes + one SVG line layer, no images. Reviewed against the M2 scope doc's <a href="#" style="color:inherit;text-decoration:underline">world map</a> and <a href="#" style="color:inherit;text-decoration:underline">dungeon structure</a> sections.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a> World map — Inn/Shop hub + scrolling tier trail</div>
+<div class="dv-card" style="width:1080px">
+<div style="width:1080px;min-height:360px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);padding:28px;box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3">
+
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-family:'Cinzel',serif;font-size:22px;letter-spacing:.12em;color:#e8c766;text-transform:uppercase">World Map</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#a89a7a;margin-top:4px">highestUnlockedTier: 2</div>
+  </div>
+
+  <div style="display:flex;gap:24px;align-items:stretch">
+
+    <div style="display:flex;flex-direction:column;gap:14px;width:168px;flex:none">
+      <div style="border:2px solid #c9a227;border-radius:8px;background:#1c1608;box-shadow:0 0 12px #c9a22766;padding:14px;text-align:center">
+        <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#e8c766">THE INN</div>
+        <div style="font-family:'EB Garamond',serif;font-size:11px;color:#a89a7a;margin-top:4px">Restore hearts · Skill tree</div>
+      </div>
+      <div style="border:1px dashed #5a4a30;border-radius:8px;background:rgba(40,34,24,.5);padding:14px;text-align:center;opacity:.6">
+        <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#c9b892">THE SHOP</div>
+        <div style="font-family:'EB Garamond',serif;font-size:11px;font-style:italic;color:#8a7a5a;margin-top:4px">Coming soon</div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-x:auto;padding:10px 4px">
+      <div style="position:relative;display:flex;align-items:center;gap:36px;min-width:1400px;padding:20px 10px">
+        <div style="position:absolute;left:10px;right:10px;top:50%;height:2px;background:repeating-linear-gradient(90deg,#7a5a22 0 8px,transparent 8px 16px);z-index:0"></div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="position:relative;width:76px;height:92px;border-radius:8px;background:linear-gradient(160deg,#4a3a12,#2a1f08);border:2px solid #c9a227;box-shadow:0 0 12px #c9a22766;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+            <div style="position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:#e8c766;color:#2a1a08;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid #7a5a22">✓</div>
+            <div style="font-family:'Cinzel',serif;font-size:12px;color:#e8c766;text-align:center;padding:0 4px">Grassland</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#c9b892">Tier 1</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 12px #e8c76677;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+            <div style="font-family:'Cinzel',serif;font-size:12px;color:#e8c766;text-align:center;padding:0 4px">Forest</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#c9b892">Tier 2</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Hill</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 3</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Coastal</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 4</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Desert</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 5</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Swamp</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 6</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Mountain</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 7</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Arctic</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 8</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Underdark</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 9</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #8a7a5a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#8a7a5a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#8a7a5a;text-align:center;padding:0 4px">Underwater</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a5a3a">Tier 10</div>
+          </div>
+        </div>
+
+        <div style="position:relative;z-index:1;width:88px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:76px;height:92px;border-radius:8px;background:rgba(60,20,20,.4);border:1px dashed #6a2a2a;opacity:.55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="width:14px;height:10px;border:2px solid #a86a6a;border-bottom:none;border-radius:7px 7px 0 0"></div>
+            <div style="width:20px;height:14px;background:#a86a6a;border-radius:2px;margin-top:-6px"></div>
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:#a86a6a;text-align:center;padding:0 4px">Urban</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6a4040">Tier 11</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:18px;justify-content:center;margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89a7a">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:linear-gradient(160deg,#4a3a12,#2a1f08);border:1px solid #c9a227"></div>Cleared</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:#1c1608;border:1px solid #e8c766"></div>Available</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:rgba(40,34,24,.5);border:1px dashed #5a4a30"></div>Locked</div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="3b">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a> Dungeon view — branching path graph, mid-run snapshot</div>
+<div class="dv-card" style="width:1080px">
+<div style="width:1080px;min-height:560px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);padding:28px;box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3">
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px">
+    <div>
+      <div style="font-family:'Cinzel',serif;font-size:20px;letter-spacing:.1em;color:#e8c766;text-transform:uppercase">Dungeon — Tier 1: Grassland</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#a89a7a;margin-top:2px">Path A cleared → Waypoint now available</div>
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:20px;color:#c94b4b;letter-spacing:.05em">♥ <span style="opacity:.35">♡</span></div>
+  </div>
+
+  <div style="overflow-x:auto;padding:6px 0">
+    <div style="position:relative;width:1230px;height:460px">
+      <svg width="1230" height="460" style="position:absolute;left:0;top:0;z-index:0">
+        <line x1="40" y1="220" x2="160" y2="90" stroke="#e8c766" stroke-width="2"/>
+        <line x1="160" y1="90" x2="250" y2="90" stroke="#e8c766" stroke-width="2"/>
+        <line x1="40" y1="220" x2="160" y2="220" stroke="#e8c766" stroke-width="2"/>
+        <line x1="160" y1="220" x2="250" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="250" y1="220" x2="340" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="40" y1="220" x2="160" y2="350" stroke="#e8c766" stroke-width="2"/>
+        <line x1="160" y1="350" x2="250" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="250" y1="350" x2="340" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="340" y1="350" x2="430" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="250" y1="90" x2="520" y2="220" stroke="#e8c766" stroke-width="2"/>
+        <line x1="340" y1="220" x2="520" y2="220" stroke="#e8c766" stroke-width="2"/>
+        <line x1="430" y1="350" x2="520" y2="220" stroke="#e8c766" stroke-width="2"/>
+        <line x1="160" y1="90" x2="160" y2="20" stroke="#e8c766" stroke-width="2"/>
+        <line x1="250" y1="350" x2="250" y2="420" stroke="#5a4a30" stroke-width="2" stroke-dasharray="4,4"/>
+        <line x1="520" y1="220" x2="610" y2="90" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="610" y1="90" x2="700" y2="90" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="700" y1="90" x2="790" y2="90" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="520" y1="220" x2="610" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="610" y1="220" x2="700" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="700" y1="220" x2="790" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="790" y1="220" x2="880" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="520" y1="220" x2="610" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="610" y1="350" x2="700" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="700" y1="350" x2="790" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="790" y1="350" x2="880" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="880" y1="350" x2="970" y2="350" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="700" y1="90" x2="700" y2="20" stroke="#5a4a30" stroke-width="2" stroke-dasharray="4,4"/>
+        <line x1="790" y1="90" x2="1060" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="880" y1="220" x2="1060" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="970" y1="350" x2="1060" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="1060" y1="220" x2="1150" y2="220" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+      </svg>
+
+      <div style="position:absolute;left:40px;top:220px;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:6px;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;box-shadow:0 0 14px #c9a22799;rotate:45deg;z-index:1"></div>
+      <div style="position:absolute;left:40px;top:250px;transform:translate(-50%,0);font-family:'JetBrains Mono',monospace;font-size:9px;color:#c9b892;z-index:1">START</div>
+
+      <div style="position:absolute;left:160px;top:90px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;box-shadow:0 0 12px #c9a22799;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#2a1a08;font-weight:700;z-index:1">A1</div>
+      <div style="position:absolute;left:250px;top:90px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;box-shadow:0 0 12px #c9a22799;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#2a1a08;font-weight:700;z-index:1">A2</div>
+
+      <div style="position:absolute;left:160px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700;z-index:1">B1</div>
+      <div style="position:absolute;left:250px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">B2</div>
+      <div style="position:absolute;left:340px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">B3</div>
+
+      <div style="position:absolute;left:160px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e8c766;font-weight:700;z-index:1">C1</div>
+      <div style="position:absolute;left:250px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">C2</div>
+      <div style="position:absolute;left:340px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">C3</div>
+      <div style="position:absolute;left:430px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">C4</div>
+
+      <div style="position:absolute;left:520px;top:220px;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:#1c1608;border:3px solid #e8c766;box-shadow:0 0 0 4px rgba(201,162,39,.25),0 0 16px #e8c76699;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:10px;color:#e8c766;z-index:1;text-align:center">WAY-<br>POINT</div>
+
+      <div style="position:absolute;left:610px;top:90px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">D1</div>
+      <div style="position:absolute;left:700px;top:90px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">D2</div>
+      <div style="position:absolute;left:790px;top:90px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">D3</div>
+
+      <div style="position:absolute;left:610px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">E1</div>
+      <div style="position:absolute;left:700px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">E2</div>
+      <div style="position:absolute;left:790px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">E3</div>
+      <div style="position:absolute;left:880px;top:220px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">E4</div>
+
+      <div style="position:absolute;left:610px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">F1</div>
+      <div style="position:absolute;left:700px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">F2</div>
+      <div style="position:absolute;left:790px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">F3</div>
+      <div style="position:absolute;left:880px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">F4</div>
+      <div style="position:absolute;left:970px;top:350px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a7a5a;z-index:1">F5</div>
+
+      <div style="position:absolute;left:1060px;top:220px;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:rgba(40,34,24,.5);border:3px dashed #5a4a30;opacity:.55;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:10px;color:#8a7a5a;z-index:1">APPRO-<br>ACH</div>
+
+      <div style="position:absolute;left:1150px;top:220px;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(80,20,20,.35);border:3px dashed #6a2a2a;opacity:.65;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#a86a6a;z-index:1">BOSS</div>
+
+      <div style="position:absolute;left:160px;top:20px;transform:translate(-50%,-50%) rotate(45deg);width:22px;height:22px;border-radius:3px;background:#3b1220;border:2px solid #c9a227;box-shadow:0 0 8px #c9a22799;z-index:1"></div>
+      <div style="position:absolute;left:700px;top:20px;transform:translate(-50%,-50%) rotate(45deg);width:22px;height:22px;border-radius:3px;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;z-index:1"></div>
+      <div style="position:absolute;left:250px;top:420px;transform:translate(-50%,-50%) rotate(45deg);width:22px;height:22px;border-radius:3px;background:rgba(40,34,24,.5);border:2px dashed #5a4a30;opacity:.55;z-index:1"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:18px;justify-content:center;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89a7a">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:1px solid #c9a227"></div>Cleared</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:#1c1608;border:1px solid #e8c766"></div>Available</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:rgba(40,34,24,.5);border:1px dashed #5a4a30"></div>Locked</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:11px;height:11px;transform:rotate(45deg);background:#3b1220;border:1px solid #c9a227"></div>Chest (mimic-indistinguishable)</div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make the map trail snake into rows instead of scrolling" · "show the dungeon graph after Waypoint clears" · "mock the Inn's skill-tree screen"</p>
+</section>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t2">2</a>
+  <div><span class="dv-tname">M0 battle screen — 3 layout options (mock fidelity)</span>
+  <p class="dv-tsub">Same content every layout must show: player HP, monster HP, monster's live-typed prompt (with a visible typo), player's target prompt + input + countdown, and one on-screen-keyboard state (mid-word, next 3 keys glowing). D&amp;D-styled type/color pass — still no monster art, per the M0 "legible, no art" rule.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a> Vertical Duel — stacked panels, classic HUD read</div>
+<div class="dv-card" style="width:1040px">
+<div style="width:1040px;min-height:720px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);padding:28px;box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3;position:relative">
+
+  <div style="text-align:center;margin-bottom:18px">
+    <div style="font-family:'Cinzel',serif;font-size:22px;letter-spacing:.12em;color:#e8c766;text-transform:uppercase">Battle — Tier 1</div>
+  </div>
+
+  <div style="background:linear-gradient(180deg,#3b1220,#2a0d17);border:2px solid #7a5a22;border-radius:8px;padding:16px 20px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.06em;color:#e8c766">GOBLIN SCOUT</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#c98d8d">HP 38 / 60</div>
+    </div>
+    <div style="height:14px;border-radius:7px;background:#1c0b0e;border:1px solid #5a2020;overflow:hidden;margin-bottom:12px">
+      <div style="width:63%;height:100%;background:linear-gradient(90deg,#8b2020,#c94b4b)"></div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.02em;background:#1c0b0e;border:1px solid #4a1826;border-radius:5px;padding:10px 14px">
+      <span style="color:#ede1c3">the gobl</span><span style="color:#e05a5a;text-decoration:underline wavy #e05a5a">x</span><span style="color:#6a5a4a">in sca_</span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 14px;color:#7a5a22;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.3em">
+    <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,#7a5a22)"></div>
+    <div style="width:10px;height:10px;background:#c9a227;transform:rotate(45deg)"></div>
+    VS
+    <div style="width:10px;height:10px;background:#c9a227;transform:rotate(45deg)"></div>
+    <div style="flex:1;height:1px;background:linear-gradient(90deg,#7a5a22,transparent)"></div>
+  </div>
+
+  <div style="background:linear-gradient(180deg,#241f3d20,#1a1226);border:2px solid #7a5a22;border-radius:8px;padding:16px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div style="font-family:'Cinzel',serif;font-size:15px;letter-spacing:.06em;color:#e8c766">YOU</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#e0d0a0">HP 82 / 100</div>
+    </div>
+    <div style="height:14px;border-radius:7px;background:#1c1608;border:1px solid #5a4a20;overflow:hidden;margin-bottom:14px">
+      <div style="width:82%;height:100%;background:linear-gradient(90deg,#8a6a1a,#e8c766)"></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+      <div style="flex:1">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:19px;letter-spacing:.02em;background:#1c1608;border:1px solid #4a3a18;border-radius:5px;padding:12px 16px">
+          <span style="color:#6a6a5a">the gob</span><span style="border-right:2px solid #e8c766">&nbsp;</span><span style="color:#4a4536">lin sneers</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#a89a7a;margin-top:6px;letter-spacing:.02em">&gt; the gob<span style="opacity:.4">|</span></div>
+      </div>
+      <div style="width:64px;text-align:center">
+        <div style="font-family:'Cinzel',serif;font-size:22px;color:#e8c766">2.8</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89a7a;text-transform:uppercase;letter-spacing:.1em">sec left</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
+      <div style="display:flex;gap:4px">
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">1</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">2</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">3</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">4</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">5</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a7a5a">6</div>
+        <div style="flex:1;height:32px;border:1px solid #7a5a22;border-radius:4px;background:rgba(201,162,39,.5);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#1c0f0a;font-weight:700">BACKSPACE</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border-radius:4px;background:#e8c766;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:#1c0f0a;font-weight:700;box-shadow:0 0 10px #e8c76699">L</div>
+        <div style="width:34px;height:32px;border-radius:4px;background:rgba(232,199,102,.55);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#1c0f0a">I</div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <div style="width:46px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.06)"></div>
+        <div style="width:34px;height:32px;border-radius:4px;background:rgba(232,199,102,.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#1c0f0a">N</div>
+        <div style="flex:1;height:32px;border:1px solid #7a5a22;border-radius:4px;background:rgba(237,225,195,.06);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a7a5a;font-weight:700">ENTER</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <div style="width:56px;height:28px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.04)"></div>
+        <div style="flex:1;height:28px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.04)"></div>
+        <div style="width:56px;height:28px;border:1px solid #4a3a18;border-radius:4px;background:rgba(237,225,195,.04)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a> Split Arena — dueling columns, symmetric read</div>
+<div class="dv-card" style="width:1040px">
+<div style="width:1040px;min-height:640px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);padding:28px;box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3">
+  <div style="text-align:center;margin-bottom:16px;font-family:'Cinzel',serif;font-size:22px;letter-spacing:.12em;color:#e8c766;text-transform:uppercase">Battle — Tier 1</div>
+  <div style="display:flex;gap:0;position:relative">
+    <div style="flex:1;padding-right:24px">
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#e8c766;margin-bottom:6px">YOU</div>
+      <div style="height:12px;border-radius:6px;background:#1c1608;border:1px solid #5a4a20;overflow:hidden;margin-bottom:14px">
+        <div style="width:82%;height:100%;background:linear-gradient(90deg,#8a6a1a,#e8c766)"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:16px;background:#1c1608;border:1px solid #4a3a18;border-radius:5px;padding:10px 14px;margin-bottom:8px">
+        <span style="color:#6a6a5a">the gob</span><span style="border-right:2px solid #e8c766">&nbsp;</span><span style="color:#4a4536">lin sneers</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#a89a7a;margin-bottom:6px">&gt; the gob<span style="opacity:.4">|</span> &nbsp;&nbsp; <span style="color:#e8c766">2.8s left</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:12px">
+        <div style="display:flex;gap:3px"><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border-radius:4px;background:#e8c766"></div><div style="width:26px;height:26px;border-radius:4px;background:rgba(232,199,102,.5)"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div></div>
+        <div style="display:flex;gap:3px"><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border-radius:4px;background:rgba(232,199,102,.3)"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:26px;height:26px;border:1px solid #4a3a18;border-radius:4px"></div></div>
+        <div style="display:flex;gap:3px"><div style="width:26px;height:26px;border:1px solid #7a5a22;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#8a7a5a;display:flex;align-items:center;justify-content:center">⌫</div><div style="flex:1;height:26px;border:1px solid #4a3a18;border-radius:4px"></div><div style="width:56px;height:26px;border:1px solid #7a5a22;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#8a7a5a;display:flex;align-items:center;justify-content:center">ENTER</div></div>
+      </div>
+    </div>
+    <div style="width:1px;background:linear-gradient(180deg,transparent,#7a5a22,transparent);margin:0 8px"></div>
+    <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:#2a0d17;border:2px solid #c9a227;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:11px;color:#e8c766;letter-spacing:.1em">VS</div>
+    <div style="flex:1;padding-left:24px">
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.08em;color:#e8c766;margin-bottom:6px;text-align:right">GOBLIN SCOUT</div>
+      <div style="height:12px;border-radius:6px;background:#1c0b0e;border:1px solid #5a2020;overflow:hidden;margin-bottom:14px">
+        <div style="width:63%;height:100%;margin-left:auto;background:linear-gradient(90deg,#8b2020,#c94b4b)"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:16px;background:#1c0b0e;border:1px solid #4a1826;border-radius:5px;padding:10px 14px;text-align:right">
+        <span style="color:#ede1c3">the gobl</span><span style="color:#e05a5a;text-decoration:underline wavy #e05a5a">x</span><span style="color:#6a5a4a">in sca_</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#c98d8d;margin-top:6px;text-align:right">typing… (typo caught)</div>
+      <div style="margin-top:34px;text-align:right;color:#5a4530;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em">HP 38 / 60</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a> Scroll &amp; Ledger — single scroll, most thematic framing</div>
+<div class="dv-card" style="width:840px">
+<div style="width:840px;min-height:760px;background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 70%);padding:36px 60px;box-sizing:border-box;font-family:'EB Garamond',serif;color:#3a2a1a">
+  <div style="background:linear-gradient(180deg,#ede1c3,#d8c79f);border-radius:4px;box-shadow:0 0 0 3px #7a5a22,0 10px 40px rgba(0,0,0,.6);padding:30px 34px;position:relative">
+    <div style="text-align:center;font-family:'Cinzel',serif;font-size:18px;letter-spacing:.14em;color:#5a2020;text-transform:uppercase;margin-bottom:18px;border-bottom:1px solid #7a5a22aa;padding-bottom:12px">Combat Ledger</div>
+
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#5a2020;margin-bottom:6px">
+        <span>GOBLIN SCOUT</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px">HP 38/60</span>
+      </div>
+      <div style="height:10px;border-radius:5px;background:#c9b892;border:1px solid #8a6a3a;overflow:hidden;margin-bottom:10px">
+        <div style="width:63%;height:100%;background:#8b2020"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#3a2a1a;background:#c9b892;border-radius:4px;padding:8px 12px">
+        the gobl<span style="color:#8b2020;text-decoration:underline wavy #8b2020">x</span>in sca<span style="opacity:.4">_</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:#8a6a3a">
+      <div style="flex:1;height:1px;background:#8a6a3a"></div>
+      <div style="width:20px;height:20px;border-radius:50%;background:#7a1818;border:2px solid #c9a227"></div>
+      <div style="flex:1;height:1px;background:#8a6a3a"></div>
+    </div>
+
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:13px;letter-spacing:.06em;color:#5a2020;margin-bottom:6px">
+        <span>YOU</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px">HP 82/100 · 2.8s left</span>
+      </div>
+      <div style="height:10px;border-radius:5px;background:#c9b892;border:1px solid #8a6a3a;overflow:hidden;margin-bottom:10px">
+        <div style="width:82%;height:100%;background:#8a6a1a"></div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#3a2a1a;background:#c9b892;border-radius:4px;padding:8px 12px;margin-bottom:6px">
+        <span style="opacity:.35">the gob</span><span style="border-right:2px solid #5a2020">&nbsp;</span><span style="opacity:.2">lin sneers</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6a5a3a">&gt; the gob|</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4px;background:#c9b892;border-radius:6px;padding:10px;border:1px solid #8a6a3a">
+      <div style="display:flex;gap:3px;justify-content:center"><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border-radius:3px;background:#7a1818;box-shadow:0 0 8px #7a181880"></div><div style="width:24px;height:24px;border-radius:3px;background:rgba(122,24,24,.5)"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:56px;height:24px;border:1px solid #8a6a3a;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:9px;display:flex;align-items:center;justify-content:center;color:#6a5a3a">⌫ BKSP</div></div>
+      <div style="display:flex;gap:3px;justify-content:center"><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border-radius:3px;background:rgba(122,24,24,.3)"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:24px;height:24px;border:1px solid #8a6a3a;border-radius:3px"></div><div style="width:60px;height:24px;border:1px solid #8a6a3a;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:9px;display:flex;align-items:center;justify-content:center;color:#6a5a3a">ENTER</div></div>
+      <div style="display:flex;gap:3px;justify-content:center"><div style="width:160px;height:20px;border:1px solid #8a6a3a;border-radius:3px"></div></div>
+    </div>
+    <div style="position:absolute;top:14px;right:20px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#8a6a3a;letter-spacing:.1em">TIER 1</div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "combine <a class="dv-oid" href="#2a">2a</a>'s keyboard with <a class="dv-oid" href="#2c">2c</a>'s scroll framing" · "show <a class="dv-oid" href="#2b">2b</a>'s win/lose overlay" · "push one of these toward the real M0 build"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t1">1</a>
+  <div><span class="dv-tname">Roadmap — how the same screen grows, M0 → M6</span>
+  <p class="dv-tsub">Low-fi, sketchy — structure only. Each frame shows what gets bolted onto the same battle layout at that milestone; nothing here is a final visual, just where things attach. M4/M5 are infra/content work with no new screen, so they're notes, not frames.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a> M0 — math spike (this doc's subject)</div>
+<div class="dv-card" style="width:230px;background:#f5f2ea;border:1.5px dashed #8a8a8a">
+<div style="width:230px;height:300px;padding:14px;box-sizing:border-box;font-family:'Patrick Hand',cursive;color:#333">
+  <div style="border:1.5px solid #333;border-radius:3px;padding:8px;margin-bottom:8px">
+    <div style="font-size:11px;margin-bottom:4px">monster hp ▓▓▓▓░░</div>
+    <div style="font-size:10px;color:#777">"the gobl_in sca.."</div>
+  </div>
+  <div style="border:1.5px solid #333;border-radius:3px;padding:8px;margin-bottom:8px">
+    <div style="font-size:11px;margin-bottom:4px">player hp ▓▓▓▓▓▓▓░</div>
+    <div style="font-size:10px;color:#777">[ the gob| ]  2.8s</div>
+  </div>
+  <div style="font-size:10px;color:#999">unstyled, one text box —<br>just prove the math feels ok</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a> M1 — real UI, one monster</div>
+<div class="dv-card" style="width:230px;background:#f5f2ea;border:1.5px dashed #8a8a8a">
+<div style="width:230px;height:300px;padding:14px;box-sizing:border-box;font-family:'Patrick Hand',cursive;color:#333">
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;margin-bottom:8px">
+    <div style="font-size:11px;font-weight:700">GOBLIN SCOUT</div>
+    <div style="font-size:11px">hp ▓▓▓▓░░ + border/type polish</div>
+  </div>
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;margin-bottom:8px">
+    <div style="font-size:11px;font-weight:700">YOU</div>
+    <div style="font-size:11px">hp ▓▓▓▓▓▓▓░</div>
+    <div style="font-size:10px;color:#777">countdown ring</div>
+  </div>
+  <div style="border:1px dashed #999;border-radius:4px;padding:6px;font-size:10px;color:#777">win / lose overlay ✕</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a> M2 — save, coins, XP, skill tree</div>
+<div class="dv-card" style="width:230px;background:#f5f2ea;border:1.5px dashed #8a8a8a">
+<div style="width:230px;height:300px;padding:14px;box-sizing:border-box;font-family:'Patrick Hand',cursive;color:#333">
+  <div style="display:flex;justify-content:space-between;border:1.5px solid #c9a227;border-radius:4px;padding:5px 8px;margin-bottom:8px;font-size:10px;background:#fdf6e3">
+    <span>🪙 240</span><span>xp ▓▓▓░</span><span style="text-decoration:underline">tree</span>
+  </div>
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;margin-bottom:8px;font-size:11px">monster panel (same as 1b)</div>
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;font-size:11px">player panel (same as 1b)</div>
+  <div style="font-size:9px;color:#999;margin-top:6px">+ Goblin, Skeleton, Slime King roster</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a> M3 — power-ups &amp; juice (CSS-only)</div>
+<div class="dv-card" style="width:230px;background:#f5f2ea;border:1.5px dashed #8a8a8a">
+<div style="width:230px;height:300px;padding:14px;box-sizing:border-box;font-family:'Patrick Hand',cursive;color:#333">
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;margin-bottom:8px;font-size:11px;position:relative">monster panel <span style="color:#c94b4b">*flash*</span></div>
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;margin-bottom:8px;font-size:11px">player panel <span style="font-size:9px;color:#777">(shake ~~)</span></div>
+  <div style="display:flex;gap:4px;margin-bottom:6px">
+    <div style="width:26px;height:26px;border:1.5px solid #333;border-radius:4px;font-size:14px;text-align:center">⚡</div>
+    <div style="width:26px;height:26px;border:1.5px solid #333;border-radius:4px;font-size:14px;text-align:center">❤</div>
+    <div style="width:26px;height:26px;border:1.5px dashed #999;border-radius:4px"></div>
+  </div>
+  <div style="font-size:9px;color:#999">power-up tray, tap to use +<br>floating damage numbers</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a> M6 — real art (optional, last)</div>
+<div class="dv-card" style="width:230px;background:#f5f2ea;border:1.5px dashed #8a8a8a">
+<div style="width:230px;height:300px;padding:14px;box-sizing:border-box;font-family:'Patrick Hand',cursive;color:#333">
+  <div style="border:2px solid #333;border-radius:5px;padding:0;margin-bottom:8px;overflow:hidden">
+    <div style="height:70px;background:repeating-linear-gradient(45deg,#ddd,#ddd 6px,#eee 6px,#eee 12px);display:flex;align-items:center;justify-content:center;font-size:9px;color:#888">monster sprite/art asset</div>
+    <div style="font-size:10px;padding:6px">hp ▓▓▓▓░░</div>
+  </div>
+  <div style="border:2px solid #333;border-radius:5px;padding:8px;font-size:11px">player panel — unchanged</div>
+  <div style="font-size:9px;color:#999;margin-top:6px">tiers 7–10 long-form text arrive here too</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make <a class="dv-oid" href="#1c">1c</a>'s HUD bar match the gold/parchment palette from turn 2" · "sketch the M2 skill-tree screen itself" · "mock the M3 power-up tray at real fidelity"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

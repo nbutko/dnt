@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M2 Implementation Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M2 Implementation Plan</h1>
+  <p class="tagline">Turning the <a href="m2-scope.html">M2 scope</a> into a build: the file layout, the
+  two new state homes, and a story-by-story order that keeps every layer testable.</p>
+</header>
+<main>
+
+<p>
+  The <a href="m2-scope.html">M2 scope doc</a> answers <em>what</em> the progression loop is (world map,
+  11 dungeons, branching paths, hearts, the Inn's skill tree, the Wordsmith gate). This doc answers <em>how to
+  build it</em> so M3–M6 stay additive: which files each piece lands in, where the new state lives, and the
+  order to build stories so each one is committable and verifiable on its own. The design language and the four
+  canonical screens (battle 2a, world map 3a, dungeon 3b, Inn 4a) are pinned in
+  <a href="design/README.md">design/README.md</a> and <a href="design/tokens.json">tokens.json</a> — follow
+  them literally, same rule as M0/M1.
+</p>
+<div class="callout decision">
+  The load-bearing rule from <a href="m0-implementation.html">M0</a> carries straight into M2: the combat
+  <code>engine/</code> never imports React, and now a second rule joins it — <strong>the persisted save reducer
+  never imports combat, and the combat engine never imports the save.</strong> They meet at exactly one seam
+  (<code>resolveModifiers()</code>, see <a href="#skill-seam">below</a>), so the skill tree can feed battle
+  numbers without either side depending on the other.
+</div>
+
+<h2 id="review">Review notes folded into the plan</h2>
+<p>
+  Six things surfaced reviewing the scope doc and the design handoff against the current code; all are reflected
+  in the stories below (and, where they touched other docs, in those docs).
+</p>
+<table>
+  <tr><th></th><th>Finding</th><th>Resolution</th></tr>
+  <tr>
+    <td>A</td>
+    <td>The served-tier rule feeds the player prompts at <code>min(monster.textTier, wordsmithMaxTier)</code>,
+    but <code>text-banks.ts</code> bundles only tiers 1–2 and <em>throws</em> on any other tier. The moment a
+    player buys Wordsmith or enters a mid-tier dungeon, combat crashes.</td>
+    <td>Story 6 adds a graceful "fall back to the highest bundled tier ≤ requested" so a content gap degrades
+    instead of throwing, and Story 7 authors <em>seed</em> banks for tiers 3–10 (all tiers now ship this
+    milestone — see below). Final long-form text stays M6.</td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td>Only Endurance and Wordsmith have spec'd effects. Focus/Luck are illustrative-only, and Utility grants
+    power-up slots — but power-ups are M3, so Utility is definitionally inert in M2.</td>
+    <td>Decided (with the owner): <strong>only Endurance + Wordsmith are buyable in M2.</strong> Focus, Luck,
+    and Utility render on the tree but ship visible-but-locked ("Coming soon"), switched on with real numbers in
+    <a href="roadmap.html#m5">M5</a> (Utility no earlier than M3). Recorded in the <a href="roadmap.html">roadmap</a>
+    so the plan isn't lost.</td>
+  </tr>
+  <tr>
+    <td>C</td>
+    <td>The scope awards XP/coins "on defeating a monster" but doesn't say <em>when</em> they commit — and a fresh
+    save has 1 heart, so the first dungeon (a 7–10 fight gauntlet) allows zero mistakes before a full wipe.</td>
+    <td>Decided: rewards <strong>bank per-kill, immediately</strong>, independent of whether the run later wipes.
+    A failed first run still earns progress toward the Endurance heart nodes. Flag the 1-heart start as a
+    playtest watch-item (Story 10).</td>
+  </tr>
+  <tr>
+    <td>D</td>
+    <td>The world map shows a "cleared" ✓ once a boss is beaten, but a single <code>highestUnlockedTier</code>
+    can't represent "tier 11 cleared" — there's no tier 12 to unlock.</td>
+    <td>Let <code>highestUnlockedTier</code> reach <strong>12</strong> to mean "all cleared, incl. Urban."
+    <code>cleared(N) = N &lt; highestUnlockedTier</code> then works for all 11 with no schema change.</td>
+  </tr>
+  <tr>
+    <td>E</td>
+    <td>The scope implies but never names two architecture seams: the in-progress dungeon run must <em>not</em>
+    be persisted (it regenerates every visit), and the skill tree must somehow reach into combat config.</td>
+    <td>Two new state homes (see <a href="#state">State architecture</a>): a <em>persistent</em> save
+    (Context + reducer + IndexedDB) and a deliberately <em>ephemeral</em> dungeon-run reducer. The
+    save↔combat bridge is one pure function, <code>resolveModifiers()</code> (<a href="#skill-seam">below</a>).</td>
+  </tr>
+  <tr>
+    <td>F</td>
+    <td><code>m2-scope.html</code> was originally mis-added under <code>docs/design/</code> — a folder reserved
+    for the Claude-generated design products (wireframes, <code>visual-spec.html</code>, <code>tokens.json</code>,
+    <code>README.md</code>). It had since been moved to <code>docs/</code>, but its internal links still used the
+    old <code>../</code> prefixes and every inbound reference still pointed at <code>design/m2-scope.html</code>,
+    so all of them were broken.</td>
+    <td>Kept in <code>docs/</code> alongside the other planning docs; rewrote its own links to root-relative and
+    repointed the six inbound references (roadmap, game-design, architecture, content-plan, index, and this doc)
+    to <code>m2-scope.html</code>. <code>design/</code> now holds only Claude design products.</td>
+  </tr>
+</table>
+
+<h2 id="state">State architecture: the three homes, now five stores</h2>
+<p>
+  <a href="m0-implementation.html#state">M0 established three kinds of state</a> — simulation, persistent, and
+  ephemeral-UI — and said Context arrives in M2. It arrives now, in two distinct shapes, because "persistent"
+  and "ephemeral" each grew a store. The point of naming them separately is that a save file and a dungeon run
+  have <em>opposite</em> lifetimes, and conflating them is exactly how the "dungeon regenerates every visit"
+  rule would rot.
+</p>
+<table>
+  <tr><th>Kind</th><th>Example</th><th>Lifetime</th><th>Home</th></tr>
+  <tr>
+    <td>Simulation / battle</td><td>monster's live-typed string, both HP bars, both countdowns</td>
+    <td>one fight</td><td><em>(unchanged)</em> framework-agnostic engine, read via <code>useSyncExternalStore</code></td>
+  </tr>
+  <tr>
+    <td>Persistent / save</td><td>coins, xp, skillTree, hearts.max, highestUnlockedTier</td>
+    <td>forever (survives reload)</td><td><strong>NEW</strong> <code>state/save/</code> — Context + <code>useReducer</code>, mirrored to IndexedDB</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / run</td><td>the generated graph, which nodes are cleared, hearts <em>remaining</em></td>
+    <td>one dungeon visit — discarded on death, leave, or reload</td>
+    <td><strong>NEW</strong> <code>state/dungeon-run/</code> — a second Context + <code>useReducer</code>, never touched by IndexedDB</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / UI</td><td>the input box text, which screen is up</td><td>a render</td>
+    <td><em>(unchanged)</em> local <code>useState</code> / the app shell</td>
+  </tr>
+</table>
+<div class="callout why">
+  Hearts split across two homes on purpose: <code>hearts.max</code> is a save fact (earned in the Endurance
+  branch, survives forever), while <em>hearts remaining</em> is a run fact (starts at max on entry, spent on
+  losses, gone when the run ends). Persisting "remaining" would let a player quit-and-reopen to dodge a wipe —
+  the scope's "close mid-dungeon = leave" rule falls out for free by keeping remaining in the ephemeral store.
+</div>
+<div class="callout decision">
+  <strong>No router library.</strong> Four screens for one player on one device — a <code>Screen</code> union
+  type plus a <code>switch</code> in <code>GameShell</code> is the whole navigation layer. Pulling in
+  react-router would be the "scales to a thousand users" move the <a href="index.html">project brief</a> tells
+  us to skip.
+</div>
+
+<h2 id="layout">File &amp; component layout</h2>
+<p>
+  The M2 additions to the <a href="m0-implementation.html#layout">M0 skeleton</a>. React-free layers
+  (<code>engine/</code>, <code>config/</code>, <code>content/</code>, <code>domain/</code>) stay the seam between
+  logic and rendering; the only new place logic meets React is the two <code>state/</code> providers.
+</p>
+<pre><code>src/
+  main.tsx
+  App.tsx                          # now: renders &lt;GameShell/&gt; (was &lt;BattleScreen/&gt;)
+  app/                             # NEW — navigation shell (no router lib)
+    GameShell.tsx                  #   owns the current Screen; switches map/dungeon/inn/battle
+    navigation.ts                  #   Screen union type + transition helpers
+  config/                          # tuning + content structure — data, not logic
+    combat.ts                      #   (unchanged)
+    dungeon-tiers.ts               # NEW — the 11-tier table: habitat, wpm range, textTier
+                                   #   range, roster-pool refs (from the scope's tier table)
+    dungeon-generation.ts          # NEW — per-segment path counts/lengths, chest counts,
+                                   #   target totals (the ~30-monster / 7-10-shortest knobs)
+    skill-tree.ts                  # NEW — branch defs: node costs + effects. M2: Endurance
+                                   #   + Wordsmith active; Focus/Luck/Utility marked locked
+    rewards.ts                     # NEW — per-tier XP/coin reward formula
+  content/                         # DATA — editable without touching logic
+    monsters.json                  #   EXPAND — add role ('regular'|'boss'|'mimic') + habitat;
+                                   #   flesh out the tier-1 roster (Skeleton, Slime King, Mimic)
+    monsters.ts                    #   + queries: byTier(), byRole(), the shared filler pool
+    keyboard-layout.ts             #   (unchanged)
+    text/
+      tier-01.json … tier-10.json  #   tiers 3-10 as PLACEHOLDER banks now; M5 authors real lines
+    text-banks.ts                  #   + fallback: highest bundled tier &le; requested (finding A)
+  domain/                          # types only, no logic
+    types.ts                       #   (battle types, unchanged)
+    save.ts                        # NEW — SaveData v2, defaultSave(), migrate()
+    dungeon.ts                     # NEW — DungeonGraph, DungeonNode, NodeState, NodeKind
+    progression.ts                 # NEW — SkillTreeState, PlayerModifiers, SkillBranchId
+  engine/                          # ← pure TS, NO React imports (the M0 rule holds)
+    rng.ts  battle.ts  monster-typing.ts   #   (unchanged)
+    damage.ts                      #   + tierGatePenalty factor in computeDamage
+    dungeon/
+      generate.ts                  # NEW — generateDungeon(tier, params, rng): DungeonGraph (pure)
+      graph.ts                     # NEW — clearNode / availableNodes / bossUnlocked / isComplete
+    progression/
+      skill-effects.ts             # NEW — resolveModifiers(skillTree, config): PlayerModifiers
+      rewards.ts                   # NEW — rewardForKill(tier, role, config)
+    sim/                           #   + dungeon-invariant sims alongside the balance harness
+  state/                           # ← where logic meets React
+    battle-store.ts                #   EXTEND — takes a full Monster + servedTier + PlayerModifiers
+    save/                          # NEW — persistent save
+      SaveProvider.tsx             #   provider + useSave() hook
+      save-reducer.ts              #   pure reducer: award / purchaseSkillNode / unlockTier
+      save-storage.ts              #   IndexedDB load + debounced write
+    dungeon-run/                   # NEW — ephemeral run (never persisted)
+      DungeonRunProvider.tsx       #   provider scoped under the dungeon screen
+      dungeon-run-reducer.ts       #   pure: enter / selectNode / resolveFight / endRun
+  ui/
+    common/                        # NEW — primitives shared across ALL screens
+      Frame.tsx                    #   the double-border outer frame (map/battle/inn share it)
+      nodeState.ts                 #   the cleared/available/locked class maps — ONE source of truth
+      Legend.tsx                   #   the 3-state legend row (map + dungeon + inn reuse it)
+      ResourcePill.tsx             #   XP / coins pill readout
+      HeartsReadout.tsx            #   ♥/♡ row
+    hooks/
+      useGameLoop.ts  useBattle.ts #   (unchanged)
+    map/                           # NEW — world map (3a)
+      WorldMapScreen.tsx  TierTrail.tsx  TierCard.tsx  HubCard.tsx
+    dungeon/                       # NEW — branch graph (3b)
+      DungeonScreen.tsx            #   composition root; owns the run provider, launches battles
+      DungeonGraph.tsx             #   SVG line layer (z0) + positioned node layer (z1)
+      DungeonNode.tsx              #   one node: kind + state
+      graph-layout.ts             #   PURE — DungeonGraph → node x/y (the two-fan-out layout)
+    inn/                           # NEW — skill tree (4a)
+      InnScreen.tsx  SkillBranch.tsx  SkillNode.tsx
+    battle/                        #   existing; BattleScreen becomes a launched screen
+      BattleScreen.tsx             #   + accepts monster/servedTier/modifiers + onResult callback
+      HealthBar.tsx  Keyboard.tsx  Key.tsx  PlayerPrompt.tsx  TypedProgress.tsx  BattleResult.tsx
+</code></pre>
+<div class="callout decision" id="node-language">
+  <strong>The single most important anti-debt call for the frontend:</strong> the cleared / available / locked
+  visual language lives in <em>exactly one file</em> — <code>ui/common/nodeState.ts</code> — consumed unchanged
+  by world-map tiles, dungeon nodes, <em>and</em> skill-tree nodes. The <a href="design/README.md">design
+  handoff</a> is explicit that all three screens reuse the same 3-state language; centralizing it means a tweak
+  to "what locked looks like" happens once, not in three drifting copies. Same story for the double-border
+  <code>Frame</code> and the <code>Legend</code> row.
+</div>
+<div class="callout why">
+  Why <code>graph-layout.ts</code> is separate from <code>DungeonGraph.tsx</code>: the scope's structure is a
+  fixed two-fan-out shape, so node positions are a <em>pure function</em> of the graph, not a physics sim. Keeping
+  layout pure makes it unit-testable (no overlaps, boss rightmost, chests as dead-end spurs) and leaves the React
+  component a dumb renderer of <code>{x, y}</code> — the same split that let M0 test combat headlessly.
+</div>
+
+<h2 id="skill-seam">The one seam: skill tree → combat</h2>
+<p>
+  The save knows purchases; the engine knows damage; neither imports the other. They meet in one pure function:
+</p>
+<pre><code>// engine/progression/skill-effects.ts
+resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifiers
+//   → { maxHp, maxHearts, wordsmithMaxTier, /* M5: timeLimitMult, critChance, critDmg, powerUpSlots */ }
+</code></pre>
+<p>
+  <code>state/battle-store.ts</code> is the only caller: when a dungeon launches a fight it reads the save,
+  calls <code>resolveModifiers()</code>, and hands the resulting <code>PlayerModifiers</code> to
+  <code>createBattle()</code> — which uses <code>wordsmithMaxTier</code> to pick the player's served prompt tier
+  and to compute the constant <code>tierGatePenalty</code> for that monster, and <code>maxHp</code> for the
+  player's HP bar. In M2 the modifier object only carries the three Endurance/Wordsmith fields; the M5 fields
+  are commented placeholders so switching Focus/Luck on later is a data-plus-one-line change, not a re-architecture.
+</p>
+
+<h2 id="stories">Stories &amp; tasks</h2>
+<p>
+  Build order: <strong>0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11.</strong> Roughly bottom-up per screen,
+  but the world map (Story 3) is pulled early so there's a visible, tappable screen to react to before the deeper
+  dungeon plumbing. The all-tiers seed content (Story 7) lands before the generator (Story 8) so generation has
+  real rosters to draw from and can be tested across the whole ladder, not just tier 1. Engine/data stories
+  (0, 4, 6, 7, 8, 9) land their <a href="m0-implementation.html">Vitest</a> coverage before the UI that consumes
+  them, same "prove it headlessly" habit as M0's balance harness. Per the
+  <a href="index.html">project's working style</a>, each story is one commit and gets a look before the next.
+</p>
+
+<div class="milestone">
+  <h3>Story 0 — Save data model + persistence <span class="tag">foundation</span></h3>
+  <p>The persistent home, standalone and unit-tested before any screen reads it.</p>
+  <ul>
+    <li><code>domain/save.ts</code>: <code>SaveData</code> (version 2, exactly the <a href="m2-scope.html#save-data">scope's
+    shape</a> — coins, xp, skillTree, hearts.max, highestUnlockedTier, monstersDefeated, stats),
+    <code>defaultSave()</code> (fresh: 0 coins/xp, all branches 0, hearts.max 1, highestUnlockedTier 1), and a
+    <code>migrate(raw)</code> stub that returns the default for anything unrecognized.</li>
+    <li><code>state/save/save-reducer.ts</code>: pure reducer + action creators — <code>award({coins, xp})</code>,
+    <code>purchaseSkillNode(branch)</code>, <code>unlockTier(n)</code>, <code>recordDefeat(id)</code>. No combat
+    or UI imports.</li>
+    <li><code>state/save/save-storage.ts</code>: <code>loadSave()</code> / <code>saveSave(data)</code> over
+    IndexedDB (one object store, one key); writes debounced so a burst of awards is one flush.</li>
+    <li><code>state/save/SaveProvider.tsx</code>: hydrates from IndexedDB on mount, exposes <code>useSave()</code>
+    → <code>{ save, dispatch }</code>, and persists on every change.</li>
+    <li>Tests: reducer transitions (award accumulates; purchase spends XP + bumps the branch; unlock is
+    monotonic); a round-trip through a fake IndexedDB.</li>
+  </ul>
+  <p><strong>Done when:</strong> reducer + storage tests pass; a throwaway harness can hydrate, dispatch an award,
+  and read it back after a simulated reload.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 1 — App shell &amp; navigation <span class="tag">foundation</span></h3>
+  <p>Give the app more than one screen, and extract the first shared primitive.</p>
+  <ul>
+    <li><code>app/navigation.ts</code>: <code>Screen</code> union — <code>{name:'map'} | {name:'inn'} |
+    {name:'dungeon', tier} | {name:'battle', …}</code> — plus typed transitions.</li>
+    <li><code>app/GameShell.tsx</code>: holds current <code>Screen</code>, wraps everything in
+    <code>&lt;SaveProvider&gt;</code>, and <code>switch</code>es to the right screen. <code>App.tsx</code> now
+    renders <code>&lt;GameShell/&gt;</code>.</li>
+    <li>Stub screens for map / dungeon / inn (a titled <code>Frame</code> + a "back to map" link); the real ones
+    land in later stories. Battle is reachable via a temporary "Start battle" button so M1 stays playable.</li>
+    <li><code>ui/common/Frame.tsx</code>: extract the double-border outer frame + radial-gradient background out
+    of <code>BattleScreen.tsx</code> (per <a href="design/README.md">README</a> §1/§2 — map and Inn reuse it
+    verbatim).</li>
+  </ul>
+  <p><strong>Done when:</strong> you can navigate map ↔ inn ↔ dungeon stubs and into a battle and back, in a real
+  browser; <code>BattleScreen</code> renders through the shared <code>Frame</code> with no visual change.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 2 — Shared visual primitives <span class="tag">foundation</span></h3>
+  <p>The 3-state language and the small readouts every screen reuses — built once, before three screens want them.</p>
+  <ul>
+    <li><code>ui/common/nodeState.ts</code>: the single source of truth for <strong>cleared / available /
+    locked</strong> styling (border, fill, glow, opacity, the ✓ badge and padlock), straight from
+    <a href="design/tokens.json">tokens.json</a>. Pure class-map helpers, no component.</li>
+    <li><code>ui/common/Legend.tsx</code>: the state-swatch legend row (takes which states + an optional chest
+    swatch).</li>
+    <li><code>ui/common/ResourcePill.tsx</code> (XP / coins) and <code>ui/common/HeartsReadout.tsx</code>
+    (♥/♡, filled <code>#c94b4b</code>).</li>
+    <li>Fonts are already loaded (Cinzel / EB Garamond / JetBrains Mono in <code>index.html</code> + the
+    <code>@theme</code> block) — verify the token names cover the few new colors (chest diamond, hearts) and add
+    any missing ones to the <code>@theme</code> map rather than hard-coding hex.</li>
+  </ul>
+  <p><strong>Done when:</strong> a scratch page renders all three node states + both pills + hearts and they match
+  the mock swatches; tokens live in <code>@theme</code>, not inline literals.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 3 — World map screen <span class="tag">3a</span></h3>
+  <p>The launch hub. First screen driven by real save data.</p>
+  <ul>
+    <li><code>config/dungeon-tiers.ts</code>: the 11 tiers as data — habitat, tier number, WPM range, textTier
+    range, roster-pool ref — transcribed from the <a href="m2-scope.html#dungeon-tiers">scope's tier
+    table</a>. No logic.</li>
+    <li><code>ui/map/</code>: <code>WorldMapScreen</code> (composition), <code>HubCard</code> (Inn = always
+    available; Shop = always locked, "Coming soon", inert), <code>TierTrail</code> (the horizontally-scrolling
+    dashed-line trail), <code>TierCard</code> (uses <code>nodeState</code>: cleared if
+    <code>tier &lt; highestUnlockedTier</code>, available if <code>=== highestUnlockedTier</code>, else locked).</li>
+    <li>Tapping the Inn → <code>navigate('inn')</code>; tapping an unlocked/cleared tier →
+    <code>navigate('dungeon', tier)</code>; Shop shows a "shopkeeper hasn't arrived" note.</li>
+  </ul>
+  <p><strong>Done when:</strong> the map matches image 3a (Inn/Shop column + 11-card trail, correct
+  cleared/available/locked per a hand-set <code>highestUnlockedTier</code>), verified in a browser.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 4 — Skill-tree config + effect resolution <span class="tag">engine</span></h3>
+  <p>The rules behind the Inn, headless first.</p>
+  <ul>
+    <li><code>domain/progression.ts</code>: <code>SkillBranchId</code>, <code>SkillTreeState</code> (per-branch
+    purchased-node count), <code>PlayerModifiers</code>.</li>
+    <li><code>config/skill-tree.ts</code>: each branch as data — ordered nodes with XP cost + effect.
+    <strong>Endurance</strong> (4: +20 HP, +20 HP, +1 heart, +1 heart) and <strong>Wordsmith</strong> (5:
+    unlock text tier 2/4/6/8/10) carry real effects and costs. <strong>Focus / Luck / Utility</strong> are
+    present with <code>status: 'locked'</code> and no purchasable nodes (the roadmap notes they switch on in
+    <a href="roadmap.html#m5">M5</a>).</li>
+    <li><code>engine/progression/skill-effects.ts</code>: <code>resolveModifiers()</code> — folds the purchased
+    Endurance/Wordsmith counts into <code>{ maxHp, maxHearts, wordsmithMaxTier }</code>. M5 fields stubbed as
+    comments.</li>
+    <li>Tests: 0 purchases → base (40 HP, 1 heart, tier 1); full Endurance → +40 HP + 2 hearts (cap 3); each
+    Wordsmith node raises the tier ceiling by exactly the table's step.</li>
+  </ul>
+  <p><strong>Done when:</strong> <code>resolveModifiers()</code> is table-tested across the purchase space; the
+  locked branches expose no buyable node.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 5 — Inn / skill-tree screen <span class="tag">4a</span></h3>
+  <p>Spend XP. First screen that mutates the save.</p>
+  <ul>
+    <li><code>ui/inn/</code>: <code>InnScreen</code> (back-to-map link + XP/coin <code>ResourcePill</code>s +
+    the 5 branch columns), <code>SkillBranch</code> (<code>flex-direction: column-reverse</code> so the tree
+    grows upward), <code>SkillNode</code> (purchased / buyable / locked via <code>nodeState</code>; buyable shows
+    its cost and is tappable; only the next node past the highest purchased is buyable).</li>
+    <li>Focus/Luck/Utility columns render fully but every node reads locked/"Coming soon" — no cost shown, not
+    tappable.</li>
+    <li>Tapping a buyable node → <code>dispatch(purchaseSkillNode(branch))</code> (Story 0 action), which spends
+    XP and flips it to purchased, revealing the next node.</li>
+  </ul>
+  <p><strong>Done when:</strong> the Inn matches image 4a; buying the Endurance/Wordsmith nodes spends XP live and
+  the change survives a reload (proving the save round-trip); locked branches are visibly inert.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 6 — Wordsmith gate + served tier in combat <span class="tag">engine</span></h3>
+  <p>Wire the skill tree into damage — the scope's central mechanic.</p>
+  <ul>
+    <li><code>engine/damage.ts</code>: add <code>tierGatePenalty(servedTier, monsterTextTier)</code> =
+    <code>servedTier &gt;= monsterTextTier ? 1 : (servedTier/monsterTextTier)**2</code>, and multiply it into
+    <code>computeDamage</code> (constant for the whole fight). Mirror the existing
+    <a href="game-design.html#damage">formula</a>.</li>
+    <li><code>content/text-banks.ts</code>: on a request for an unbundled tier, fall back to the highest bundled
+    tier ≤ requested instead of throwing (finding A) — a permanent safety net so a content gap degrades instead
+    of crashing. (The seed banks for tiers 3–10 themselves are authored in <a href="#story-content">Story 7</a>;
+    this mechanism keeps combat safe both before and after that lands.)</li>
+    <li><code>state/battle-store.ts</code>: stop hardcoding <code>PLAYER_TEXT_TIER = 1</code> and the monster id —
+    take a full <code>Monster</code> + a <code>PlayerModifiers</code>; set the player's served tier to
+    <code>min(monster.textTier, modifiers.wordsmithMaxTier)</code>, pass <code>tierGatePenalty</code> and
+    <code>maxHp</code> through.</li>
+    <li>Tests: penalty is 1 at/above tier, 0.56 at 6/8, 0.25 at 4/8; served tier picks the min; a below-tier
+    fight still runs (doesn't crash on a missing bank).</li>
+  </ul>
+  <p><strong>Done when:</strong> penalty math is table-tested; a battle launched with a low Wordsmith modifier
+  against a high-textTier monster serves easy prompts and visibly under-damages, in a browser.</p>
+</div>
+
+<div class="milestone" id="story-content">
+  <h3>Story 7 — Seed content: rosters + text banks, all 11 tiers <span class="tag">content</span></h3>
+  <p>Enough monsters and typing content for the <em>whole</em> ladder to be generatable and playable now — seed
+  quality, not final. Authored before the generator so it draws from real data across all tiers, not just tier 1.
+  Pure content + a small schema bump; no logic beyond lookups.</p>
+  <ul>
+    <li><code>domain/types.ts</code>: extend <code>Monster</code> with <code>role</code>
+    ('regular'|'boss'|'mimic') and <code>habitat</code>.</li>
+    <li><code>content/monsters.json</code>: a seed roster for <strong>each of the 11 tiers</strong> — a handful of
+    regulars, one boss, and one habitat-reflavored Mimic per tier — using the
+    <a href="m2-scope.html#dungeon-tiers">scope's tier table</a> as the guide (habitat, CR-guided name picks, WPM
+    range, textTier range) and drawing names/CRs from <a href="monster-manual.json">monster-manual.json</a>.
+    Reflavor Any-Habitat fillers where a habitat's native bench thins out (e.g. Underwater), exactly as the scope
+    allows. Tier 1 (Grassland) is the Slime / Goblin / Skeleton / Slime King reskin + a Mimic. Per-monster stats
+    (hp, wpm, accuracy, attention, <code>slack</code>) are seeded from the tier's WPM band; precise tuning — and
+    pushing tougher monsters' <code>slack</code> toward the ~5%-miss end — is the <a href="roadmap.html#m5">M5</a>
+    balance pass, same measure-first habit as the M0 roster.</li>
+    <li><code>content/monsters.ts</code>: <code>byTier</code> / <code>byRole</code> / shared-filler-pool queries
+    (still just data lookups).</li>
+    <li><code>content/text/tier-03.json … tier-10.json</code>: seed line sets for every text tier, each reflecting
+    that tier's ramp from the <a href="content-plan.html">Content Plan</a>'s tier table (capitalization,
+    punctuation, numbers, length, paragraph structure) — short seed banks, not the final long-form excerpts
+    (those stay M6). Tiers 1–2 already exist.</li>
+    <li>Checks: every tier 1–11 yields ≥ the generator's minimum regulars + a boss + a mimic; every text tier
+    1–10 loads non-empty; each monster's <code>textTier</code> sits inside its tier's range.</li>
+  </ul>
+  <p><strong>Done when:</strong> every one of the 11 tiers has a roster that can fill a full dungeon and every text
+  tier 1–10 loads; the schema checks are green. Flavor accuracy and long-form text are explicitly <em>not</em>
+  the bar here — seed quality is.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 8 — Dungeon generation engine <span class="tag">engine</span></h3>
+  <p>The procedural graph, pure and headless — the meatiest engine story. Now draws from the Story 7 rosters, so
+  it can be exercised on any tier.</p>
+  <ul>
+    <li><code>domain/dungeon.ts</code>: <code>NodeKind</code> ('entrance'|'fight'|'waypoint'|'approach'|'boss'|'chest'),
+    <code>NodeState</code> ('locked'|'available'|'cleared'), <code>DungeonNode</code> (id, kind, state, monster
+    ref, downstream edges, <code>isRealChest?</code>), <code>DungeonGraph</code>.</li>
+    <li><code>config/dungeon-generation.ts</code>: per-segment knobs — early 2–4 paths × 2–4 nodes, late 2–4 ×
+    3–5, 3–5 chests, target total ~30 (26–34 band) — as data (the tuning surface the scope flags).</li>
+    <li><code>engine/dungeon/generate.ts</code>: <code>generateDungeon(tier, params, rng)</code> — builds the
+    two-fan-out shape (entrance → early paths → waypoint → late paths → approach → boss), draws monsters from the
+    tier's roster (regular pool + boss + Mimic-as-chest + Any-Habitat filler), attaches chests as dead-end spurs
+    off regular nodes only, and picks exactly one real chest. Seeded, deterministic.</li>
+    <li><code>engine/dungeon/graph.ts</code>: pure transitions — <code>clearNode</code> (marks cleared, flips
+    immediate downstream to available), <code>availableNodes</code>, <code>bossUnlocked</code> (Approach cleared),
+    <code>isComplete</code>.</li>
+    <li>Tests + an <code>engine/sim/</code> pass over many seeds: shortest path always 7–10; total (excl. mimics)
+    in 26–34; exactly one real chest; chests never on Waypoint/Approach; waypoint opens when <em>any</em> one
+    early path clears; boss gated solely by Approach.</li>
+  </ul>
+  <p><strong>Done when:</strong> the invariant sim is green across a few thousand seeds; a printed sample graph
+  reads as the scope's shape.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 9 — Dungeon-run state machine <span class="tag">engine</span></h3>
+  <p>The ephemeral run store — the second, deliberately non-persisted state home.</p>
+  <ul>
+    <li><code>state/dungeon-run/dungeon-run-reducer.ts</code>: pure reducer over <code>{ graph, heartsRemaining,
+    activeNodeId }</code> — <code>enter(tier, maxHearts, rng)</code> (calls <code>generateDungeon</code>),
+    <code>selectNode(id)</code>, <code>resolveFight('win'|'lose', nodeId)</code> (win → <code>clearNode</code>;
+    lose → <code>heartsRemaining--</code>, node stays available), <code>runOutcome</code> ('ongoing'|'wiped'|'complete').</li>
+    <li><code>state/dungeon-run/DungeonRunProvider.tsx</code>: scoped under the dungeon screen; never persisted.</li>
+    <li>Tests: lose decrements a heart + leaves the node available; 0 hearts → 'wiped'; clearing Approach → boss
+    available; clearing boss → 'complete'.</li>
+  </ul>
+  <p><strong>Done when:</strong> run-reducer tests pass; a headless "enter → clear a path → hit the waypoint" walk
+  produces the right state sequence.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 10 — Dungeon graph view <span class="tag">3b</span></h3>
+  <p>Render the run.</p>
+  <ul>
+    <li><code>ui/dungeon/graph-layout.ts</code>: pure <code>DungeonGraph → Map&lt;nodeId, {x,y}&gt;</code> for the
+    fixed two-fan-out shape (entrance left, boss right, early/late paths as rows, chests as short spurs). Unit
+    test: boss is rightmost, no two nodes share a position, chest spurs hang off their parent.</li>
+    <li><code>ui/dungeon/DungeonGraph.tsx</code>: an absolutely-positioned <code>&lt;svg&gt;</code> edge layer
+    (solid gold to cleared/available, dashed dim to locked) under a node layer; <code>DungeonNode.tsx</code>
+    renders one node by kind (circle / diamond / big waypoint-approach / red boss / chest diamond) + state (via
+    <code>nodeState</code>). Chests look <strong>identical</strong> real-or-mimic.</li>
+    <li><code>ui/dungeon/DungeonScreen.tsx</code>: header (name + one-line status) + <code>HeartsReadout</code>;
+    hosts the run provider; tapping an available node → launch a battle for that monster (wired in Story 11).</li>
+  </ul>
+  <p><strong>Done when:</strong> a generated tier-1 dungeon renders matching image 3b (states, chokepoints, chest
+  spurs, dashed vs solid edges), verified in a browser.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 11 — Wire the loop: battle ↔ dungeon ↔ save + rewards</h3>
+  <p>Close the metagame loop end to end.</p>
+  <ul>
+    <li><code>ui/battle/BattleScreen.tsx</code>: accept a <code>monster</code> + <code>servedTier</code> +
+    <code>PlayerModifiers</code> and an <code>onResult('win'|'lose')</code> callback; on finish, return to the
+    dungeon instead of dead-ending.</li>
+    <li><code>DungeonScreen</code> launch flow: read the save → <code>resolveModifiers()</code> → open the battle
+    screen for the tapped node → on result, <code>resolveFight()</code> the run <em>and</em>, on a win,
+    <code>dispatch(award(...))</code> <strong>immediately, per-kill</strong> (finding C) via
+    <code>config/rewards.ts</code> + <code>engine/progression/rewards.ts</code>. Opening the real chest awards a
+    coin/XP bonus with no fight; a mimic is a fight.</li>
+    <li>Boss win → <code>dispatch(unlockTier(tier+1))</code> the first time (and to 12 on tier 11, finding D).
+    Run 'wiped' → return to the map at the Inn, discard the run. "Leave Dungeon" → discard, no heart restore.
+    Visiting the Inn → hearts back to <code>max</code>.</li>
+    <li><code>config/rewards.ts</code>: per-tier XP/coin formula (a starting curve — a tuning knob per the scope's
+    open questions).</li>
+  </ul>
+  <p><strong>Done when:</strong> the full loop runs in a browser — pick a dungeon, fight along a branch, bank XP
+  per kill, wipe or clear, spend XP at the Inn, watch a boss clear unlock the next tier's card on the map.
+  <strong>Playtest watch-item:</strong> the 1-heart fresh-save start (finding C) — confirm the first dungeon
+  isn't punishing enough to sour the first session, and adjust the starting heart or early reward curve if it is.</li>
+  </ul>
+</div>
+
+<h2 id="out-of-scope">Out of scope for M2</h2>
+<ul>
+  <li><strong>Power-ups, the Shop's items, and the Utility skill branch's payoff</strong> — M3. Utility, Focus,
+  and Luck render locked; their numbers and activation are <a href="roadmap.html#m5">M5</a> (Utility gated on M3
+  power-ups existing).</li>
+  <li><strong>Final-quality roster flavor and long-form typing content</strong> — M5/M6. M2 ships <em>seed</em>
+  rosters and text banks for all 11 tiers (Story 7), so the whole ladder is playable now; the balance-tuned
+  stats, habitat-accurate names, and long-form excerpts (public-domain books) are the later content passes.</li>
+  <li><strong>Any art / sprites and battle juice</strong> (hit flashes, shake, sound) — M3/M6.</li>
+  <li><strong>Hosting / PWA install</strong> — M4.</li>
+  <li><strong>Persisting an in-progress dungeon run</strong> — deliberately never (finding E); closing mid-dungeon
+  equals leaving, by design.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

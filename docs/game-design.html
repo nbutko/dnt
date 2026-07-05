@@ -65,16 +65,19 @@
        * lengthFactor(text)
        * speedBonus(timeUsed, timeLimit)
        * critMultiplier(luck)
-       * powerUpMultiplier</code></pre>
+       * powerUpMultiplier
+       * tierGatePenalty</code></pre>
 <ul>
   <li><strong>lengthFactor</strong> — roughly <code>1 + (charCount - referenceLength) / referenceLength</code>, so a longer prompt swings harder. This is the direct payoff for the skill tree unlocking longer text. Clamp it to a small floor (<code>Math.max(0.25, …)</code>) so a very short prompt well under <code>referenceLength</code> can't drive damage to zero or negative.</li>
   <li><strong>speedBonus</strong> — multiplier for finishing well under the time limit vs. barely making it. There is no separate accuracy factor: a typo already costs time (notice it, backspace, retype), so sloppy typing is automatically punished by a worse speedBonus rather than by a second penalty. Since an attack can only submit on an exact match anyway (see <a href="#submitting">Submitting an attack</a>), speed is the only axis left to reward.</li>
   <li><strong>critMultiplier</strong> — rolled per attack against the player's Luck skill stat: a <code>criticalChance</code> to trigger, and a <code>criticalDamageMultiplier</code> applied when it does. See <a href="#skill-tree">skill tree</a>.</li>
   <li><strong>powerUpMultiplier</strong> — 1.0 normally; things like "Double Strike" set it to 2.0 for one attack. Stacks multiplicatively with a crit if both happen to land on the same swing.</li>
+  <li><strong>tierGatePenalty</strong> — 1.0 when the player's Wordsmith-unlocked text tier covers the monster's own <code>textTier</code>; otherwise <code>(servedTier / monster.textTier) ** 2</code>, where <code>servedTier</code> is the player's own (lower) unlocked tier. Added in M2, once dungeons have monsters whose native text tier can outrun the player's unlocks — see the <a href="m2-scope.html#wordsmith-gate">M2 scope doc</a> for the full mechanic.</li>
 </ul>
 <p>
-  The monster's damage uses the same shape (minus Luck, which is a player-only stat) with its own
-  <code>baseDamage</code>/text, so difficulty is tuned by monster stats, not a separate rulebook.
+  The monster's damage uses the same shape (minus Luck and <code>tierGatePenalty</code>, both player-only
+  concepts) with its own <code>baseDamage</code>/text, so difficulty is tuned by monster stats, not a
+  separate rulebook.
 </p>
 
 <h2>HP &amp; timers</h2>
@@ -82,7 +85,7 @@
   <tr><th>Stat</th><th>Base (level 1)</th><th>Grows via</th></tr>
   <tr><td>Player max HP</td><td>100</td><td>Skill tree: Endurance branch</td></tr>
   <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>Skill tree: Focus branch (more generous multiplier)</td></tr>
-  <tr><td>Max prompt length allowed</td><td>~12 characters</td><td>Skill tree: Wordsmith branch</td></tr>
+  <tr><td>Max text tier the player can be given</td><td>Tier 1</td><td>Skill tree: Wordsmith branch (see <a href="m2-scope.html#wordsmith-gate">M2 scope</a>) — fighting a monster above your unlocked tier is allowed but non-linearly weak, not blocked</td></tr>
   <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content-plan.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
 </table>
 <div class="callout why">
@@ -161,15 +164,27 @@
 
 <h2>Progression: coins, XP, skill tree</h2>
 <p>After a won battle: coins (spend on cosmetic stuff / power-up refills), XP (spend on the skill tree), and a chance at a power-up drop.</p>
+<p>
+  This is a per-battle system, separate from <strong>hearts</strong> — the run-level lives system that
+  governs a whole dungeon attempt (lose all hearts, get sent back to the Inn and lose the dungeon's
+  progress). Hearts, the world map, and dungeons themselves are a big enough system to get their own doc —
+  see the <a href="m2-scope.html">M2 scope doc</a>.
+</p>
 <h3 id="skill-tree">Skill tree branches (starting set)</h3>
 <table>
   <tr><th>Branch</th><th>What it unlocks</th></tr>
-  <tr><td>Endurance</td><td>+ max HP per node</td></tr>
-  <tr><td>Wordsmith</td><td>+ max prompt length the player can be given (higher damage ceiling)</td></tr>
+  <tr><td>Endurance</td><td>Node 1–2: +20 max HP each. Node 3–4: +1 max heart each (see <a href="m2-scope.html#inn">M2 scope</a>)</td></tr>
+  <tr><td>Wordsmith</td><td>Unlocks 2 more text tiers per node (5 nodes covering tiers 1→10) — raises the ceiling on prompt difficulty/length the player can be given, and avoids the <a href="#damage"><code>tierGatePenalty</code></a> against monsters at or below the unlocked tier (see <a href="m2-scope.html#wordsmith-gate">M2 scope</a>)</td></tr>
   <tr><td>Focus</td><td>more generous time-limit multiplier</td></tr>
   <tr><td>Luck</td><td>+ critical hit chance and/or critical damage multiplier per node (see <a href="#damage">Damage</a>)</td></tr>
   <tr><td>Utility</td><td>+1 power-up inventory slot per node</td></tr>
 </table>
+<div class="callout decision">
+  Hearts (max 1, +1 per Endurance node 3/4, so 3 max for now) are folded into Endurance rather than given
+  their own branch — both are "how much beating can I take before something resets," just at different
+  scales (a battle vs. a whole dungeon run). Keeps the tree at 5 branches instead of 6. See the
+  <a href="m2-scope.html#inn">M2 scope doc</a> for the full reasoning.
+</div>
 <div class="callout decision">
   Luck replaces the earlier "Precision" branch. Precision existed to soften an accuracy penalty on damage —
   now that mistakes are purely a time cost (no separate accuracy factor), there's nothing left for it to

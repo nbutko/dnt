@@ -2,15 +2,15 @@
 // lifetime from the ephemeral dungeon-run store: this survives reload, that
 // doesn't.
 
-export type SkillBranchId = 'endurance' | 'wordsmith' | 'focus' | 'luck' | 'utility'
+import type { SkillTreeState } from './progression'
 
 export interface SaveData {
   version: 2
   coins: number
   xp: number
-  // Purchased-node count per branch — Story 4's config/skill-tree.ts turns
-  // this count into actual effects via resolveModifiers().
-  skillTree: Record<SkillBranchId, number>
+  // Purchased-node count per branch — config/skill-tree.ts + resolveModifiers()
+  // (engine/progression/skill-effects.ts) turn this into actual effects.
+  skillTree: SkillTreeState
   hearts: { max: number }
   // Reaches 12 to mean "tier 11 (Urban) cleared too" — see m2-implementation
   // finding D. cleared(N) = N < highestUnlockedTier.

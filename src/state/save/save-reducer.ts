@@ -1,4 +1,5 @@
-import type { SaveData, SkillBranchId } from '../../domain/save'
+import type { SaveData } from '../../domain/save'
+import type { SkillBranchId } from '../../domain/progression'
 
 export type SaveAction =
   | { type: 'award'; coins: number; xp: number }

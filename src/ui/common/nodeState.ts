@@ -10,15 +10,24 @@ export type NodeVisualState = 'cleared' | 'available' | 'locked'
 // state (docs/design/README.md §3).
 export type NodeFamily = 'gold' | 'danger'
 
+// Square tier/graph nodes use a diagonal gradient when cleared; round nodes
+// (skill tree) use the same radial fill as Legend's circle swatch — same
+// palette, shape-appropriate direction.
+export type NodeShape = 'square' | 'circle'
+
 export interface NodeStateClasses {
   container: string
   label: string
 }
 
-const GOLD: Record<NodeVisualState, NodeStateClasses> = {
+const GOLD_CLEARED_FILL: Record<NodeShape, string> = {
+  square: 'bg-gradient-to-br from-node-cleared-from to-node-cleared-to',
+  circle: 'bg-[radial-gradient(circle_at_35%_30%,#e8c766,#8a6a1a)]',
+}
+
+const gold = (shape: NodeShape): Record<NodeVisualState, NodeStateClasses> => ({
   cleared: {
-    container:
-      'border-2 border-accent-gold bg-gradient-to-br from-node-cleared-from to-node-cleared-to shadow-[0_0_12px_#c9a22766]',
+    container: `border-2 border-accent-gold ${GOLD_CLEARED_FILL[shape]} shadow-[0_0_12px_#c9a22766]`,
     label: 'text-accent-gold-bright',
   },
   available: {
@@ -32,7 +41,7 @@ const GOLD: Record<NodeVisualState, NodeStateClasses> = {
     container: 'border border-dashed border-node-locked-border bg-node-locked-solid',
     label: 'text-node-locked-text',
   },
-}
+})
 
 const DANGER: Record<NodeVisualState, NodeStateClasses> = {
   cleared: {
@@ -51,12 +60,8 @@ const DANGER: Record<NodeVisualState, NodeStateClasses> = {
   },
 }
 
-const FAMILIES: Record<NodeFamily, Record<NodeVisualState, NodeStateClasses>> = {
-  gold: GOLD,
-  danger: DANGER,
-}
-
 export const nodeStateClasses = (
   state: NodeVisualState,
   family: NodeFamily = 'gold',
-): NodeStateClasses => FAMILIES[family][state]
+  shape: NodeShape = 'square',
+): NodeStateClasses => (family === 'gold' ? gold(shape) : DANGER)[state]

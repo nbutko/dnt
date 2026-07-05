@@ -578,7 +578,11 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     Put the coin/XP readout next to the hearts in the dungeon header, and on the world-map header too. Root: reuse
     <code>ui/common/ResourcePill.tsx</code> (already used in the Inn) in <code>ui/dungeon/DungeonScreen.tsx</code> and
     <code>ui/map/WorldMapScreen.tsx</code>.
-    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Rework (user feedback):</em> XP/coins were <em>stacked above</em> the hearts, and the map/inn showed no
+    hearts at all. New <code>ui/common/StatusReadout.tsx</code> lays XP + coins to the <em>left</em> of the hearts on
+    one row, and now renders on all three status screens (dungeon, world map, inn). Outside a run the hearts read full
+    (<code>maxHearts</code>), since hearts are a per-run resource restored at the Inn.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Chunky scrollbar chrome (world map <em>and</em> dungeon view).</strong> <em>[easy–medium]</em>

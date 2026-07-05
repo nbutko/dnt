@@ -1,10 +1,11 @@
 import { toMap, type Screen } from '../../app/navigation'
 import { SKILL_TREE } from '../../config/skill-tree'
 import type { SkillBranchId } from '../../domain/progression'
+import { resolveModifiers } from '../../engine/progression/skill-effects'
 import { purchaseSkillNode } from '../../state/save/save-reducer'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
-import ResourcePill from '../common/ResourcePill'
+import StatusReadout from '../common/StatusReadout'
 import SkillBranch from './SkillBranch'
 
 interface InnScreenProps {
@@ -16,6 +17,8 @@ const BRANCH_ORDER: SkillBranchId[] = ['endurance', 'wordsmith', 'focus', 'luck'
 // The Inn's skill tree (image 4a) — first screen that mutates the save.
 const InnScreen = ({ onNavigate }: InnScreenProps) => {
   const { save, dispatch } = useSave()
+  // Full hearts outside a run — they only deplete mid-dungeon (feedback #5).
+  const { maxHearts } = resolveModifiers(save.skillTree)
 
   return (
     <Frame maxWidth={1080}>
@@ -30,10 +33,8 @@ const InnScreen = ({ onNavigate }: InnScreenProps) => {
         <h1 className="font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
           The Inn — Skill Tree
         </h1>
-        <div className="flex gap-2.5">
-          <ResourcePill kind="xp" amount={save.xp} />
-          <ResourcePill kind="coins" amount={save.coins} />
-        </div>
+        <StatusReadout xp={save.xp} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
+
       </div>
 
       <div className="flex items-end justify-center gap-4.5">

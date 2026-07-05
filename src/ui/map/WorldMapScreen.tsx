@@ -1,9 +1,10 @@
 import { toDungeon, toInn, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
+import { resolveModifiers } from '../../engine/progression/skill-effects'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
-import ResourcePill from '../common/ResourcePill'
+import StatusReadout from '../common/StatusReadout'
 import HubCard from './HubCard'
 import TierTrail from './TierTrail'
 
@@ -15,6 +16,9 @@ interface WorldMapScreenProps {
 // the real save's highestUnlockedTier.
 const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
   const { save } = useSave()
+  // Hearts are a per-run resource, restored at the Inn — outside a dungeon the
+  // player is at full, so show maxHearts on both counts (feedback #5).
+  const { maxHearts } = resolveModifiers(save.skillTree)
 
   return (
     <Frame maxWidth={1080}>
@@ -25,10 +29,9 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
         <div className="mt-1 font-mono text-[11px] text-text-dim">
           highestUnlockedTier: {save.highestUnlockedTier}
         </div>
-        {/* XP/gold readout, mirroring the Inn header (feedback #5). */}
-        <div className="absolute top-0 right-0 flex gap-2.5">
-          <ResourcePill kind="xp" amount={save.xp} />
-          <ResourcePill kind="coins" amount={save.coins} />
+        {/* Status cluster, mirroring the Inn header (feedback #5). */}
+        <div className="absolute top-0 right-0">
+          <StatusReadout xp={save.xp} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
         </div>
       </div>
 

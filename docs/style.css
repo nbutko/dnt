@@ -164,6 +164,16 @@ th { color: var(--accent-2); font-weight: 600; }
 ul, ol { padding-left: 1.3rem; }
 li { margin: 0.25rem 0; }
 
+.status {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+.status .done { color: var(--accent-2); }
+
 footer.page-foot {
   max-width: var(--maxw);
   margin: 0 auto;

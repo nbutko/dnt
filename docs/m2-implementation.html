@@ -539,6 +539,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     force a dismiss-then-Enter two-step that's worse than the status quo. So the win/real-chest path's Enter goes
     through the modal's confirm; only the loss path (no reward modal) needs the plain Enter-to-continue. Design the two
     together.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Outer frame needs a gutter from the viewport edge.</strong> <em>[easy]</em><br>
@@ -548,6 +549,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     padded full-height container (e.g. <code>p-4 sm:p-6</code> in <code>app/GameShell.tsx</code>) and give
     <code>Frame</code> a small <code>my</code>; make sure the width rule collapses <em>below</em> the border on small
     screens rather than overflowing.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Reveal real-vs-mimic on <em>cleared</em> chests.</strong> <em>[easy]</em><br>
@@ -556,6 +558,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>ui/dungeon/DungeonNode.tsx</code> <code>glyphFor()</code> currently shows ✓ for <em>any</em> cleared node;
     branch on <code>node.isRealChest</code> for cleared chests and render a danger-coloured ✗ for mimics. (The
     unopened state must stay identical — only change the <em>cleared</em> chest glyph.)
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>A cleared chokepoint lights up <em>every</em> incoming edge, not just the path you walked.</strong>
@@ -565,12 +568,14 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>walkable = graph.nodes[targetId].state !== 'locked'</code> (based on the <em>target</em>). Change the rule to
     <strong>solid iff the edge's <em>source</em> node is <code>cleared</code></strong> (a road you actually walked);
     everything else dashed. The entrance is auto-cleared, so the first-move edges still glow correctly.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Show XP &amp; gold on the dungeon and world map.</strong> <em>[easy]</em><br>
     Put the coin/XP readout next to the hearts in the dungeon header, and on the world-map header too. Root: reuse
     <code>ui/common/ResourcePill.tsx</code> (already used in the Inn) in <code>ui/dungeon/DungeonScreen.tsx</code> and
     <code>ui/map/WorldMapScreen.tsx</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Chunky scrollbar chrome (world map <em>and</em> dungeon view).</strong> <em>[easy–medium]</em>
@@ -583,6 +588,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>overflow-x-auto</code>) — so style <em>both</em>. Prefer extracting a shared scroll-container component (or a
     shared utility class) that renders the scrollbar thin/subtle (or overlay-style) so the two stay consistent. (Not
     an overflow bug — don't chase the width math.)
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Preserve horizontal scroll position when returning from a fight.</strong> <em>[medium]</em><br>
@@ -591,6 +597,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     container's offset. Fix: either lift the scroll offset into state (save on scroll, restore on mount via a ref) or
     keep the graph mounted (hidden) while the battle overlays it. Files: <code>ui/dungeon/DungeonScreen.tsx</code>,
     <code>DungeonGraph.tsx</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Nodes should tell you which monster they are.</strong> <em>[medium]</em><br>
@@ -599,6 +606,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>ui/dungeon/DungeonNode.tsx</code> can render <code>getMonster(node.monsterId).name</code> as a small
     caption or tooltip; decide a treatment that doesn't clutter a 40px circle (hover tooltip, or a caption under
     only the larger nodes).
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Never serve the same prompt twice in a row.</strong> <em>[medium]</em><br>
@@ -606,6 +614,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>makePromptSource</code> samples uniformly <em>with</em> replacement. Track the last line and re-roll (or pick
     from pool-minus-last). This implies <strong>every tier needs ≥2 lines</strong> — audit
     <code>content/text/tier-*.json</code> and add a schema/test assertion so a single-line tier can't regress this.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Hide the input box; show the typed text only over the prompt.</strong> <em>[medium]</em><br>
@@ -613,6 +622,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>&gt; …</code> echo line below. Show just the single overlaid line (like the monster's
     <code>TypedProgress</code>) with a blinking caret, and keep the real <code>&lt;input&gt;</code> in the DOM but
     visually hidden so typing/focus still work. Root: <code>ui/battle/PlayerPrompt.tsx</code> renders both.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Typing multiple spaces appears to delete the prompt text.</strong> <em>[medium; likely tied to #10]</em><br>
@@ -622,6 +632,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     the remaining prompt. Needs a repro + a decision on how off-track/whitespace input renders (e.g. clamp the typed
     overlay to prompt length, or render wrong chars inline without shifting the untyped remainder). Fixing #10 reshapes
     this surface, so triage the two together. Files: <code>TypedProgress.tsx</code>, <code>PlayerPrompt.tsx</code>.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Reward modal on a win / chest claim.</strong> <em>[medium — batch with #1]</em><br>
@@ -632,6 +643,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <br><strong>Batch with #1:</strong> the modal's confirm (its button, and Enter) must double as the battle's
     "continue" — one press returns to the graph, never dismiss-then-continue. So this and #1 are one piece of work:
     a win/real-chest resolves into the reward modal, and confirming it is what advances the run.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>"You encountered a Mimic!" modal before a mimic fight.</strong> <em>[medium]</em><br>
@@ -639,6 +651,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     non-dismissable modal with a <strong>Begin Battle</strong> button first. Root: gate the mimic-chest
     <code>selectNode</code> → battle transition behind a modal in <code>DungeonScreen</code>. (Revealing mimic-ness
     only <em>after</em> the player commits to opening the chest is fine.)
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Chest spur can overlap an unrelated path arc.</strong> <em>[medium–hard]</em> (screenshot: chest crossing
@@ -647,6 +660,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     parent, which can land on a neighbouring row's edge or a converging arc. Fix: pick the spur's side/length by where
     there's free space (avoid nearby edges/nodes), or reserve dedicated chest lanes. Add an overlap check to the layout
     test.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Path nodes overlap arcs from other paths.</strong> <em>[hard]</em> (screenshot: Mountain late-fan)<br>
@@ -656,6 +670,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     so its last node shares the Approach-adjacent column (short paths get leading slack instead of trailing), and/or
     route edges around nodes, and/or widen row spacing. Needs a small layout redesign with overlap unit tests, so this
     is the biggest one — a candidate to fold into M3 if it grows.
+    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
 </ol>
 

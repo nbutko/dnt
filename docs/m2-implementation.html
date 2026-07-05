@@ -746,7 +746,9 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     (<code>MALISON</code>) keeps the column wide enough that <code>Yuan-Ti</code> never squeezes. Fix: each word span
     is <code>whitespace-nowrap</code> so a word (hyphen and all) never breaks internally; the space break between words
     stays. Files: <code>ui/dungeon/DungeonNode.tsx</code>.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> each caption word span is now <code>whitespace-nowrap</code>, so <code>Kuo-toa</code> stays whole
+    while <code>Whip</code> still drops to its own line.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Grassland monster names should match the monster manual.</strong> <em>[easy]</em><br>

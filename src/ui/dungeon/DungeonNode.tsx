@@ -111,8 +111,14 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
         // clear the resulting two-/three-line caption.
         <span className="absolute top-full left-1/2 mt-1 flex -translate-x-1/2 flex-col items-center font-mono text-[9px] leading-tight tracking-wide text-text-dim uppercase">
           {caption.split(' ').map((word, index) => (
+            // whitespace-nowrap keeps a single word (hyphen and all) on one line
+            // — otherwise "Kuo-toa Whip" breaks at the hyphen when its short
+            // sibling ("Whip") lets the flex item shrink to min-content
+            // (round-2 #B). The space break between words is unaffected.
             // eslint-disable-next-line react/no-array-index-key -- caption words are positional
-            <span key={index}>{word}</span>
+            <span key={index} className="whitespace-nowrap">
+              {word}
+            </span>
           ))}
         </span>
       )}

@@ -3,6 +3,7 @@ import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
+import ResourcePill from '../common/ResourcePill'
 import HubCard from './HubCard'
 import TierTrail from './TierTrail'
 
@@ -17,12 +18,17 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
 
   return (
     <Frame maxWidth={1080}>
-      <div className="mb-5 text-center">
+      <div className="relative mb-5 text-center">
         <h1 className="font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
           World Map
         </h1>
         <div className="mt-1 font-mono text-[11px] text-text-dim">
           highestUnlockedTier: {save.highestUnlockedTier}
+        </div>
+        {/* XP/gold readout, mirroring the Inn header (feedback #5). */}
+        <div className="absolute top-0 right-0 flex gap-2.5">
+          <ResourcePill kind="xp" amount={save.xp} />
+          <ResourcePill kind="coins" amount={save.coins} />
         </div>
       </div>
 

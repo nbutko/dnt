@@ -17,6 +17,7 @@ import BattleScreen from '../battle/BattleScreen'
 import Frame from '../common/Frame'
 import HeartsReadout from '../common/HeartsReadout'
 import Legend from '../common/Legend'
+import ResourcePill from '../common/ResourcePill'
 import DungeonGraphView from './DungeonGraph'
 
 interface DungeonScreenProps {
@@ -154,7 +155,15 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
           </h1>
           <p className="mt-1 font-mono text-[11px] text-text-dim">{statusLine(run.graph)}</p>
         </div>
-        <HeartsReadout current={run.heartsRemaining} max={modifiers.maxHearts} />
+        {/* XP/gold above the hearts, so the run's live resources read at a
+            glance next to its live health (feedback #5). */}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex gap-2.5">
+            <ResourcePill kind="xp" amount={save.xp} />
+            <ResourcePill kind="coins" amount={save.coins} />
+          </div>
+          <HeartsReadout current={run.heartsRemaining} max={modifiers.maxHearts} />
+        </div>
       </div>
 
       {body}

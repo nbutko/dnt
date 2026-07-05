@@ -10,10 +10,18 @@ const combatConfig: CombatConfig = {
   baseDamage: 10,
   referenceLength: 12,
   lengthFactorFloor: 0.25,
-  playerBaselineWpm: 15,
+  // Loosened from 15 after real playtesting felt rushed: the countdown
+  // starts the instant a prompt appears, so the budget also has to cover
+  // reading the line, not just typing it. See playerReadingBufferMs below.
+  playerBaselineWpm: 12,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 3000,
+  // Flat headroom added to every player time limit for reading/reacting to
+  // a fresh prompt before typing starts, on top of the typing-time estimate.
+  playerReadingBufferMs: 2000,
   playerMaxHp: 100,
+  // How long a "Time Limit Expired" pause holds before the next prompt draws.
+  playerMissPauseMs: 2000,
   monsterSlack: 1.75,
   criticalChance: 0.1,
   criticalDamageMultiplier: 2,

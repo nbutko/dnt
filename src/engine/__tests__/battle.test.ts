@@ -10,7 +10,9 @@ const combat: CombatConfig = {
   playerBaselineWpm: 15,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 5000,
+  playerReadingBufferMs: 0,
   playerMaxHp: 100,
+  playerMissPauseMs: 2000,
   monsterSlack: 1.75,
   criticalChance: 0.1,
   criticalDamageMultiplier: 2,
@@ -184,6 +186,45 @@ describe('createBattle', () => {
     // ticking further after the win must not advance the frozen prompt either
     battle.tick(1000)
     expect(battle.getState().player.attempt).toBe(attemptBefore)
+  })
+
+  it('pauses with an expire event instead of instantly drawing a new prompt on timeout', () => {
+    const rng = createRng(1)
+    const fastTimeoutCombat: CombatConfig = {
+      ...combat,
+      playerBaselineWpm: 1000, // makes the typing-time term negligible
+      playerTimeLimitFloorMs: 100,
+      playerReadingBufferMs: 0,
+      playerMissPauseMs: 500,
+    }
+    const battle = createBattle({
+      combat: fastTimeoutCombat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+    })
+    const attemptBefore = battle.getState().player.attempt
+
+    battle.tick(150) // exceeds the 100ms time limit
+    let state = battle.getState()
+    expect(state.lastEvent).toEqual({ side: 'player', kind: 'expire' })
+    expect(state.player.paused).toBe(true)
+    expect(state.player.prompt).toBe('jak')
+    expect(state.player.attempt).toBe(attemptBefore)
+
+    // submits during the pause are ignored, even a would-be exact match
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().monster.hp).toBe(steadyMonster.hp)
+
+    battle.tick(400) // 100ms of the 500ms pause left
+    expect(battle.getState().player.paused).toBe(true)
+    expect(battle.getState().player.attempt).toBe(attemptBefore)
+
+    battle.tick(200) // pause elapses -> advances to the next prompt
+    state = battle.getState()
+    expect(state.player.paused).toBe(false)
+    expect(state.player.attempt).toBe(attemptBefore + 1)
   })
 
   it('loses when the player never attacks and the monster keeps landing hits', () => {

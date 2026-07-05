@@ -24,13 +24,15 @@ export const createBattle = (config: BattleConfig): Battle => {
   const playerTimeLimitFor = (promptText: string): number =>
     Math.max(
       combat.playerTimeLimitFloorMs,
-      expectedTypingTimeMs(promptText.length, combat.playerBaselineWpm, combat),
+      combat.playerReadingBufferMs +
+        expectedTypingTimeMs(promptText.length, combat.playerBaselineWpm, combat),
     )
 
   let playerPrompt = playerPrompts()
   let playerAttempt = 0
   let playerTimeLimitMs = playerTimeLimitFor(playerPrompt)
   let playerElapsedMs = 0
+  let playerPauseRemainingMs = 0
 
   let monsterPromptText = monsterPrompts()
   let monsterTyper = createMonsterTyper(monster, monsterPromptText, rng, combat)
@@ -49,6 +51,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         attempt: playerAttempt,
         timeLimitMs: playerTimeLimitMs,
         elapsedMs: playerElapsedMs,
+        paused: playerPauseRemainingMs > 0,
       },
       monster: {
         id: monster.id,
@@ -97,10 +100,15 @@ export const createBattle = (config: BattleConfig): Battle => {
   const tick = (dtMs: number): void => {
     if (status !== 'ongoing') return
 
-    playerElapsedMs += dtMs
-    if (playerElapsedMs >= playerTimeLimitMs) {
-      lastEvent = { side: 'player', kind: 'expire' }
-      advancePlayerPrompt()
+    if (playerPauseRemainingMs > 0) {
+      playerPauseRemainingMs = Math.max(0, playerPauseRemainingMs - dtMs)
+      if (playerPauseRemainingMs === 0 && status === 'ongoing') advancePlayerPrompt()
+    } else {
+      playerElapsedMs += dtMs
+      if (playerElapsedMs >= playerTimeLimitMs) {
+        lastEvent = { side: 'player', kind: 'expire' }
+        playerPauseRemainingMs = combat.playerMissPauseMs
+      }
     }
 
     monsterTyper.advance(dtMs)
@@ -130,6 +138,7 @@ export const createBattle = (config: BattleConfig): Battle => {
   // to treat as a literal character, not a submit attempt.
   const submitPlayerAttack = (input: string): void => {
     if (status !== 'ongoing') return
+    if (playerPauseRemainingMs > 0) return
     if (input.length !== playerPrompt.length) return
 
     if (input === playerPrompt) {

@@ -9,16 +9,18 @@ import PlayerPrompt from './PlayerPrompt'
 interface HarnessProps {
   prompt: string
   disabled?: boolean
+  paused?: boolean
   onSubmit: (input: string) => void
 }
 
-const Harness = ({ prompt, disabled = false, onSubmit }: HarnessProps) => {
+const Harness = ({ prompt, disabled = false, paused = false, onSubmit }: HarnessProps) => {
   const [input, setInput] = useState('')
   return (
     <PlayerPrompt
       prompt={prompt}
       input={input}
       disabled={disabled}
+      paused={paused}
       onInputChange={setInput}
       onSubmit={onSubmit}
     />
@@ -43,5 +45,11 @@ describe('PlayerPrompt', () => {
   it('is disabled once the battle is no longer ongoing', () => {
     render(<Harness prompt="jak" disabled onSubmit={vi.fn()} />)
     expect(screen.getByLabelText('Type the prompt')).toBeDisabled()
+  })
+
+  it('shows a time-out message instead of the input while paused', () => {
+    render(<Harness prompt="jak" paused onSubmit={vi.fn()} />)
+    expect(screen.getByText('Time Limit Expired. You missed!')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Type the prompt')).not.toBeInTheDocument()
   })
 })

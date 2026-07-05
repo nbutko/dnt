@@ -31,7 +31,9 @@ export interface CombatConfig {
   playerBaselineWpm: number
   avgWordLength: number
   playerTimeLimitFloorMs: number
+  playerReadingBufferMs: number
   playerMaxHp: number
+  playerMissPauseMs: number
   monsterSlack: number
   criticalChance: number
   criticalDamageMultiplier: number
@@ -56,6 +58,10 @@ export interface PlayerState {
   attempt: number
   timeLimitMs: number
   elapsedMs: number
+  // True for a brief pause after the time limit expires, before the next
+  // prompt is drawn — gives the UI a moment to show "time's up" feedback
+  // instead of silently swapping to a new line.
+  paused: boolean
 }
 
 export interface MonsterState {

@@ -5,6 +5,7 @@ interface PlayerPromptProps {
   prompt: string
   input: string
   disabled: boolean
+  paused: boolean
   onInputChange: (value: string) => void
   onSubmit: (input: string) => void
 }
@@ -19,11 +20,33 @@ interface PlayerPromptProps {
 // target-prompt-with-progress line (TypedProgress) a 10-year-old reads under
 // time pressure, and a small dim "live input echo" below it that's the
 // actual focused control — see docs/design/visual-spec.html#type.
-const PlayerPrompt = ({ prompt, input, disabled, onInputChange, onSubmit }: PlayerPromptProps) => {
+//
+// While `paused` (a brief window after a timeout, see engine/battle.ts), both
+// lines are replaced with an explicit "time's up" message instead of silently
+// swapping to the next prompt.
+const PlayerPrompt = ({
+  prompt,
+  input,
+  disabled,
+  paused,
+  onInputChange,
+  onSubmit,
+}: PlayerPromptProps) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key !== 'Enter') return
     if (input.length !== prompt.length) return
     onSubmit(input)
+  }
+
+  if (paused) {
+    return (
+      <div className="flex flex-col gap-1">
+        <p className="font-mono text-lg text-danger-bright">Time Limit Expired. You missed!</p>
+        <p aria-hidden="true" className="font-mono text-[13px] text-text-dim">
+          &gt;
+        </p>
+      </div>
+    )
   }
 
   return (

@@ -81,6 +81,7 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
               prompt={state.player.prompt}
               input={input}
               disabled={state.status !== 'ongoing'}
+              paused={state.player.paused}
               onInputChange={setInput}
               onSubmit={actions.submit}
             />
@@ -94,7 +95,11 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
         </div>
 
         <div className="mt-4">
-          <Keyboard prompt={state.player.prompt} input={input} />
+          <Keyboard
+            prompt={state.player.prompt}
+            input={input}
+            active={state.status === 'ongoing' && !state.player.paused}
+          />
         </div>
 
         {state.status !== 'ongoing' && (

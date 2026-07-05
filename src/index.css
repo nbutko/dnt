@@ -55,3 +55,25 @@ body {
   background: var(--color-bg-deep);
   font-family: var(--font-body);
 }
+
+/* Thin, gold-tinted horizontal scrollbar shared by the map's tier trail and
+   the dungeon graph (feedback #6). The default OS chrome reads as a heavy
+   light-grey bar against the dark panels; this slims it and colours it to the
+   border-gold family so it disappears into the frame until you scroll. */
+.scroll-x-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-gold) transparent;
+}
+.scroll-x-subtle::-webkit-scrollbar {
+  height: 8px;
+}
+.scroll-x-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-x-subtle::-webkit-scrollbar-thumb {
+  background: var(--color-border-gold);
+  border-radius: 4px;
+}
+.scroll-x-subtle::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-gold);
+}

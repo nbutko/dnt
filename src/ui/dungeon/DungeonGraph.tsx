@@ -42,7 +42,7 @@ const DungeonGraph = ({ graph, onSelectNode }: DungeonGraphProps) => {
   )
 
   return (
-    <div className="overflow-x-auto py-2">
+    <div className="scroll-x-subtle overflow-x-auto py-2">
       <div className="relative mx-auto" style={{ width, height }}>
         <svg className="absolute top-0 left-0 z-0" width={width} height={height} aria-hidden>
           {edges.map((edge) => (

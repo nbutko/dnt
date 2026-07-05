@@ -19,7 +19,7 @@ const tierState = (tier: number, highestUnlockedTier: number) => {
 // The horizontally-scrolling dashed trail of tier cards (design/README.md
 // §2).
 const TierTrail = ({ tiers, highestUnlockedTier, onSelectTier }: TierTrailProps) => (
-  <div className="flex-1 overflow-x-auto px-1 py-2.5">
+  <div className="scroll-x-subtle flex-1 overflow-x-auto px-1 py-2.5">
     {/* w-max (not a fixed min-width guess): a block-level flex container
         defaults to filling its *containing block's* width, not shrinking to
         its content — so without this, the row was only as wide as the

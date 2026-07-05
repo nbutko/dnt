@@ -1,6 +1,5 @@
-import BattleScreen from './ui/battle/BattleScreen'
+import GameShell from './app/GameShell'
 
-// M0: renders BattleScreen directly — no menus, no routing.
-const App = () => <BattleScreen />
+const App = () => <GameShell />
 
 export default App

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getMonster } from '../../content/monsters'
 import { createBattleStore, type BattleStore } from '../../state/battle-store'
+import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
 import { useGameLoop } from '../hooks/useGameLoop'
 import BattleResult from './BattleResult'
@@ -10,15 +11,6 @@ import PlayerPrompt from './PlayerPrompt'
 import TypedProgress from './TypedProgress'
 
 const M0_MONSTER_ID = 'slime' // M0/M1 hardcode one monster; the roster grows in M2.
-
-// Outer-frame gradient/outline per docs/design/visual-spec.html#layout: a
-// radial glow behind a double-border look, too one-off to earn a Tailwind
-// utility of its own.
-const outerFrameStyle = {
-  background: 'radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)',
-  outline: '1px solid var(--color-border-inset)',
-  outlineOffset: '-8px',
-}
 
 interface ReadyBattleScreenProps {
   store: BattleStore
@@ -44,7 +36,7 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
     Math.max(0, state.monster.timeLimitMs - state.monster.elapsedMs) / 1000
 
   return (
-    <div className="mx-auto max-w-[1040px] border-[3px] border-border-gold p-7" style={outerFrameStyle}>
+    <Frame>
       <h1 className="mb-6 text-center font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
         Battle — Tier {monsterInfo.tier}
       </h1>
@@ -127,7 +119,7 @@ const ReadyBattleScreen = ({ store }: ReadyBattleScreenProps) => {
           </div>
         )}
       </section>
-    </div>
+    </Frame>
   )
 }
 

@@ -582,7 +582,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     hearts at all. New <code>ui/common/StatusReadout.tsx</code> lays XP + coins to the <em>left</em> of the hearts on
     one row, and now renders on all three status screens (dungeon, world map, inn). Outside a run the hearts read full
     (<code>maxHearts</code>), since hearts are a per-run resource restored at the Inn.
-    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by User</span></div>
   </li>
   <li>
     <strong>Chunky scrollbar chrome (world map <em>and</em> dungeon view).</strong> <em>[easy–medium]</em>
@@ -633,7 +633,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     looked correct and a mis-typed space was invisible. Now a wrong keystroke shows the character the player
     <em>actually typed</em>, in red — and a wrong space renders as a red underscore (<code>_</code>). Correct chars
     still show the target letter in the normal colour. Covered by <code>TypedProgress.test.tsx</code>.
-    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by User</span></div>
   </li>
   <li>
     <strong>Typing multiple spaces appears to delete the prompt text.</strong> <em>[medium; likely tied to #10]</em><br>

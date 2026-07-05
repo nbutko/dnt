@@ -757,7 +757,12 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <code>Slime → Gray Ooze</code> (CR 1/2, the easiest ooze). <code>Skeleton</code> is already a real entry — leave it.
     Display-name only; ids and combat stats are unchanged (config stays at committed values). Files:
     <code>content/monsters.json</code>.
-    <div class="status">☐ Fix applied&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+    <br><em>Done:</em> renamed the three <code>Grassland</code> display names — <code>Slime → Gray Ooze</code>,
+    <code>Goblin → Goblin Minion</code>, and (user's call) the boss <code>Slime King → Goblin Boss</code> (a real
+    manual entry, Fey CR 1, Grassland). Ids (<code>slime</code>/<code>goblin</code>/<code>slime-king</code>) and all
+    stats are untouched; the boss flavor line that named "a regular Slime" now names a Goblin Minion. Existing tests
+    reference monsters by id, so all 114 still pass.
+    <div class="status"><span class="done">☑ Fix applied</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
   </li>
   <li>
     <strong>Waypoint/Approach/Boss should hide their monster behind a <code>?</code> and reveal it on select.</strong>

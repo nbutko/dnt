@@ -1,7 +1,7 @@
 [
   {
     "id": "slime",
-    "name": "Slime",
+    "name": "Gray Ooze",
     "tier": 1,
     "role": "regular",
     "habitat": "Grassland",
@@ -15,7 +15,7 @@
   },
   {
     "id": "goblin",
-    "name": "Goblin",
+    "name": "Goblin Minion",
     "tier": 1,
     "role": "regular",
     "habitat": "Grassland",
@@ -43,7 +43,7 @@
   },
   {
     "id": "slime-king",
-    "name": "Slime King",
+    "name": "Goblin Boss",
     "tier": 1,
     "role": "boss",
     "habitat": "Grassland",
@@ -53,7 +53,7 @@
     "accuracy": 0.85,
     "attention": 0.6,
     "slack": 1.7,
-    "flavor": "Grassland's boss \u2014 more HP and more careful than a regular Slime, not faster"
+    "flavor": "Grassland's boss \u2014 more HP and more careful than a Goblin Minion, not faster"
   },
   {
     "id": "grassland-mimic",

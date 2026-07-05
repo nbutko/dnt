@@ -1,4 +1,4 @@
-import { toMap, type Screen } from '../../app/navigation'
+import { toBattle, toMap, type Screen } from '../../app/navigation'
 import Frame from '../common/Frame'
 
 interface DungeonScreenProps {
@@ -7,7 +7,9 @@ interface DungeonScreenProps {
 }
 
 // Stub for Story 1 — the branch graph lands in Story 10, wired to a real
-// generated run in Story 11.
+// generated run in Story 11. The "Start battle" link is a temporary escape
+// hatch so the battle screen stays reachable until Story 11 wires a real
+// node tap into a launched fight.
 const DungeonScreen = ({ tier, onNavigate }: DungeonScreenProps) => (
   <Frame>
     <button
@@ -21,6 +23,15 @@ const DungeonScreen = ({ tier, onNavigate }: DungeonScreenProps) => (
       Dungeon — Tier {tier}
     </h1>
     <p className="mt-4 text-center text-text-dim">Branch graph — coming in Story 10.</p>
+    <div className="mt-6 text-center">
+      <button
+        type="button"
+        className="rounded border border-border-gold px-4 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"
+        onClick={() => onNavigate(toBattle())}
+      >
+        Start battle (temporary)
+      </button>
+    </div>
   </Frame>
 )
 

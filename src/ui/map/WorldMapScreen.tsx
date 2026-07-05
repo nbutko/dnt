@@ -1,41 +1,52 @@
-import { toBattle, toDungeon, toInn, type Screen } from '../../app/navigation'
+import { toDungeon, toInn, type Screen } from '../../app/navigation'
+import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
+import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
+import Legend from '../common/Legend'
+import HubCard from './HubCard'
+import TierTrail from './TierTrail'
 
 interface WorldMapScreenProps {
   onNavigate: (screen: Screen) => void
 }
 
-// Stub for Story 1 — the real Inn/Shop hub + 11-tier trail (image 3a) lands
-// in Story 3, once Story 2's shared node-state primitives exist.
-const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => (
-  <Frame maxWidth={1080}>
-    <h1 className="text-center font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
-      World Map
-    </h1>
-    <div className="mt-6 flex flex-wrap justify-center gap-4 font-mono text-sm text-text-primary">
-      <button
-        type="button"
-        className="rounded border border-border-gold px-4 py-2 hover:border-accent-gold-bright"
-        onClick={() => onNavigate(toInn())}
-      >
-        Go to the Inn
-      </button>
-      <button
-        type="button"
-        className="rounded border border-border-gold px-4 py-2 hover:border-accent-gold-bright"
-        onClick={() => onNavigate(toDungeon(1))}
-      >
-        Enter Tier 1 dungeon
-      </button>
-      <button
-        type="button"
-        className="rounded border border-border-gold px-4 py-2 hover:border-accent-gold-bright"
-        onClick={() => onNavigate(toBattle())}
-      >
-        Start battle
-      </button>
-    </div>
-  </Frame>
-)
+// The launch hub (image 3a): Inn/Shop column + the 11-tier trail, driven by
+// the real save's highestUnlockedTier.
+const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
+  const { save } = useSave()
+
+  return (
+    <Frame maxWidth={1080}>
+      <div className="mb-5 text-center">
+        <h1 className="font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
+          World Map
+        </h1>
+        <div className="mt-1 font-mono text-[11px] text-text-dim">
+          highestUnlockedTier: {save.highestUnlockedTier}
+        </div>
+      </div>
+
+      <div className="flex items-stretch gap-6">
+        <div className="flex w-[168px] flex-none flex-col gap-3.5">
+          <HubCard
+            variant="inn"
+            title="The Inn"
+            subtitle="Restore hearts · Skill tree"
+            onSelect={() => onNavigate(toInn())}
+          />
+          <HubCard variant="shop" title="The Shop" subtitle="Coming soon" />
+        </div>
+
+        <TierTrail
+          tiers={DUNGEON_TIERS}
+          highestUnlockedTier={save.highestUnlockedTier}
+          onSelectTier={(tier) => onNavigate(toDungeon(tier))}
+        />
+      </div>
+
+      <Legend shape="square" />
+    </Frame>
+  )
+}
 
 export default WorldMapScreen

@@ -95,3 +95,23 @@ body {
 .caret-blink {
   animation: caret-blink 1s step-end infinite;
 }
+
+/* The "tumbling dice" look for Die.tsx while a roll is in flight (M3 Story 4's
+   AbilityRoller, and Story 6's encounter d20) — a lightweight spin+squash
+   since the die is a flat SVG projection, not an actual 3D mesh. Looping
+   (rather than a single settle) because the caller controls duration by
+   toggling the `rolling` prop, not by waiting out one animation cycle. */
+@keyframes die-tumble {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.82);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+.die-tumble {
+  animation: die-tumble 0.5s ease-in-out infinite;
+}

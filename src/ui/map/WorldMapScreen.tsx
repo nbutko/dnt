@@ -1,7 +1,7 @@
 import { toDungeon, toInn, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import { getWeapon } from '../../config/weapons'
-import { PLACEHOLDER_CHARACTER, resolveModifiers } from '../../engine/character/modifiers'
+import { resolveModifiers } from '../../engine/character/modifiers'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
@@ -17,14 +17,13 @@ interface WorldMapScreenProps {
 // the real save's highestUnlockedTier.
 const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
   const { save } = useSave()
+  // GameShell gates every screen behind character creation (Story 4), so
+  // save.character is always real here — TS can't see that cross-component
+  // invariant, hence the assertion.
+  const character = save.character!
   // Hearts are a per-run resource, restored at the Inn — outside a dungeon the
-  // player is at full, so show maxHearts on both counts (feedback #5). No
-  // character yet until Story 4 lands creation — see modifiers.ts's
-  // PLACEHOLDER_CHARACTER.
-  const { maxHearts } = resolveModifiers(
-    save.character ?? PLACEHOLDER_CHARACTER,
-    getWeapon(save.equippedWeapon),
-  )
+  // player is at full, so show maxHearts on both counts (feedback #5).
+  const { maxHearts } = resolveModifiers(character, getWeapon(save.equippedWeapon))
 
   return (
     <Frame maxWidth={1080}>
@@ -38,7 +37,7 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
         {/* Status cluster, mirroring the Inn header (feedback #5). */}
         <div className="absolute top-0 right-0">
           <StatusReadout
-            xp={save.character?.xp ?? 0}
+            xp={character.xp}
             coins={save.coins}
             hearts={maxHearts}
             maxHearts={maxHearts}

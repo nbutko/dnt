@@ -200,19 +200,3 @@ export const resolveModifiers = (
     arcaneCritMult,
   }
 }
-
-// Story 4 gates every screen behind character creation (GameShell renders
-// CharacterCreateScreen whenever save.character is null), so a null
-// character can never reach a live screen once that lands. Until then, the
-// map/Inn/dungeon headers — which only need maxHearts/maxHp before a hero
-// exists — fall back to this level-1 baseline so today's screens keep
-// compiling and behave exactly as a fresh save always did. Delete this when
-// Story 4 lands its null-gate.
-export const PLACEHOLDER_CHARACTER: Character = {
-  name: 'Adventurer',
-  class: 'fighter',
-  level: 1,
-  xp: 0,
-  abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
-  pendingAsi: 0,
-}

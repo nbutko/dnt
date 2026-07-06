@@ -1,6 +1,6 @@
 import { toMap, type Screen } from '../../app/navigation'
 import { getWeapon } from '../../config/weapons'
-import { PLACEHOLDER_CHARACTER, resolveModifiers } from '../../engine/character/modifiers'
+import { resolveModifiers } from '../../engine/character/modifiers'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import StatusReadout from '../common/StatusReadout'
@@ -16,13 +16,13 @@ interface InnScreenProps {
 // renders and compiles against the v3 save shape.
 const InnScreen = ({ onNavigate }: InnScreenProps) => {
   const { save } = useSave()
+  // GameShell gates every screen behind character creation (Story 4), so
+  // save.character is always real here — TS can't see that cross-component
+  // invariant, hence the assertion.
+  const character = save.character!
   // Full hearts outside a run — they only deplete mid-dungeon (feedback #5).
-  // No buffs at the Inn (it's never inside a run) and no character yet until
-  // Story 4 lands creation — see modifiers.ts's PLACEHOLDER_CHARACTER.
-  const { maxHearts } = resolveModifiers(
-    save.character ?? PLACEHOLDER_CHARACTER,
-    getWeapon(save.equippedWeapon),
-  )
+  // No buffs at the Inn (it's never inside a run).
+  const { maxHearts } = resolveModifiers(character, getWeapon(save.equippedWeapon))
 
   return (
     <Frame maxWidth={1080}>
@@ -38,7 +38,7 @@ const InnScreen = ({ onNavigate }: InnScreenProps) => {
           The Inn
         </h1>
         <StatusReadout
-          xp={save.character?.xp ?? 0}
+          xp={character.xp}
           coins={save.coins}
           hearts={maxHearts}
           maxHearts={maxHearts}

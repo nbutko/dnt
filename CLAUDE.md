@@ -1,0 +1,81 @@
+# Dungeons & Typing (`dnt`)
+
+A monster-battle **typing trainer** for one specific 10-year-old, played on his Chromebook. The player and each
+monster race their own line of text against their own clock; type yours correctly in time and you land a hit.
+Win battles → earn coins/XP → level up a D&D character → buy gear → fight harder dungeons. It's a solo side
+project for one kid, **not** a product for the world.
+
+> **Read the docs before spelunking the code.** Almost every "how/why" question is already answered in `docs/`.
+> Only dig through source when a question is genuinely unanswerable from the resources below.
+
+## Start here
+
+| If you need… | Open |
+| --- | --- |
+| **The map of the code** — tree, layers, seams, "where do I change X?" | [`docs/codebase-architecture.html`](docs/codebase-architecture.html) |
+| The pitch, principles, doc index | [`docs/index.html`](docs/index.html) |
+| Build order & milestones (M0–M6) | [`docs/roadmap.html`](docs/roadmap.html) |
+| Combat math, HP/timers, damage formula | [`docs/game-design.html`](docs/game-design.html) |
+| Stack, data model, persistence, hosting | [`docs/architecture.html`](docs/architecture.html) |
+| Text tiers, monster roster, content sourcing | [`docs/content-plan.html`](docs/content-plan.html) |
+
+### Current milestone: **M3 — the character sheet (the D&D layer)**
+- **Scope (what):** [`docs/m3-scope.html`](docs/m3-scope.html) — six abilities, D&D leveling (replaces the skill
+  tree), classes, dice (encounter d20 + weapon damage die), weapons, consumables, the Shop.
+- **Implementation (how):** [`docs/m3-implementation.html`](docs/m3-implementation.html) — stories 0–12, the
+  seam reuse, review findings. **This is the plan of record; follow its story order.**
+- **Wireframes (what it looks like):** [`docs/design/m3-wireframes.html`](docs/design/m3-wireframes.html) — 8
+  screens, match them exactly.
+
+Prior milestones: M0 [`m0-implementation.html`](docs/m0-implementation.html) (combat spike, done);
+M2 [`m2-scope.html`](docs/m2-scope.html) + [`m2-implementation.html`](docs/m2-implementation.html) (progression
+loop, done — its tail has the post-playtest feedback logs).
+
+## Working rules (non-negotiable)
+
+- **One story = one commit, with a check-in between. Never batch.** Implement, verify, commit, stop, wait.
+- **Before any _code_ commit, this must be clean:** `npm run lint` + `tsc` (`npm run build`) + `npm run test`
+  (all bundled as `npm run presubmit`). Docs-only commits skip this gate.
+- **Verify UI visually, not just via tests.** Match [`docs/design/`](docs/design/) exactly — the
+  [wireframes](docs/design/m3-wireframes.html), [`visual-spec.html`](docs/design/visual-spec.html),
+  [`README.md`](docs/design/README.md), and [`tokens.json`](docs/design/tokens.json). Dev server:
+  `npm run dev` → `http://127.0.0.1:5173/` (also serves `/docs/...`; `file://` URLs are blocked by the browser
+  tools).
+- **Commit only when asked.** Branch first if on `main`. Commit messages end with:
+  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+- **Favor simple over scalable.** One kid, one device — "works great for him today" beats "scales to a thousand
+  users." No accounts, no backend, no router library.
+
+## Architecture invariants (breaking these is how the code rots)
+
+- **The combat `engine/` never imports React.** Pure, headless, unit-tested.
+- **The persistent save never imports combat; combat never imports the save.** They meet at exactly **one** pure
+  function, `resolveModifiers()` (`engine/progression/skill-effects.ts`, moving to `engine/character/modifiers.ts`
+  in M3). It turns save data → a `PlayerModifiers` object the battle consumes. **Grow this seam; don't route
+  around it** — it's why milestones stay additive.
+- **State is classified by lifetime** (see the architecture doc): _persistent_ (save → IndexedDB), _ephemeral run_
+  (the dungeon-run store, **never** persisted — persisting it would let a player quit-to-dodge a wipe), and
+  _simulation_ (the battle store). Don't move state across homes.
+- **`src/config/combat.ts` stays at its committed values.** Retuning is a deliberate, reviewed change, not a
+  drive-by.
+- **Prove engine/data logic headlessly (tests + `engine/sim/` harnesses) _before_ the UI that consumes it.**
+
+## Gotchas / good-to-knows
+
+- **Save migrations are brittle:** `domain/save.ts` hard-codes the version literal and `isSaveData()` requires an
+  exact match; `migrate()` wipes anything unrecognized. Bump the version _and_ write a real migration when the
+  shape changes (M3 does this in Story 0), or existing saves silently reset.
+- **Dead-but-real hooks worth reusing:** `powerUpMultiplier` (plumbed through `engine/damage.ts` since M0, unused),
+  `stats.bestWpm` / `stats.battlesLost` (in the save shape, never written), and `dungeon-tiers.ts`
+  `textTierRange` (a config field nothing consumes yet). M3 lights all of these up.
+- **Battle is not a top-level screen** — it launches _inside_ `DungeonScreen` so the ephemeral run stays mounted,
+  and returns via an `onResult` callback.
+- **Tuning knobs are deferred to M5 on purpose.** Per-point magnitudes ship as placeholders (M3 corrals them into
+  `config/abilities.ts` + `config/leveling.ts`); don't treat placeholder numbers as tuned.
+- `docs/monster-manual.json` is canonical monster names/CRs reference data (not shipped code).
+
+## Memory & context
+
+There is a persistent auto-memory at `~/.claude/projects/-Users-nb-Documents-dnt/memory/` (indexed by
+`MEMORY.md`) capturing user context, workflow feedback, and milestone status across sessions. It's loaded
+automatically — check it for standing preferences before asking.

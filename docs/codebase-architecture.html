@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codebase Architecture — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Codebase Architecture</h1>
+  <p class="tagline">A living map of the <code>src/</code> tree — the layering, the state homes, the seams, and
+  where each system lives. Read this before spelunking the code.</p>
+</header>
+<main>
+
+<p>
+  This is orientation, not gospel: the code is the source of truth, and this doc will drift. Its job is to make the
+  <em>next</em> read cheap — to say "here is the shape, here are the rules, here is which file to open" so a change
+  starts from a map instead of a search. Keep it roughly current when the shape changes; don't sweat line-level
+  detail. Snapshot taken during <a href="m3-implementation.html">M3 planning</a> (post-M2, pre-M3-code).
+</p>
+
+<h2 id="stack">Stack</h2>
+<ul>
+  <li><strong>React 19 + TypeScript</strong>, built with <strong>Vite 8</strong>, styled with <strong>Tailwind
+  4</strong> (design tokens in an <code>@theme</code> block; see <a href="design/tokens.json">tokens.json</a>).</li>
+  <li><strong>IndexedDB via <code>idb</code></strong> for the save file — no backend, no accounts (the
+  <a href="index.html">brief's</a> "one kid, one Chromebook" rule).</li>
+  <li><strong>Vitest 4</strong> (jsdom, globals) for tests; <code>@testing-library/react</code> + <code>user-event</code>
+  for components, <code>fake-indexeddb</code> for storage.</li>
+  <li><strong>No router, no Zustand/Redux.</strong> State is React Context + <code>useReducer</code> plus one
+  hand-rolled external store for the battle. Deliberate — see <a href="#state">state homes</a>.</li>
+</ul>
+
+<h2 id="layering">The layering &amp; its one rule</h2>
+<p>
+  The tree is organized by <strong>layer</strong>, not by feature, and the layers form a one-way dependency stack.
+  The React-free layers (<code>domain/</code>, <code>engine/</code>, <code>config/</code>, <code>content/</code>)
+  never import React or the UI; the <code>state/</code> layer is where logic first meets React; <code>ui/</code>
+  renders. The load-bearing invariant that keeps it all decoupled:
+</p>
+<div class="callout decision">
+  <strong>The combat <code>engine/</code> never imports React. The persistent save never imports combat, and
+  combat never imports the save.</strong> They meet at exactly one pure function —
+  <code>resolveModifiers()</code> — which turns save data into a <code>PlayerModifiers</code> object the battle
+  consumes. This single seam is why milestones stay additive: you can swap what feeds it (M3 replaces the skill
+  tree with a character) without touching the combat math on the other side. <em>Grow the seam; don't route
+  around it.</em>
+</div>
+
+<h2 id="tree">The <code>src/</code> tree</h2>
+<pre><code>src/
+  App.tsx  main.tsx  index.css        # trivial root: &lt;GameShell/&gt;
+  app/
+    GameShell.tsx                     # owns the current Screen; wraps SaveProvider; switch on screen.name
+    navigation.ts                     # Screen union + constructors (toMap/toInn/toDungeon) — the "router"
+  config/                             # tuning + content STRUCTURE — data, never logic
+    combat.ts                         #   CombatConfig instance (the committed combat knobs)
+    dungeon-tiers.ts                  #   the 11 tiers (habitat, wpmRange, textTierRange, rosterPool)
+    dungeon-generation.ts             #   fan-out generator knobs (path counts, chest counts, target total)
+    rewards.ts                        #   per-kill / per-chest xp+coin formula
+    skill-tree.ts                     #   the 5 branches (Endurance/Wordsmith active; Focus/Luck/Utility locked)
+  content/                            # editable DATA + thin lookups
+    monsters.json  monsters.ts        #   70 monster records; getMonster/byTier/byRole
+    text/tier-01.json … tier-10.json  #   line banks per text tier
+    text-banks.ts                     #   loadTier/makePromptSource (degrade-to-easier fallback, no-repeat picker)
+    keyboard-layout.ts
+  domain/                             # PURE TYPES, no logic
+    types.ts                          #   combat/monster/battle types + CombatConfig, TextTier, Rng
+    save.ts                           #   SaveData (v2) + defaultSave/migrate/isSaveData
+    dungeon.ts                        #   DungeonGraph/DungeonNode/NodeKind/NodeState
+    progression.ts                    #   SkillBranchId/SkillTreeState/PlayerModifiers
+  engine/                             # ← PURE LOGIC, NO REACT (the load-bearing rule)
+    battle.ts                         #   createBattle() — the combat state machine (the only place a fight lives)
+    damage.ts                         #   ALL core combat math (length/speed/crit/tier-gate/computeDamage)
+    monster-typing.ts                 #   the monster typing simulation
+    rng.ts                            #   seedable mulberry32 PRNG (deterministic)
+    dungeon/generate.ts  graph.ts     #   generateDungeon() + pure graph transitions
+    progression/skill-effects.ts      #   resolveModifiers() — THE save↔combat seam
+    progression/rewards.ts            #   rewardForKill/rewardForChest
+    sim/balance.ts  dungeon-invariants.ts  # offline harnesses (test-only)
+  state/                              # ← where logic meets React
+    battle-store.ts                   #   external store over createBattle(), read via useSyncExternalStore
+    save/                             #   PERSISTENT: SaveProvider + save-reducer + save-storage (IndexedDB)
+    dungeon-run/                      #   EPHEMERAL: DungeonRunProvider + dungeon-run-reducer (never persisted)
+  ui/
+    common/   Frame  nodeState  Legend  ResourcePill  StatusReadout  HeartsReadout  ModalOverlay
+    battle/   BattleScreen  HealthBar  Keyboard  Key  PlayerPrompt  TypedProgress  BattleResult
+    map/      WorldMapScreen  HubCard  TierCard  TierTrail
+    dungeon/  DungeonScreen  DungeonGraph  DungeonNode  graph-layout  EncounterModal  RewardModal
+    inn/      InnScreen  SkillBranch  SkillNode
+    hooks/    useBattle  useGameLoop
+  test/setup.ts                       # jest-dom import
+</code></pre>
+
+<h2 id="state">State: three lifetimes, five stores, no global library</h2>
+<p>
+  Every piece of state is classified by <em>lifetime</em>, and that decides its home. Conflating lifetimes is the
+  bug class this structure exists to prevent (e.g. persisting a dungeon run would let a player quit-to-dodge a
+  wipe).
+</p>
+<table>
+  <tr><th>Kind</th><th>Example</th><th>Lifetime</th><th>Home</th></tr>
+  <tr>
+    <td>Simulation / battle</td><td>both HP bars, both countdowns, the monster's live-typed string</td>
+    <td>one fight</td>
+    <td><code>state/battle-store.ts</code> — a hand-rolled external store wrapping one <code>createBattle()</code>,
+    read via <code>useSyncExternalStore</code> in <code>ui/hooks/useBattle.ts</code>; <code>useGameLoop</code>
+    drives <code>tick</code></td>
+  </tr>
+  <tr>
+    <td>Persistent / save</td><td>coins, xp, skillTree, hearts.max, highestUnlockedTier, stats</td>
+    <td>forever (survives reload)</td>
+    <td><code>state/save/</code> — Context (<code>SaveProvider</code>/<code>useSave</code>) + <code>useReducer</code>,
+    mirrored to IndexedDB (debounced)</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / run</td><td>the generated graph, which nodes are cleared, hearts <em>remaining</em></td>
+    <td>one dungeon visit (discarded on death/leave/reload)</td>
+    <td><code>state/dungeon-run/</code> — a second Context + <code>useReducer</code>, scoped under the dungeon
+    screen, <strong>never</strong> touched by IndexedDB</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / UI</td><td>input box text, which screen is up</td><td>a render</td>
+    <td>local <code>useState</code>; navigation is <code>useState&lt;Screen&gt;</code> in <code>GameShell</code></td>
+  </tr>
+</table>
+<div class="callout why">
+  The hearts split is the canonical example of why lifetimes matter: <code>hearts.max</code> is a save fact
+  (earned, permanent), while <em>hearts remaining</em> is a run fact (starts at max, spent on losses, gone at run
+  end). Keeping "remaining" in the ephemeral store makes "close mid-dungeon = leave" fall out for free. M3 reuses
+  this exact split for consumables — <em>owned</em> items are persistent, <em>active buffs</em> are ephemeral.
+</div>
+
+<h2 id="navigation">Navigation: a screen state machine, not a router</h2>
+<p>
+  <code>app/navigation.ts</code> defines <code>Screen = { name:'map' } | { name:'inn' } | { name:'dungeon'; tier }</code>
+  with constructor helpers. <code>app/GameShell.tsx</code> holds one <code>useState&lt;Screen&gt;</code> and
+  <code>switch</code>es on <code>screen.name</code>, passing <code>onNavigate</code> down. Battle is <em>not</em> a
+  top-level screen — it's launched <em>inside</em> <code>DungeonScreen</code> so the ephemeral run stays mounted,
+  and returns its result via an <code>onResult('win'|'lose')</code> callback. The Shop is a "Coming soon"
+  <code>HubCard</code> with no screen yet. Four screens for one kid on one device is why there's no router library.
+</p>
+
+<h2 id="combat">The combat engine (where the math lives)</h2>
+<ul>
+  <li><code>engine/battle.ts</code> — <code>createBattle(config)</code> returns
+  <code>{ getState, subscribe, tick(dtMs), submitPlayerAttack(input) }</code>. Runs the player and monster as
+  independent cycles on one clock. A player submit only counts when <code>input.length === prompt.length</code>
+  (exact-match). Player time limit =
+  <code>max(floorMs, readingBufferMs + expectedTypingTimeMs(len, baselineWpm))</code>.</li>
+  <li><code>engine/damage.ts</code> — <strong>all core math</strong>: <code>lengthFactor</code> (longer = harder),
+  <code>speedBonus</code> (fast finish = up to 2×), <code>critMultiplier</code>, <code>tierGatePenalty</code>
+  (squared tier-ratio when served below the monster's tier), and <code>computeDamage</code> =
+  <code>baseDamage × lengthFactor × speedBonus × crit × powerUpMultiplier × gatePenalty</code>.
+  <code>computeMonsterDamage</code> is the same minus crit &amp; power-ups (both player-only).
+  <strong>Note:</strong> <code>powerUpMultiplier</code> is plumbed but unused since M0 (M3's consumables light it
+  up).</li>
+  <li><code>engine/monster-typing.ts</code> — the monster typer: chars arrive on a noisy interval, each may be a
+  typo per <code>accuracy</code>, typos aren't corrected until <code>attention</code> seconds pass;
+  <code>timeLimitMs = expectedTypingTimeMs(...) × slack</code>.</li>
+  <li><code>engine/rng.ts</code> — <code>createRng(seed)</code>, mulberry32, deterministic;
+  <code>next()</code> uniform, <code>sample(mean, variance)</code> normal.</li>
+</ul>
+<div class="callout decision">
+  <code>config/combat.ts</code> holds the committed combat constants (<code>baseDamage: 10</code>,
+  <code>playerMaxHp: 40</code>, <code>criticalChance: 0.1</code>, …). Per the working rules it
+  <strong>stays at its committed values</strong> — retuning happens by changing config, and any change is a
+  deliberate, reviewed act, not a drive-by.
+</div>
+
+<h2 id="seam">The one seam: <code>resolveModifiers()</code></h2>
+<p>
+  <code>engine/progression/skill-effects.ts</code> exports <code>resolveModifiers(skillTree): PlayerModifiers</code>
+  — currently folding purchased Endurance nodes into <code>maxHp</code>/<code>maxHearts</code> and the last
+  Wordsmith node into <code>wordsmithMaxTier</code>. It is the <strong>sole</strong> bridge from save data to
+  combat numbers, called by <code>battle-store.ts</code> (which then builds the fight) and by the map/dungeon/Inn
+  screens (for <code>maxHearts</code>). <strong>This is the highest-leverage function in the codebase:</strong>
+  keep its output contract and you can rewrite everything feeding it without touching the engine. (M3 does exactly
+  that — see the <a href="m3-implementation.html#seams">M3 seams</a>.)
+</p>
+
+<h2 id="save">The save file</h2>
+<p>
+  <code>domain/save.ts</code> defines <code>SaveData</code> (currently <code>version: 2</code>) —
+  <code>coins, xp, skillTree, hearts.max, highestUnlockedTier, monstersDefeated, stats</code>.
+  <code>isSaveData()</code> hard-requires <code>version === 2</code>; <code>migrate()</code> returns a fresh
+  default for anything else (no real migration path yet — a shape change wipes old saves unless you write one).
+  <code>state/save/</code>: <code>save-reducer.ts</code> (pure; actions <code>award</code>,
+  <code>purchaseSkillNode</code>, <code>unlockTier</code>, <code>recordDefeat</code>, <code>hydrate</code> — costs
+  are passed <em>in</em> so the reducer never imports config), <code>save-storage.ts</code> (IndexedDB, 250ms
+  debounced write), <code>SaveProvider.tsx</code> (hydrates on mount with a 4s timeout fallback, mirrors every
+  change). <strong>Dead fields worth knowing:</strong> <code>stats.battlesLost</code> and
+  <code>stats.bestWpm</code> exist but are never written.
+</p>
+
+<h2 id="content-types">Content &amp; the key types</h2>
+<ul>
+  <li><strong>Monsters</strong> — <code>Monster { id, name, tier, role('regular'|'boss'|'mimic'), habitat, hp,
+  textTier, wpm, accuracy, attention, slack, flavor }</code>; 70 records in <code>content/monsters.json</code>,
+  queried via <code>getMonster</code>/<code>byTier</code>/<code>byRole</code>.
+  See also <a href="monster-manual.json">monster-manual.json</a> for canonical names/CRs.</li>
+  <li><strong>Dungeons</strong> — <code>DungeonGraph { tier, seed, entranceId, bossId, waypointId, approachId,
+  nodes }</code>; nodes are <code>{ id, kind, state, monsterId?, edges, isRealChest? }</code>.
+  <code>generateDungeon()</code> builds a two-fan-out graph; <code>graph.ts</code> has the pure transitions
+  (<code>clearNode</code>, <code>availableNodes</code>, <code>bossUnlocked</code>, <code>isComplete</code>).
+  Config: <code>DungeonTier { tier, habitat, wpmRange, textTierRange, rosterPool }</code> — note
+  <code>textTierRange</code> is currently a <strong>dead field</strong> nothing consumes (M3's encounter d20 reads
+  it).</li>
+  <li><strong>Text tiers</strong> — <code>TextTier = 1..10</code>; <code>TextBank { loadTier, makePromptSource }</code>
+  with a degrade-to-nearest-easier fallback and a never-repeat-the-last-line picker; banks in
+  <code>content/text/tier-0N.json</code>.</li>
+</ul>
+
+<h2 id="tests">Tests</h2>
+<p>
+  Vitest, configured inside <code>vite.config.ts</code> (jsdom, globals, <code>src/test/setup.ts</code>). Tests are
+  <strong>co-located</strong> as <code>*.test.ts(x)</code> siblings (the engine uses a <code>__tests__/</code>
+  subfolder). Well covered: the engine (battle, damage, monster-typing, rng), the dungeon (graph +
+  invariant sweep), progression (rewards, skill-effects), the balance sim, content (monsters, text-banks), state
+  (save-reducer, save-storage, SaveProvider, dungeon-run-reducer), and a few UI units (PlayerPrompt, TypedProgress,
+  graph-layout, RewardModal). Not covered: <code>battle-store</code>, the hooks, and the top-level screens.
+  <strong>The habit:</strong> engine/data logic is proven headlessly (unit tests + the
+  <code>engine/sim/</code> harnesses) <em>before</em> the UI that consumes it — mirror it.
+</p>
+
+<h2 id="where">Quick "where do I change…?" index</h2>
+<table>
+  <tr><th>To change…</th><th>Open…</th></tr>
+  <tr><td>a combat constant (damage, HP, crit, timing)</td><td><code>config/combat.ts</code> (committed — change deliberately)</td></tr>
+  <tr><td>the damage math itself</td><td><code>engine/damage.ts</code></td></tr>
+  <tr><td>how monsters type</td><td><code>engine/monster-typing.ts</code></td></tr>
+  <tr><td>what a save holds / a save action</td><td><code>domain/save.ts</code> + <code>state/save/save-reducer.ts</code></td></tr>
+  <tr><td>how save data reaches combat</td><td><code>engine/progression/skill-effects.ts</code> (<code>resolveModifiers</code>)</td></tr>
+  <tr><td>the tier table / dungeon shape</td><td><code>config/dungeon-tiers.ts</code> + <code>engine/dungeon/generate.ts</code></td></tr>
+  <tr><td>monster stats / roster</td><td><code>content/monsters.json</code></td></tr>
+  <tr><td>typing prompts</td><td><code>content/text/tier-0N.json</code> + <code>content/text-banks.ts</code></td></tr>
+  <tr><td>navigation / add a screen</td><td><code>app/navigation.ts</code> + <code>app/GameShell.tsx</code></td></tr>
+  <tr><td>the shared cleared/available/locked look</td><td><code>ui/common/nodeState.ts</code> (one source of truth for 3 screens)</td></tr>
+  <tr><td>the outer frame / tokens</td><td><code>ui/common/Frame.tsx</code> + the <code>@theme</code> block (<a href="design/tokens.json">tokens.json</a>)</td></tr>
+</table>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

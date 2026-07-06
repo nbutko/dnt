@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3 Implementation Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M3 Implementation Plan</h1>
+  <p class="tagline">Turning the <a href="m3-scope.html">M3 scope</a> and its <a href="design/m3-wireframes.html">wireframes</a>
+  into a build: where the character sheet lives, how it feeds combat through the seam M2 already left us, and a
+  story-by-story order that pays down debt before it adds features.</p>
+</header>
+<main>
+
+<p>
+  The <a href="m3-scope.html">M3 scope doc</a> answers <em>what</em> the D&amp;D layer is (six abilities, D&amp;D
+  leveling, two dice, weapons, consumables, the Shop) and the <a href="design/m3-wireframes.html">M3 wireframes</a>
+  show <em>what every screen looks like</em> (character creation, the reworked Inn, the Shop, the encounter d20,
+  premonitions, the bag, the Armory, in-battle flashes). This doc answers <em>how to build it</em> so M4–M6 stay
+  additive: which files each piece lands in, how the new character state reaches the battle math, and the order to
+  build stories so each one is committable and verifiable on its own. The token language, the four canonical M2
+  screens, and the eight M3 mocks are pinned in <a href="design/README.md">design/README.md</a>,
+  <a href="design/tokens.json">tokens.json</a>, and the <a href="design/m3-wireframes.html">wireframes</a> — follow
+  them literally, same rule as M0–M2.
+</p>
+
+<div class="callout decision">
+  <strong>The load-bearing rule, and why M3 is cheap because of it.</strong> M0 said the combat
+  <code>engine/</code> never imports React; M2 added that the persistent <strong>save reducer never imports combat,
+  and combat never imports the save</strong> — they meet at exactly one pure function,
+  <code>resolveModifiers()</code>. That single seam is the reason this "major feature step" is mostly a
+  <em>swap</em>, not a rewrite: M3 changes what feeds <code>resolveModifiers()</code> (a full character instead of a
+  skill tree) while <strong>keeping its output contract</strong> — a <code>PlayerModifiers</code> object the
+  battle store already knows how to consume. The four call sites (<code>battle-store.ts</code> and the map / dungeon
+  / Inn screens) barely move. The single most important instruction in this whole plan:
+  <strong>grow that seam, don't route around it.</strong>
+</div>
+
+<h2 id="review">Review notes folded into the plan</h2>
+<p>
+  Eight things surfaced reviewing the scope, the wireframes, and the current code together; all are reflected in
+  the stories below (and, where they touched the scope, are already recorded there).
+</p>
+<table>
+  <tr><th></th><th>Finding</th><th>Resolution</th></tr>
+  <tr>
+    <td>A</td>
+    <td><code>domain/save.ts</code> hard-codes <code>version: 2</code> as a literal and <code>isSaveData()</code>
+    requires <code>version === 2</code>; <code>migrate()</code> returns a fresh default for anything else. The M3
+    shape is a total reshape (a nested <code>character</code>, an <code>inventory</code>, an
+    <code>equippedWeapon</code>; the whole <code>skillTree</code> field gone), so without a real migration every
+    existing save silently resets.</td>
+    <td>Story 0 bumps to <code>version: 3</code> and writes a real <strong>v2→v3 migrate</strong> that keeps coins,
+    <code>highestUnlockedTier</code>, <code>monstersDefeated</code>, and <code>stats</code>, drops
+    <code>skillTree</code>, and sets <code>character: null</code> so the player is routed through
+    <a href="#story-4">character creation</a> once. A dev-only "hard reset to fresh v3" escape hatch rides along —
+    per the <a href="m3-scope.html#reshaping">scope</a>, wiping is acceptable for our single real player.</td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td><code>resolveModifiers(skillTree)</code> currently returns
+    <code>{ maxHp, maxHearts, wordsmithMaxTier }</code>. M3 needs it to carry a weapon die, ability mods, crit and
+    time bonuses, dodge/intimidate, class features, and consumable buffs — a much wider surface, fed by a
+    <em>character</em> (persistent) <em>and</em> the run's active item buffs (ephemeral).</td>
+    <td>Story 3 rewrites the function as <code>resolveModifiers(character, weapon, activeBuffs, cfg)</code> keeping
+    the <strong>same return type name</strong> (<code>PlayerModifiers</code>, with fields added and
+    <code>wordsmithMaxTier</code>→<code>intTierCap</code> renamed). Persistent character and ephemeral buffs are
+    both assembled by the single caller that already reads both stores (the dungeon's battle-launch), so the seam
+    stays one function. See <a href="#seams">the seams</a>.</td>
+  </tr>
+  <tr>
+    <td>C</td>
+    <td><code>config/dungeon-tiers.ts</code> carries a <code>textTierRange</code> per dungeon that <em>nothing
+    consumes today</em> — a dead field. The scope makes the <a href="m3-scope.html#encounter-roll">encounter
+    d20</a> read the player's served tier out of that range, capped by INT.</td>
+    <td>Story 6 wires it: the d20's band picks a target tier from <code>textTierRange</code>
+    (low→bottom, high→top), then <code>servedTier = min(bandTier, intTierCap)</code>. The field goes from dead to
+    load-bearing with no schema change.</td>
+  </tr>
+  <tr>
+    <td>D</td>
+    <td><code>engine/damage.ts</code> <code>tierGatePenalty(servedTier, monsterTextTier)</code> compares the
+    player's served tier to <em>the monster's</em> text tier. But in M3 the monster still types its own
+    <code>textTier</code> line while the <em>player's</em> served tier comes from the band — so "the monster's
+    tier" is no longer the right thing to gate against.</td>
+    <td>Story 6 reinterprets the second argument: the penalty now compares <code>servedTier</code> to the
+    <strong>band's target tier</strong> (what you rolled into but INT capped you below). Same squared-ratio math,
+    same function, argument re-sourced. The monster's <code>textTier</code> keeps governing only the line the
+    <em>monster</em> types.</td>
+  </tr>
+  <tr>
+    <td>E</td>
+    <td>The <a href="m3-scope.html#items">consumables</a> split cleanly along the exact axis M2 already
+    established for hearts: <em>owning</em> an item is a save fact (forever), while a <em>buff being active</em> is
+    a run fact (clears on win/wipe/leave). Conflating them would let a player quit-and-reopen to refresh a spent
+    buff — the same rot the ephemeral run store was built to prevent.</td>
+    <td>Story 9 puts <code>inventory.consumables</code> in the persistent save and <code>activeBuffs</code> in the
+    ephemeral <code>dungeon-run</code> store — the hearts pattern, reused. Using an item is one dispatch to
+    <em>each</em> store: decrement the owned count (save), add the buff (run).</td>
+  </tr>
+  <tr>
+    <td>F</td>
+    <td><code>engine/damage.ts</code> has a <code>powerUpMultiplier</code> parameter that has been plumbed but
+    unused since M0, and <code>SaveData.stats.bestWpm</code> has been persisted-but-never-written since M2. Both
+    are exactly the hooks M3 needs.</td>
+    <td>Story 9 drives <code>powerUpMultiplier</code> from the <code>Bull's Strength</code>/<code>Elixir of
+    Might</code> buffs (no new plumbing), and Story 12 finally writes <code>bestWpm</code> on a battle win while
+    we're already in the save code.</td>
+  </tr>
+  <tr>
+    <td>G</td>
+    <td>Character creation is a screen that must run <em>before</em> the world map on a fresh (or migrated) save,
+    but <code>SaveProvider</code> always seeds a complete <code>defaultSave()</code>, so there's no "uncreated"
+    state to gate on, and the <code>Screen</code> union has no room for creation or the Shop.</td>
+    <td>Story 0 makes <code>character: null</code> the fresh-save marker; Story 4 gates on it in
+    <code>GameShell</code> <em>before</em> the screen <code>switch</code> (creation is a blocking pre-map gate, not
+    a navigable screen). Story 10 adds <code>{name:'shop'}</code> to the union. Still no router — the
+    <a href="m2-implementation.html#state">M2 "no router" call</a> holds.</td>
+  </tr>
+  <tr>
+    <td>H</td>
+    <td>The scope's <a href="m3-scope.html#open">last open question</a> — "does M3 want a juice pass?" — is
+    explicitly left for this doc to answer.</td>
+    <td><strong>Decided:</strong> the juice that <em>falls out</em> of dice and damage is in scope (the tumbling
+    d20, the floating damage number, the crit flash, "Dodged!" / "Second Wind!" flashes — see
+    <a href="#story-11">Story 11</a> and <a href="design/m3-wireframes.html">wireframe turn 8</a>), because those
+    beats have to exist for the mechanics to read at all. Screen-shake, SFX, and any asset-backed animation stay
+    deferred (M6). Juice never blocks a story.</td>
+  </tr>
+</table>
+
+<h2 id="state">State architecture: the same homes, two new tenants</h2>
+<p>
+  M2 named <a href="m2-implementation.html#state">five stores across three lifetimes</a> — simulation, persistent,
+  ephemeral. M3 adds no new <em>kind</em> of state; it drops two new tenants into the homes that already exist,
+  which is the whole point of having named them.
+</p>
+<table>
+  <tr><th>Kind</th><th>M3 addition</th><th>Lifetime</th><th>Home (unchanged)</th></tr>
+  <tr>
+    <td>Persistent / save</td>
+    <td><strong>the character</strong> (class, level, xp-as-total, six abilities, pendingAsi), the
+    <strong>owned inventory</strong> (weapons + consumable counts), and <code>equippedWeapon</code></td>
+    <td>forever</td><td><code>state/save/</code> — Context + reducer + IndexedDB</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / run</td>
+    <td><strong>active item buffs</strong> (which effects ride the next fight / rest of the run)</td>
+    <td>one dungeon visit — cleared on win, wipe, or leave</td>
+    <td><code>state/dungeon-run/</code> — the second Context, never persisted</td>
+  </tr>
+  <tr>
+    <td>Ephemeral / UI</td>
+    <td>the <strong>encounter-roll result</strong> (band, guaranteed-crit / fumble flags) and the creation-flow
+    in-progress picks</td>
+    <td>a modal / a screen</td><td>local <code>useState</code>; the roll is handed straight into the battle launch</td>
+  </tr>
+</table>
+<div class="callout why">
+  Consumables split across two homes for the <em>same</em> reason hearts did in M2:
+  <strong>owning</strong> a Luckstone is a save fact, but the Luckstone being <strong>active</strong> is a run
+  fact that must die when the run does. Persisting the active buff would resurrect the "quit to dodge a
+  consequence" exploit the ephemeral store exists to close. XP is the mirror-image simplification going the other
+  way: it stops being a <em>spendable</em> save field and becomes a running total the leveling function reads — no
+  new store, one fewer mutation.
+</div>
+
+<h2 id="layout">File &amp; component layout</h2>
+<p>
+  The M3 additions to the <a href="m2-implementation.html#layout">M2 tree</a>. The React-free layers
+  (<code>engine/</code>, <code>config/</code>, <code>content/</code>, <code>domain/</code>) stay the seam between
+  logic and rendering; every new mechanic lands as pure data + a pure function before any screen renders it.
+  <strong>RETIRE</strong> marks what the skill-tree teardown removes.
+</p>
+<pre><code>src/
+  app/
+    navigation.ts                  # CHANGE — add { name:'shop' } to the Screen union
+    GameShell.tsx                  # CHANGE — gate on save.character===null → creation (before switch)
+  config/                          # tuning + content structure — data, not logic
+    combat.ts                      #   (unchanged — stays at committed values; new knobs live below)
+    skill-tree.ts                  # RETIRE
+    classes.ts                     # NEW — the 4 classes: hit die, favored abilities, start weapon, feature
+    weapons.ts                     # NEW — the weapon table (die, ability, crit range, tier, price)
+    items.ts                       # NEW — the consumable table (effect, duration, tier, price)
+    leveling.ts                    # NEW — XP-to-level table, ASI levels, proficiency ramp, HP-per-level
+    abilities.ts                   # NEW — per-point MAGNITUDES (damage%, crit%, time ms, dodge, …)
+                                   #   — every M5 tuning knob, one file, seeded with placeholders
+  content/
+    names.json                     # NEW — the random fantasy-name pool for creation defaults
+    monsters.json                  #   CHANGE — mimic deception DC per tier (or derive from tier)
+  domain/                          # types only, no logic
+    progression.ts                # CHANGE — PlayerModifiers grows; SkillBranchId/SkillTreeState RETIRE
+    save.ts                        # CHANGE — SaveData v3, defaultSave() (character:null), migrate() v2→v3
+    character.ts                   # NEW — Ability, AbilityScores, CharacterClass, Character, abilityMod()
+    weapons.ts                     # NEW — WeaponId, Weapon
+    items.ts                       # NEW — ItemId, Consumable, ActiveBuff, BuffDuration
+  engine/                          # ← pure TS, NO React (the M0 rule holds)
+    damage.ts                      # CHANGE — flat baseDamage → weapon die + ability mod; crit rolls dice ×N
+    dice/
+      encounter-roll.ts            # NEW — rollEncounter(cfg, mods, rng) → { natural, total, band, crit, fumble }
+      band.ts                      # NEW — bandToServedTier(band, textTierRange, intTierCap)
+    character/
+      leveling.ts                  # NEW — levelForXp(), grantsForLevel(), applyAsi() (all pure)
+      modifiers.ts                 # NEW — resolveModifiers(character, weapon, activeBuffs, cfg): PlayerModifiers
+                                   #   (this file replaces engine/progression/skill-effects.ts)
+    progression/
+      skill-effects.ts             # RETIRE (its resolveModifiers moves to character/modifiers.ts)
+      rewards.ts                   #   CHANGE — bosses/real-chest can roll a gear/consumable drop
+    sim/
+      balance.ts                   #   CHANGE — SimulatedPlayer gains a weapon + abilities; re-tune harness
+  state/
+    battle-store.ts                #   CHANGE — take an EncounterRoll + richer PlayerModifiers; per-hit weapon die
+    save/save-reducer.ts           #   CHANGE — creation/level/asi/equip/buy/consume actions; purchaseSkillNode RETIRE
+    dungeon-run/dungeon-run-reducer.ts  # CHANGE — activeBuffs slice + addBuff / clearBuffs
+  ui/
+    common/
+      Die.tsx                      # NEW — the projected 3D d20 (from the wireframe), reused by roll + creation
+      Tabs.tsx                     # NEW — the Inn / (later) sheet tab strip
+    create/                        # NEW — character creation (wireframe turn 1)
+      CharacterCreateScreen.tsx  AbilityRoller.tsx  ClassPicker.tsx  NameField.tsx  HeroSummary.tsx
+    inn/                           # REWORK — retire skill tree; becomes Rest & Sheet + Armory tabs
+      InnScreen.tsx                #   CHANGE — tab host
+      SkillBranch.tsx  SkillNode.tsx   # RETIRE
+      RestPanel.tsx                # NEW — long rest (restore hearts), HP always full here
+      CharacterSheet.tsx           # NEW — the six abilities, level, features, pending-ASI
+      AsiPanel.tsx                 # NEW — spend Ability Score Improvements (the +/− steppers)
+      Armory.tsx                   # NEW — equip a weapon (between dungeons only)
+    shop/                          # NEW — the Shop (wireframe turn 3)
+      ShopScreen.tsx  ShopItem.tsx  PriceTag.tsx      # PriceTag applies the signed CHA modifier
+    dungeon/
+      DungeonScreen.tsx            #   CHANGE — battle launch reads character→resolveModifiers; hosts the Bag
+      EncounterModal.tsx           #   CHANGE — rolls & animates the d20; Reroll / Advantage; Begin Battle
+      Bag.tsx                      # NEW — the expandable consumable drawer (wireframe turn 6)
+      ActiveBuffsStrip.tsx         # NEW — pinned "what's riding on the next fight" readout
+    battle/
+      BattleScreen.tsx             #   CHANGE — floating damage/crit numbers, ability flashes, HUD strip
+      Flash.tsx                    # NEW — "Dodged!" / "Second Wind!" / "CRIT!" transient overlays
+</code></pre>
+<div class="callout decision" id="one-die">
+  <strong>The single most important anti-debt call for the frontend:</strong> the projected d20 —
+  the one piece of genuinely fiddly geometry in the wireframes — lives in <em>exactly one</em>
+  <code>ui/common/Die.tsx</code>, consumed by both the ability roller (creation) and the encounter modal. The
+  same discipline that gave M2 one <code>nodeState.ts</code> for three screens gives M3 one die for two. Same
+  story for the <code>Tabs</code> strip and the <code>Flash</code> overlay.
+</div>
+<div class="callout why">
+  Why <code>config/abilities.ts</code> and <code>config/leveling.ts</code> are their own files, empty of logic:
+  the <a href="m3-scope.html#open">scope's open questions</a> are <em>all</em> magnitudes — how much a +1 mod is
+  worth, the XP curve, the mimic DCs, <code>damageScale</code>. Corralling every one of them into two data files
+  means the <a href="roadmap.html#m5">M5</a> tuning pass is a <em>values edit</em>, never a code change. That is
+  the debt this milestone pays down at the front: M3 ships placeholders in the right home so M5 never has to go
+  hunting through engine code for a number.
+</div>
+
+<h2 id="seams">The seams: three pure functions do the wiring</h2>
+<p>
+  Everything logic-meets-combat in M3 flows through three pure functions, so the React layer stays a dumb
+  renderer and the engine stays headless-testable — the M0/M2 habit, extended.
+</p>
+<ol>
+  <li>
+    <strong>Character → combat numbers.</strong>
+    <pre><code>// engine/character/modifiers.ts  (replaces progression/skill-effects.ts)
+resolveModifiers(character: Character, weapon: Weapon, activeBuffs: ActiveBuff[], cfg): PlayerModifiers
+//  → { maxHp, maxHearts, intTierCap, timeBudgetBonusMs, encounterBonus, hasAdvantage,
+//      critChanceBonus, critDamageMult, powerUpMult, dodgeChance, intimidateWpmCut,
+//      weaponDie, weaponAbilityMod, critRange, guaranteedFirstCrit, fumbleImmune,
+//      sneakAttackDice, secondWind, arcaneCritMult }</code></pre>
+    Same output <em>role</em> as M2's <code>PlayerModifiers</code>, wider. The one caller that assembles both the
+    persistent character (from the save) and the ephemeral buffs (from the run store) is the dungeon's
+    battle-launch — it already reads both. Persistent-only fields (HP, weapon, class features) fold in from
+    <code>character</code> + <code>weapon</code>; the run buffs layer on top.
+  </li>
+  <li>
+    <strong>The encounter d20 → the shape of the fight.</strong>
+    <pre><code>// engine/dice/encounter-roll.ts
+rollEncounter(cfg, mods: PlayerModifiers, rng): EncounterRoll
+//  → { natural, total, band: 'low'|'mid'|'high', guaranteedCrit, fumble }
+// engine/dice/band.ts
+bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</code></pre>
+    The modal rolls it (advantage = two rolls keep-higher; Luckstone/Wand add to <code>total</code>; nat 1/20
+    from the <em>natural</em> only), then <strong>hands the frozen result into the battle launch</strong> — an
+    ephemeral value, persisted nowhere.
+  </li>
+  <li>
+    <strong>The weapon die → the size of each blow.</strong> In <code>engine/damage.ts</code>,
+    <code>computeDamage</code> stops using flat <code>combat.baseDamage</code> and instead rolls
+    <code>weaponDie</code> + adds <code>weaponAbilityMod</code>, all × a <code>damageScale</code> constant that
+    keeps magnitudes near today's <code>baseDamage = 10</code>. A crit rolls the die <em>N</em> times
+    (2 normally, 3 for a Wizard) — the D&amp;D rule, replacing the flat <code>criticalDamageMultiplier</code>.
+    Monster damage (<code>computeMonsterDamage</code>) is untouched: monsters have no weapon, no crit.
+  </li>
+</ol>
+<div class="callout decision">
+  Two dice, two clearly separated code paths, mirroring the <a href="m3-scope.html#dice">scope's</a> split: the
+  <strong>d20 lives in <code>engine/dice/</code> and resolves once, before the clock</strong>; the
+  <strong>weapon die lives in <code>engine/damage.ts</code> and resolves every hit, inside the existing damage
+  call</strong>. Neither ever asks the player to stop typing — the d20 is pre-fight, the weapon die is automatic.
+</div>
+
+<h2 id="stories">Stories &amp; tasks</h2>
+<p>
+  Build order: <strong>0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13.</strong> Strictly bottom-up: the save
+  model and config data first, then the engine functions with their <a href="m0-implementation.html">Vitest</a>
+  coverage, then the screens that consume them. The one deliberate ordering choice is that
+  <strong>character creation (Story 4) lands right after the modifier seam (Story 3)</strong>, so the moment a
+  hero exists his derived stats are already correct and the game boots end-to-end — every later story is then a
+  visible improvement to a working loop rather than plumbing toward a first paint. Per the
+  <a href="index.html">project's working style</a>, each story is <strong>one commit</strong>, gated on
+  <code>tsc --noEmit</code> + <code>eslint</code> + <code>vitest run</code> clean, and gets a look before the next.
+</p>
+
+<div class="milestone">
+  <h3>Story 0 — Save v3 + the character model + migration <span class="tag">foundation</span></h3>
+  <p>The persistent shape, standalone and unit-tested before any screen reads it. This is the debt-paydown story —
+  do the real migration now, not a silent wipe.</p>
+  <ul>
+    <li><code>domain/character.ts</code>: <code>Ability</code> ('str'|'dex'|'con'|'int'|'wis'|'cha'),
+    <code>AbilityScores</code> (the six numbers), <code>CharacterClass</code> ('fighter'|'wizard'|'rogue'|'bard'),
+    <code>Character</code> (name, class, level, xp, abilities, pendingAsi), and the one pure helper everything
+    leans on — <code>abilityMod(score) = Math.floor((score - 10) / 2)</code>.</li>
+    <li><code>domain/weapons.ts</code> / <code>domain/items.ts</code>: <code>WeaponId</code>/<code>Weapon</code>,
+    <code>ItemId</code>/<code>Consumable</code>/<code>ActiveBuff</code>/<code>BuffDuration</code>
+    ('next-fight'|'rest-of-dungeon'|'instant').</li>
+    <li><code>domain/save.ts</code>: <code>SaveData</code> <strong>version 3</strong> — the
+    <a href="m3-scope.html#reshaping">scope's shape</a>: <code>character: Character | null</code>, <code>coins</code>,
+    <code>equippedWeapon: WeaponId</code>, <code>inventory: { weapons: WeaponId[]; consumables: Record&lt;ItemId,
+    number&gt; }</code>, <code>hearts: { max }</code>, <code>highestUnlockedTier</code>, <code>monstersDefeated</code>,
+    <code>stats</code>. <code>defaultSave()</code> sets <code>character: null</code> (the "uncreated" marker,
+    finding G). Rewrite <code>isSaveData()</code> to accept <code>version === 3</code>.</li>
+    <li><code>migrate(raw)</code>: a real <strong>v2→v3</strong> path (finding A) — keep coins, unlocks, defeats,
+    stats; drop <code>skillTree</code>; <code>character: null</code>. Anything older or unrecognized → fresh v3.</li>
+    <li><code>state/save/save-reducer.ts</code>: retire <code>purchaseSkillNode</code>; add
+    <code>createCharacter(character)</code>, <code>gainXp(amount)</code> (accumulate + auto-level via the Story 2
+    function, banking <code>pendingAsi</code>), <code>applyAsi(spend)</code>, <code>equipWeapon(id)</code>,
+    <code>buyItem</code>/<code>buyWeapon(id, price)</code> (price passed in — the reducer never imports config, the
+    seam rule), <code>consumeItem(id)</code>. Keep <code>award</code>, <code>unlockTier</code>,
+    <code>recordDefeat</code>, <code>hydrate</code>.</li>
+    <li>Tests: <code>abilityMod</code> across the table; migrate preserves the kept fields and nulls the character;
+    each new action's transition; a v2 blob round-trips to a playable v3.</li>
+  </ul>
+  <p><strong>Done when:</strong> reducer + migrate tests pass; a v2 fixture loads as v3 with coins/unlocks intact
+  and <code>character: null</code>.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 1 — Classes, weapons, items, leveling &amp; ability config <span class="tag">content/config</span></h3>
+  <p>Every M3 number as pure data, in the files M5 will tune. No logic beyond lookups.</p>
+  <ul>
+    <li><code>config/classes.ts</code>: the four <a href="m3-scope.html#classes">classes</a> — hit die, favored
+    abilities, starting weapon, and a machine-readable feature descriptor (Second Wind threshold/heal, Sneak Attack
+    dice, Arcane crit-mult &amp; +1 INT cap, Bardic reroll + shop discount + enemy debuff).</li>
+    <li><code>config/weapons.ts</code>: the <a href="m3-scope.html#weapons">weapon table</a> (die, governing
+    ability, crit range, tier, price, the greataxe's time-budget penalty).</li>
+    <li><code>config/items.ts</code>: the <a href="m3-scope.html#items">consumable table</a> (effect key,
+    duration, tier, price).</li>
+    <li><code>config/leveling.ts</code>: the XP-to-level table (5e's 0/300/900/2700/6500/… as the starting curve),
+    the ASI levels {4,8,12,16,19}, the proficiency ramp (+2…+6), and the per-level HP formula (hit die + CON mod ×
+    scale).</li>
+    <li><code>config/abilities.ts</code>: the per-point <strong>magnitudes</strong> — damage %, crit %, time-budget
+    ms, dodge %, intimidate wpm-cut, shop discount %, INT tier-cap step, mimic-DC-by-tier, <code>damageScale</code>.
+    Seeded with placeholders and a comment pointing at <a href="roadmap.html#m5">M5</a>.</li>
+    <li><code>content/names.json</code>: the fantasy-name pool for creation defaults.</li>
+    <li>Tests (schema-level): every class's starting weapon exists in the weapon table; every weapon's ability is a
+    real <code>Ability</code>; the XP table is monotonic; the ASI levels are inside the level range.</li>
+  </ul>
+  <p><strong>Done when:</strong> all five config modules type-check and the cross-reference tests are green. No
+  behavior yet — this is the data the next stories stand on.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 2 — Leveling engine <span class="tag">engine</span></h3>
+  <p>D&amp;D progression as pure functions, headless first.</p>
+  <ul>
+    <li><code>engine/character/leveling.ts</code>: <code>levelForXp(xp, cfg)</code> (which threshold an XP total
+    sits at), <code>grantsForLevel(class, level, con, cfg)</code> (HP added, proficiency bonus, whether this level
+    grants an ASI, which class features unlock), and <code>applyAsi(abilities, spend)</code> (validate ≤2 points,
+    return new scores). All pure, all seeded off Story 1's config.</li>
+    <li>The save reducer's <code>gainXp</code> (Story 0) calls <code>levelForXp</code> to detect crossings and banks
+    <code>pendingAsi</code> for any ASI level passed; HP/proficiency are <em>derived</em> at read time (see Story 3),
+    not stored, so they can never drift from the abilities.</li>
+    <li>Tests: XP just under vs. over each threshold; a multi-level jump banks the right number of ASIs;
+    proficiency follows the ramp; a d10 Fighter and a d6 Wizard land at the scope's level-1 HP targets;
+    <code>applyAsi</code> rejects a 3-point spend.</li>
+  </ul>
+  <p><strong>Done when:</strong> leveling is table-tested across the XP curve; nothing about HP or proficiency is
+  persisted (derive-don't-store proven).</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 3 — <code>resolveModifiers</code> rewrite: the seam <span class="tag">engine</span></h3>
+  <p>The load-bearing swap. Change the seam's <em>input</em>, preserve its <em>output</em>, and the whole combat
+  side comes along for free.</p>
+  <ul>
+    <li><code>domain/progression.ts</code>: grow <code>PlayerModifiers</code> to the
+    <a href="#seams">seam-1 shape</a>; retire <code>SkillBranchId</code>/<code>SkillTreeState</code>.</li>
+    <li><code>engine/character/modifiers.ts</code> (replacing <code>progression/skill-effects.ts</code>):
+    <code>resolveModifiers(character, weapon, activeBuffs, cfg)</code> — fold ability mods, class features, derived
+    HP/proficiency (via Story 2), the equipped weapon's die/ability/crit-range, and then the active buffs, into one
+    <code>PlayerModifiers</code>. Pure; <code>activeBuffs</code> defaults to empty so non-run callers (map/Inn, which
+    only need <code>maxHearts</code>) call it with a character alone.</li>
+    <li>Update the four call sites to pass a <code>character</code> instead of a <code>skillTree</code>. Delete the
+    skill-effects file and its test; port the coverage.</li>
+    <li>Tests: base character (all mods 0, no weapon bonus) reproduces today's baseline (40-ish HP, tier by INT);
+    +CON raises maxHp per the formula; equipping a greataxe sets die=d12 and a time penalty; a Bull's Strength buff
+    raises <code>powerUpMult</code>; a Wizard sets <code>arcaneCritMult = 3</code>.</li>
+  </ul>
+  <p><strong>Done when:</strong> the seam is table-tested across characters/weapons/buffs; <code>battle-store.ts</code>
+  compiles against the new signature with no combat-math change; the skill-tree engine code is gone.</p>
+</div>
+
+<div class="milestone" id="story-4">
+  <h3>Story 4 — Character creation <span class="tag">wireframe t1</span></h3>
+  <p>The first screen a fresh save hits — and the moment the whole M3 loop first boots.</p>
+  <ul>
+    <li><code>ui/common/Die.tsx</code>: the projected 3D d20 from the <a href="design/m3-wireframes.html">wireframe</a>
+    (the geometry is already worked out there) — the one die component, reused in Story 6.</li>
+    <li><code>ui/create/</code>: <code>AbilityRoller</code> (six <code>4d6-drop-lowest</code> rolls shown as tumbling
+    dice, a limited "roll again" that re-rolls the set, the rectangular ability grid from the wireframe),
+    <code>ClassPicker</code> (the four class chips), <code>NameField</code> (defaulting to a
+    <code>names.json</code> pick), and <code>HeroSummary</code> ("meet your hero" confirm). Each step pre-filled with
+    a valid random default so one button = a complete hero.</li>
+    <li><code>CharacterCreateScreen</code>: composes the flow; on confirm, <code>dispatch(createCharacter(...))</code>
+    with the applied class hit die / favored bonuses / starting weapon (equipped) / feature.</li>
+    <li><code>app/GameShell.tsx</code>: <em>before</em> the screen <code>switch</code>, if
+    <code>save.character === null</code> render <code>CharacterCreateScreen</code> (finding G). No new
+    <code>Screen</code> variant — it's a blocking gate.</li>
+  </ul>
+  <p><strong>Done when:</strong> a fresh save opens creation, mashing "roll → confirm" produces a hero, and the
+  world map appears with that hero's derived HP/hearts correct — verified in a browser against wireframe turn 1.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 5 — The Inn reworked: Rest &amp; Sheet <span class="tag">wireframe t2</span></h3>
+  <p>Retire the skill tree; the Inn becomes the character screen. First screen that mutates the new character state.</p>
+  <ul>
+    <li>Delete <code>ui/inn/SkillBranch.tsx</code> / <code>SkillNode.tsx</code> and the
+    <code>purchaseSkillNode</code> wiring; add <code>ui/common/Tabs.tsx</code>.</li>
+    <li><code>ui/inn/InnScreen.tsx</code>: a tab host — <strong>Rest &amp; Sheet</strong> now, <strong>Armory</strong>
+    (Story 8) as a second tab.</li>
+    <li><code>RestPanel.tsx</code>: the long rest restores spent <strong>hearts</strong> — and HP always reads
+    <em>full</em> here, because HP resets each battle (the <a href="m3-scope.html#leveling">scope's Inn call</a>,
+    already fixed in the wireframe).</li>
+    <li><code>CharacterSheet.tsx</code>: the six abilities + mods, level, XP-to-next bar, equipped weapon, class
+    feature; <code>AsiPanel.tsx</code>: the +/− steppers to spend <code>pendingAsi</code>, dispatching
+    <code>applyAsi</code>; a pending-ASI banner when points are owed.</li>
+  </ul>
+  <p><strong>Done when:</strong> the Inn matches wireframe turn 2; a long rest restores hearts (HP shown full);
+  spending an ASI raises an ability live and survives a reload (save round-trip); the skill-tree UI is gone.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 6 — The encounter d20 <span class="tag">wireframe t4</span></h3>
+  <p>The marquee mechanic — and the fix for M2's "why did the prompt difficulty jump?" wart. Engine first, then the
+  modal.</p>
+  <ul>
+    <li><code>engine/dice/encounter-roll.ts</code>: <code>rollEncounter(cfg, mods, rng)</code> → natural, total
+    (d20 + proficiency + <code>encounterBonus</code>; advantage = two d20 keep-higher), band from the total, and
+    fumble/inspired from the <em>natural</em> 1/20 only.</li>
+    <li><code>engine/dice/band.ts</code>: <code>bandToServedTier(band, textTierRange, intTierCap)</code> — band
+    picks a target tier out of the dungeon's (previously dead) <code>textTierRange</code> (finding C);
+    <code>servedTier = min(target, intTierCap)</code>, returning both so the gate knows the shortfall.</li>
+    <li><code>engine/damage.ts</code>: reinterpret <code>tierGatePenalty</code>'s second arg as the band's
+    <em>gate target</em> tier, not the monster's (finding D). Same math.</li>
+    <li><code>ui/dungeon/EncounterModal.tsx</code>: roll and animate the d20 (reusing <code>Die.tsx</code>), show
+    the breakdown and band ladder, a <strong>Reroll</strong> (Bardic Inspiration / Guidance) and advantage
+    (Rogue), and <strong>Begin Battle</strong> which freezes the <code>EncounterRoll</code> and hands it to the
+    launch (ephemeral, per the <a href="#state">state table</a>).</li>
+    <li>Tests: band boundaries; advantage keeps the higher; a modifier can push the band but never manufacture a
+    nat-20 crit; <code>bandToServedTier</code> caps at INT and reports the gate target; penalty is 1 when served ≥
+    target.</li>
+  </ul>
+  <p><strong>Done when:</strong> roll + band math are table-tested; committing to a fight rolls a visible d20 whose
+  band picks the prompt difficulty, capped by INT — verified against wireframe turn 4.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 7 — Damage formula: weapon die + ability mod <span class="tag">engine</span></h3>
+  <p>Replace flat damage with dice. The one story that touches the committed combat feel — so re-run the balance
+  harness.</p>
+  <ul>
+    <li><code>engine/damage.ts</code>: <code>computeDamage</code> takes <code>weaponDie</code>,
+    <code>weaponAbilityMod</code>, and a crit <em>count</em> (2 or Wizard's 3); base becomes
+    <code>(roll(die)×N + mod) × damageScale</code> × the existing length/speed/gate/powerUp factors. Keep
+    <code>criticalChance</code> as the per-hit trigger; retire the flat <code>criticalDamageMultiplier</code> in
+    favor of rolling the die again. <code>computeMonsterDamage</code> unchanged.</li>
+    <li><code>state/battle-store.ts</code>: on each correct submit, roll the equipped weapon's die (via the
+    battle's seeded <code>rng</code>) and pass it + <code>weaponAbilityMod</code> + the fight's crit rule (from the
+    <code>EncounterRoll</code>: a guaranteed first crit / fumble → no crits) into <code>computeDamage</code>. Emit
+    the rolled number as a battle event for the floating damage popup (Story 11).</li>
+    <li><code>engine/sim/balance.ts</code>: give <code>SimulatedPlayer</code> a weapon + abilities; re-run the
+    harness and set <code>damageScale</code> so a baseline character's hits-to-kill stays in today's band (the
+    <a href="m3-scope.html#open">scope's HP-scale decision</a>) — <code>config/combat.ts</code> itself stays at its
+    committed values; <code>damageScale</code> lives in <code>config/abilities.ts</code>.</li>
+    <li>Tests: a crit rolls the die twice (thrice for Wizard); a fumble fight caps at low band, no crits, ×0.75;
+    the balance sim's hits-to-kill sits in the target band across tiers.</li>
+  </ul>
+  <p><strong>Done when:</strong> per-hit damage varies with the weapon die and pops a number; the balance sim is
+  green in the tuned band; a browser fight feels like today's, now with dice.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 8 — The Armory: equip weapons <span class="tag">wireframe t7</span></h3>
+  <p>Persistent gear — equip only between dungeons.</p>
+  <ul>
+    <li><code>ui/inn/Armory.tsx</code>: the Inn's second tab — the owned weapon list (equipped badge), a compare
+    panel (die / ability / crit-range deltas), and <strong>Equip</strong> → <code>dispatch(equipWeapon(id))</code>.
+    Owned-weapon set reads from <code>inventory.weapons</code>.</li>
+    <li>The equip action is only reachable from the Inn (finding: the <a href="m3-scope.html#weapons">scope's
+    equip-at-Inn-only rule</a>); the dungeon UI never offers it, so a weapon is a run-long commitment.</li>
+    <li>The equipped weapon already feeds combat via Story 3's <code>resolveModifiers</code> — this story is the UI
+    to change it, no new engine work.</li>
+  </ul>
+  <p><strong>Done when:</strong> the Armory matches wireframe turn 7; equipping a weapon persists and visibly
+  changes the next fight's damage die; no equip control exists inside a dungeon.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 9 — Consumables: the Bag, active buffs &amp; the <code>powerUpMult</code> hook <span class="tag">wireframe t6</span></h3>
+  <p>The use-side of items — split across the persistent inventory and the ephemeral run buffs (finding E), lighting
+  up the dormant power-up hook (finding F).</p>
+  <ul>
+    <li><code>state/dungeon-run/dungeon-run-reducer.ts</code>: an <code>activeBuffs: ActiveBuff[]</code> slice with
+    <code>addBuff</code>, a <code>clearBuffs</code> that fires on run end (win/wipe/leave), and expiry of
+    <code>next-fight</code> buffs after a fight resolves. Never persisted.</li>
+    <li><code>ui/dungeon/Bag.tsx</code>: the expandable drawer over the graph (opens from a
+    <code>🎒 Bag</code> button, closes on node select — the <a href="m3-scope.html#items">scope's drawer call</a>);
+    using an item = <code>dispatch(consumeItem(id))</code> to the save (decrement owned) <em>and</em>
+    <code>dispatch(addBuff(...))</code> to the run. <code>ActiveBuffsStrip.tsx</code>: the pinned "what's riding on
+    the next fight" readout.</li>
+    <li>The buffs already reach combat through <code>resolveModifiers</code>'s <code>activeBuffs</code> arg (Story
+    3) and the encounter roll's <code>encounterBonus</code>/advantage (Story 6): Bull's Strength/Elixir →
+    <code>powerUpMult</code>, Potion of Speed → time budget, Luckstone/Guidance → the d20, Oil of Sharpness → crit,
+    Elixir of Intellect → INT cap +1, Potion of Healing → a heart dispatch. No new combat plumbing.</li>
+    <li>Tests: using an item decrements the owned count and adds exactly one buff; a <code>next-fight</code> buff
+    clears after one fight, a <code>rest-of-dungeon</code> buff persists until run end; ending the run clears all.</li>
+  </ul>
+  <p><strong>Done when:</strong> the bag matches wireframe turn 6; using a Bull's Strength shows on the strip and
+  measurably raises next-fight damage, then clears; leaving the dungeon drops every buff (but not the owned items).</p>
+</div>
+
+<div class="milestone" id="story-10">
+  <h3>Story 10 — The Shop: coins get a sink <span class="tag">wireframe t3</span></h3>
+  <p>Open the placeholder. Coins, earned since M2 with nowhere to go, finally spend.</p>
+  <ul>
+    <li><code>app/navigation.ts</code>: add <code>{ name: 'shop' }</code> (finding G); the map's Shop
+    <code>HubCard</code> stops being "Coming soon" and navigates.</li>
+    <li><code>ui/shop/</code>: <code>ShopScreen</code> (consumables that restock each visit + one-off weapons),
+    <code>ShopItem</code>, and <code>PriceTag</code> — which applies the <strong>signed</strong> CHA modifier
+    (a <a href="m3-scope.html#shop">negative CHA marks prices up</a>), surfaced as the scope's banner. Buying →
+    <code>dispatch(buyItem/buyWeapon(id, adjustedPrice))</code> (price computed in the UI, passed to the reducer —
+    the seam rule).</li>
+    <li>A Bard's Silver Tongue stacks its discount on top of CHA, read from the class feature via
+    <code>resolveModifiers</code> (or a small shared price helper so the Shop and the modifier agree on one
+    formula).</li>
+  </ul>
+  <p><strong>Done when:</strong> the Shop matches wireframe turn 3; buying spends coins and drops the item into the
+  inventory (weapon → Armory, consumable → Bag); a negative-CHA hero sees marked-up prices with the banner.</p>
+</div>
+
+<div class="milestone" id="story-11">
+  <h3>Story 11 — Class features, ability flashes &amp; mimic sense <span class="tag">wireframe t5, t8</span></h3>
+  <p>The reactive layer — everything that must be <em>automatic + a flash</em> because the kid can't press a button
+  mid-line (the <a href="m3-scope.html#ability-mechanics">scope's hard rule</a>). This is also the juice pass
+  (finding H).</p>
+  <ul>
+    <li><code>ui/common/Flash.tsx</code> + <code>ui/battle/BattleScreen.tsx</code>: floating damage/crit numbers
+    off the Story 7 battle events, and transient overlays — <strong>DEX dodge</strong> (negate a hit, "Dodged!"),
+    <strong>Fighter Second Wind</strong> (auto-heal at ≤30% HP, once/battle), <strong>Rogue Sneak Attack</strong>
+    (+Nd6 on first hit / crits), <strong>Wizard Arcane</strong> (×3 crit). All resolve in the engine
+    (<code>battle-store</code> reads the class-feature fields already on <code>PlayerModifiers</code>) and surface as
+    a flash — no mid-typing input.</li>
+    <li><strong>CHA intimidate / Bard debuff</strong>: cut the monster's effective wpm at fight start (surfaced once
+    in the encounter modal, then baked into the monster typer's config for that fight).</li>
+    <li><strong>WIS mimic sense</strong> (wireframe turn 5): on selecting a chest, a <em>hidden</em>
+    <code>d20 + WIS + proficiency</code> (Rogue Expertise = double proficiency) vs. the tier's mimic deception DC
+    (<code>config/abilities.ts</code>). Only a <em>mimic</em> success surfaces — the "sets your teeth on edge" modal
+    with Back away / Open anyway; a real chest never warns (the scope's no-false-alarms default). A soft WIS threat
+    read on chokepoints ("feels unusually tough") — never the monster's name.</li>
+    <li>Tests: dodge probability from DEX mod; Second Wind fires once at the threshold; the mimic check surfaces only
+    on a mimic+success and never on a real chest; intimidate reduces monster hits.</li>
+  </ul>
+  <p><strong>Done when:</strong> a fight shows floating numbers and the right flashes; a high-WIS hero gets warned on
+  a mimic and never on a real chest — verified against wireframe turns 5 and 8.</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 12 — Loot revision + close the loop <span class="tag"></span></h3>
+  <p>Wire the new rewards through and prove the whole M3 loop end to end.</p>
+  <ul>
+    <li><code>engine/progression/rewards.ts</code>: the real treasure chest can now roll a <em>weapon</em>, a
+    <em>consumable</em>, or a coin hoard (the <a href="m3-scope.html#loot">scope's loot table</a>); a boss adds a
+    larger payout and can guarantee a gear drop. Regular kills keep paying coins + XP. Pure + seeded; tested.</li>
+    <li><code>ui/dungeon/DungeonScreen.tsx</code>: on a win, <code>dispatch(gainXp(...))</code> +
+    <code>award(coins)</code> per kill (immediate, as M2); a gear/consumable drop dispatches into the inventory and
+    shows in the reward modal.</li>
+    <li>Finally write <code>stats.bestWpm</code> on a win (finding F) — the field that's been dead since M2.</li>
+    <li>Boss win → <code>unlockTier</code> as M2. A first end-to-end walk: create a hero → map → dungeon → encounter
+    d20 → typed fight with weapon dice + flashes → per-kill XP crossing a level (banking an ASI) → Inn to spend the
+    ASI / rest / equip → Shop to buy a potion → back in for another run.</li>
+  </ul>
+  <p><strong>Done when:</strong> the full D&amp;D loop runs in a browser and reads like a role-playing game, not a
+  math worksheet — the milestone's <a href="roadmap.html#m3">deliverable</a>.
+  <strong>Playtest watch-items:</strong> the XP pacing (does a level feel earned?), the <code>damageScale</code>
+  feel, and whether creation's reroll count is generous enough — all <a href="roadmap.html#m5">M5</a> knobs, flagged
+  here so the first session's reactions land against a list.</p>
+</div>
+
+<div class="milestone" id="story-13">
+  <h3>Story 13 — Play-tuning: mathematical sanity checks + a theory rebalance <span class="tag core">makes "not broken" defensible</span></h3>
+  <p>
+    M3 <em>radically</em> redefines the play parameters: flat <code>baseDamage</code> becomes a rolled weapon die
+    + ability mod, crits go from a flat ×2 to rolling the dice again, and a d20 now picks the prompt band. That's
+    exactly the kind of change that can quietly turn every fight into a one-shot or an unwinnable slog. This story
+    is the M3 analog of <a href="m0-implementation.html">M0's balance harness</a> — <strong>redevelop the
+    sanity-check framework for the new mechanics, then rebalance the placeholders on theory alone</strong> so the
+    game is provably-not-broken before the kid ever sees it. It is <em>not</em> the <a href="roadmap.html#m5">M5</a>
+    feel/pacing pass (that's playtest-driven and comes later); it's the floor of numerical sanity M5 tunes on top
+    of.
+  </p>
+  <ul>
+    <li><strong>(a) Rebuild the harness.</strong> Extend <code>engine/sim/balance.ts</code> (already touched in
+    Story 7) so a <code>SimulatedPlayer</code> is a full M3 character — class, level, six abilities, an equipped
+    weapon, optional buffs — and the sim runs the <em>whole</em> new pipeline headlessly: roll the encounter d20
+    → band → served tier (capped by INT) → typed fight with per-hit weapon-die rolls, crits (×2 / Wizard ×3),
+    dodge, Second Wind, Sneak Attack, intimidate. All pure, all seeded, so results are reproducible.</li>
+    <li><strong>Closed-form checks alongside the sim</strong> (the "theory" half — cheap, exact, catch bugs the
+    Monte-Carlo hides): <code>E[weapon die] = (sides+1)/2</code>; expected hit damage at baseline ≈ today's
+    <code>baseDamage = 10</code> (this is what pins <code>damageScale</code>); expected crit contribution given
+    <code>criticalChance</code> and the ×N rule; the HP-per-level formula lands a level-1 d10 Fighter near 40 and a
+    d6 Wizard a bit under (the <a href="m3-scope.html#open">scope's HP-scale decision</a>); the proficiency ramp
+    shifts the d20 band distribution the intended amount per level.</li>
+    <li><strong>The metrics that define "sane"</strong> — report per (tier × class × representative level):
+    win-rate for a baseline typist, median battle duration (the ~30–45s target still holds),
+    <strong>hits-to-kill</strong> band (the load-bearing ratio — must stay in a healthy multi-prompt range, no
+    one-shots, no 30-prompt grinds), crit/dodge frequencies, and the encounter-band histogram.</li>
+    <li><strong>(b) Rebalance on theory.</strong> Turn the placeholder magnitudes in
+    <code>config/abilities.ts</code> + <code>config/leveling.ts</code> (and <code>damageScale</code>) until the
+    checks pass: no character/weapon/level combo one-shots or is one-shot; every fight is winnable-but-tense in the
+    target band; the dice add <em>spice, not coin-flips</em> (bound the per-hit damage variance so a d12 greataxe is
+    swingy but never trivializes or whiffs a fight). <code>config/combat.ts</code> stays at its committed values —
+    all tuning lands in the M3 config files, per the <a href="#layout">layout rule</a>.</li>
+    <li><strong>Lock it in as invariant tests</strong> (the <a href="m0-implementation.html">M0</a>/M2
+    <code>engine/sim/</code> habit): a sweep asserting, across characters × weapons × tiers, that hits-to-kill
+    stays in-band, no fight is unwinnable for a baseline typist or trivially auto-won, and the monotonicity
+    sanities hold — leveling up, a bigger die, or a higher ability is never <em>strictly worse</em>, and a higher
+    dungeon tier is never <em>easier</em>. These fail loudly if a future tuning edit breaks the floor.</li>
+  </ul>
+  <p><strong>Done when:</strong> the harness answers "does a baseline-WPM kid, as each of the four classes at a few
+  representative levels, win a tier-appropriate dungeon at a reasonable rate and in a sane number of prompts?"
+  without anyone playing it by hand; the closed-form checks agree with the sim; the invariant sweep is green; and
+  the placeholder numbers are a defensible <em>floor</em> handed to <a href="roadmap.html#m5">M5</a> — sane, not
+  yet final.</p>
+</div>
+
+<h2 id="out-of-scope">Out of scope for M3</h2>
+<ul>
+  <li><strong>Final <em>feel</em> tuning of every magnitude</strong> — the per-point mod values, XP pacing, mimic
+  DCs, <code>damageScale</code>, prices, Second Wind/Sneak Attack numbers. M3 ships placeholders in
+  <code>config/abilities.ts</code> + <code>config/leveling.ts</code>, rebalanced to a defensible <em>numerical
+  floor</em> by <a href="#story-13">Story 13</a> (theory, not playtest); the playtest-driven <em>feel</em> and
+  pacing pass is <a href="roadmap.html#m5">M5</a> (a values edit on top of that floor, by design).</li>
+  <li><strong>Screen-shake, SFX, and any asset-backed animation</strong> — M3 includes only the juice that falls
+  out of dice/damage (floating numbers, the d20, flashes, finding H). The rest is M6.</li>
+  <li><strong>More than four classes / the full weapon &amp; item catalog</strong> — the framework holds any
+  number; the launch set is deliberately small.</li>
+  <li><strong>Long-form typing content</strong> — the seed banks from M2 carry M3; real excerpts stay M6.</li>
+  <li><strong>Hosting / PWA install</strong> — M4.</li>
+  <li><strong>Persisting an in-progress run or its active buffs</strong> — deliberately never (finding E), same
+  rule as M2's hearts.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

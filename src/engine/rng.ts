@@ -12,6 +12,11 @@ const mulberry32 = (seed: number) => {
   }
 }
 
+// Uniform 1..sides — the shared die-roll primitive (engine/damage.ts's
+// weapon dice; engine/dice/encounter-roll.ts rolls its own d20 inline the
+// same way, predating this helper).
+export const rollDie = (rng: Rng, sides: number): number => Math.floor(rng.next() * sides) + 1
+
 export const createRng = (seed: number): Rng => {
   const random = mulberry32(seed)
 

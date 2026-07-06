@@ -14,12 +14,30 @@ export interface Battle {
 // game-design.html. It's the only place combat state lives; the UI (Story 5)
 // only ever reads getState()/subscribe() and calls tick()/submitPlayerAttack().
 export const createBattle = (config: BattleConfig): Battle => {
-  const { combat, monster, playerPrompts, monsterPrompts, rng, tierGatePenalty = 1 } = config
+  const {
+    combat,
+    monster,
+    playerPrompts,
+    monsterPrompts,
+    rng,
+    tierGatePenalty = 1,
+    weaponDie,
+    weaponAbilityMod,
+    damageScale,
+    critCount,
+    guaranteedFirstCrit = false,
+    noCrits = false,
+    fumbleDamageMultiplier,
+  } = config
 
   let status: BattleStatus = 'ongoing'
   let playerHp = combat.playerMaxHp
   let monsterHp = monster.hp
   let lastEvent: BattleEvent | undefined
+  // guaranteedFirstCrit (the encounter d20's nat-20 "INSPIRED" result, Story
+  // 6) only ever forces *one* swing — this fight's first landed hit — so it
+  // has to be tracked here, not per-call in computeDamage.
+  let playerHasLandedHit = false
 
   const playerTimeLimitFor = (promptText: string): number =>
     Math.max(
@@ -162,9 +180,23 @@ export const createBattle = (config: BattleConfig): Battle => {
         combat,
         rng,
         tierGatePenalty,
+        weaponDie,
+        weaponAbilityMod,
+        damageScale,
+        critCount,
+        forceCrit: guaranteedFirstCrit && !playerHasLandedHit,
+        noCrits,
+        fumbleDamageMultiplier,
       })
+      playerHasLandedHit = true
       monsterHp = Math.max(0, monsterHp - result.damage)
-      lastEvent = { side: 'player', kind: 'hit', damage: result.damage }
+      lastEvent = {
+        side: 'player',
+        kind: 'hit',
+        damage: result.damage,
+        isCrit: result.isCrit,
+        diceRolled: result.diceRolled,
+      }
 
       // Only draw a new prompt if the battle is still ongoing — otherwise
       // the UI would show a fresh, never-attempted prompt sitting next to

@@ -1,3 +1,4 @@
+import abilitiesConfig from '../config/abilities'
 import combat from '../config/combat'
 import textBank from '../content/text-banks'
 import type { PlayerModifiers } from '../domain/progression'
@@ -19,10 +20,10 @@ export interface BattleStore {
 // Takes the full Monster + the player's resolved character/weapon/buff
 // modifiers (engine/character/modifiers.ts, M3 Story 3) — the served text
 // tier and the resulting damage gate (m2-scope.html#wordsmith-gate, now INT-
-// driven) are computed once here, for the whole fight. The richer M3 fields
-// (weaponDie, crit/dodge bonuses, class features, …) aren't consumed yet —
-// later stories (7, 9, 11) light them up; this story only widens the input
-// without changing the combat math.
+// driven) are computed once here, for the whole fight. Story 7 lights up the
+// weapon dice + arcane crit count; the remaining M3 fields (dodge, class
+// features that aren't a crit count, …) still aren't consumed — later
+// stories (9, 11) light those up.
 export const createBattleStore = async (
   monster: Monster,
   modifiers: PlayerModifiers,
@@ -47,6 +48,17 @@ export const createBattleStore = async (
     monsterPrompts,
     rng,
     tierGatePenalty: tierGatePenalty(servedTier, targetTier),
+    // Story 7: the equipped weapon's dice + the Wizard's arcane crit count.
+    weaponDie: modifiers.weaponDie,
+    weaponAbilityMod: modifiers.weaponAbilityMod,
+    damageScale: abilitiesConfig.damageScale,
+    critCount: modifiers.arcaneCritMult,
+    guaranteedFirstCrit: modifiers.guaranteedFirstCrit,
+    // TODO(Story 12): noCrits + fumbleDamageMultiplier come from this
+    // fight's frozen EncounterRoll (engine/dice/encounter-roll.ts's `fumble`
+    // flag) — same TODO as servedTier/targetTier above: the encounter modal
+    // isn't wired into the live launch flow yet, so a fumble can't reach
+    // here. Left at computeDamage's defaults (no suppression, x1) until then.
   })
 
   return {

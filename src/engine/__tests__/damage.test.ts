@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CombatConfig, TextTier } from '../../domain/types'
-import { computeDamage, critMultiplier, lengthFactor, speedBonus, tierGatePenalty } from '../damage'
+import { computeDamage, lengthFactor, rollIsCrit, speedBonus, tierGatePenalty } from '../damage'
 import { createRng } from '../rng'
 
 const baseCombat: CombatConfig = {
@@ -48,33 +48,49 @@ describe('speedBonus', () => {
   })
 })
 
-describe('critMultiplier', () => {
+describe('rollIsCrit', () => {
   it('never crits when criticalChance is 0', () => {
     const rng = createRng(5)
     const combat = { ...baseCombat, criticalChance: 0 }
     for (let i = 0; i < 50; i += 1) {
-      expect(critMultiplier(combat, rng).isCrit).toBe(false)
+      expect(rollIsCrit(combat, rng)).toBe(false)
     }
   })
 
-  it('always crits when criticalChance is 1, applying criticalDamageMultiplier', () => {
+  it('always crits when criticalChance is 1', () => {
     const rng = createRng(5)
-    const combat = { ...baseCombat, criticalChance: 1, criticalDamageMultiplier: 3 }
-    const result = critMultiplier(combat, rng)
-    expect(result.isCrit).toBe(true)
-    expect(result.multiplier).toBe(3)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    expect(rollIsCrit(combat, rng)).toBe(true)
   })
 
   it('is deterministic under a fixed seed', () => {
     const combat = { ...baseCombat, criticalChance: 0.5 }
-    const a = critMultiplier(combat, createRng(123))
-    const b = critMultiplier(combat, createRng(123))
+    const a = rollIsCrit(combat, createRng(123))
+    const b = rollIsCrit(combat, createRng(123))
     expect(a).toEqual(b)
+  })
+
+  it('forceCrit always crits, even at criticalChance 0, without consuming an rng draw', () => {
+    const rng = createRng(5)
+    const combat = { ...baseCombat, criticalChance: 0 }
+    expect(rollIsCrit(combat, rng, { forceCrit: true })).toBe(true)
+  })
+
+  it('noCrits never crits, even at criticalChance 1', () => {
+    const rng = createRng(5)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    expect(rollIsCrit(combat, rng, { noCrits: true })).toBe(false)
+  })
+
+  it('noCrits wins over forceCrit if somehow both are set', () => {
+    const rng = createRng(5)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    expect(rollIsCrit(combat, rng, { forceCrit: true, noCrits: true })).toBe(false)
   })
 })
 
 describe('computeDamage', () => {
-  it('combines lengthFactor, speedBonus, crit and power-up multiplicatively', () => {
+  it('combines lengthFactor, speedBonus and power-up multiplicatively, on top of a rolled weapon die', () => {
     const rng = createRng(1)
     const result = computeDamage({
       charCount: 20,
@@ -82,14 +98,22 @@ describe('computeDamage', () => {
       timeLimitMs: 1000,
       combat: baseCombat,
       rng,
+      weaponDie: 6,
+      weaponAbilityMod: 2,
+      damageScale: 1,
       powerUpMultiplier: 2,
     })
-    // lengthFactor(20) = 2, speedBonus(0/1000) = 2, crit off (chance 0) = 1, powerUp = 2
-    expect(result.damage).toBeCloseTo(10 * 2 * 2 * 1 * 2)
+    // lengthFactor(20) = 2, speedBonus(0/1000) = 2, crit off (chance 0) -> one
+    // d6 roll + mod 2, powerUp = 2.
+    expect(result.diceRolled).toHaveLength(1)
+    const [roll] = result.diceRolled
+    expect(roll).toBeGreaterThanOrEqual(1)
+    expect(roll).toBeLessThanOrEqual(6)
+    expect(result.damage).toBeCloseTo((roll + 2) * 1 * 2 * 2 * 2)
     expect(result.isCrit).toBe(false)
   })
 
-  it('defaults powerUpMultiplier to 1', () => {
+  it('defaults powerUpMultiplier to 1 and applies damageScale to (roll + mod)', () => {
     const rng = createRng(1)
     const result = computeDamage({
       charCount: 10,
@@ -97,8 +121,12 @@ describe('computeDamage', () => {
       timeLimitMs: 1000,
       combat: baseCombat,
       rng,
+      weaponDie: 8,
+      weaponAbilityMod: 0,
+      damageScale: 1.5,
     })
-    expect(result.damage).toBeCloseTo(10)
+    const [roll] = result.diceRolled
+    expect(result.damage).toBeCloseTo(roll * 1.5)
   })
 
   it('multiplies in tierGatePenalty when under-tiered', () => {
@@ -109,9 +137,107 @@ describe('computeDamage', () => {
       timeLimitMs: 1000,
       combat: baseCombat,
       rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
       tierGatePenalty: 0.25,
     })
-    expect(result.damage).toBeCloseTo(10 * 0.25)
+    const [roll] = result.diceRolled
+    expect(result.damage).toBeCloseTo(roll * 0.25)
+  })
+
+  it('a crit rolls the weapon die twice (default critCount) and sums both', () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+    })
+    expect(result.isCrit).toBe(true)
+    expect(result.diceRolled).toHaveLength(2)
+    const total = result.diceRolled[0] + result.diceRolled[1]
+    expect(result.damage).toBeCloseTo(total)
+  })
+
+  it("a crit rolls three dice for the Wizard's arcane crit (critCount 3)", () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      critCount: 3,
+    })
+    expect(result.isCrit).toBe(true)
+    expect(result.diceRolled).toHaveLength(3)
+  })
+
+  it('guaranteedFirstCrit (forceCrit) makes the swing crit even at criticalChance 0', () => {
+    const rng = createRng(1)
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: baseCombat, // criticalChance: 0
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      forceCrit: true,
+    })
+    expect(result.isCrit).toBe(true)
+    expect(result.diceRolled).toHaveLength(2)
+  })
+
+  it('a fumble fight (noCrits) never crits and caps damage via fumbleDamageMultiplier', () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 1 } // would always crit otherwise
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      noCrits: true,
+      fumbleDamageMultiplier: 0.75,
+    })
+    expect(result.isCrit).toBe(false)
+    expect(result.diceRolled).toHaveLength(1)
+    expect(result.damage).toBeCloseTo(result.diceRolled[0] * 0.75)
+  })
+
+  it('is deterministic: the same seed produces the same dice/damage sequence', () => {
+    const combat = { ...baseCombat, criticalChance: 0.5 }
+    const run = () => {
+      const rng = createRng(42)
+      return [1, 2, 3, 4, 5].map(() =>
+        computeDamage({
+          charCount: 10,
+          timeUsedMs: 500,
+          timeLimitMs: 1000,
+          combat,
+          rng,
+          weaponDie: 8,
+          weaponAbilityMod: 2,
+          damageScale: 1.5,
+        }),
+      )
+    }
+    expect(run()).toEqual(run())
   })
 })
 

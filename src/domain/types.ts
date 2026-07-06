@@ -62,6 +62,21 @@ export interface BattleConfig {
   // 1 (no gate) so existing callers/tests that don't know about Wordsmith
   // are unaffected.
   tierGatePenalty?: number
+  // The equipped weapon + this fight's crit rule (Story 7: engine/damage.ts's
+  // computeDamage). All optional — a caller that doesn't pass a weapon falls
+  // back to computeDamage's own defaults, so older tests/sim code still run.
+  weaponDie?: number
+  weaponAbilityMod?: number
+  damageScale?: number
+  critCount?: number
+  // The encounter d20's nat-20 "INSPIRED" result (Story 6): this fight's
+  // first landed player hit always crits. Not wired to a live caller yet —
+  // that's Story 12's EncounterRoll plumbing — so it defaults to false.
+  guaranteedFirstCrit?: boolean
+  // The encounter d20's natural-1 "FUMBLE" result: no crits this fight, plus
+  // fumbleDamageMultiplier caps every hit. Same Story 12 TODO as above.
+  noCrits?: boolean
+  fumbleDamageMultiplier?: number
 }
 
 export interface PlayerState {
@@ -104,6 +119,11 @@ export interface BattleEvent {
   side: BattleEventSide
   kind: BattleEventKind
   damage?: number
+  // Player 'hit' only (Story 7): the individual weapon-die rolls this swing
+  // (length 1 normally, `critCount` on a crit) and whether it crit — Story
+  // 11's floating damage popup reads these to show the rolled number(s).
+  diceRolled?: number[]
+  isCrit?: boolean
 }
 
 export type BattleStatus = 'ongoing' | 'won' | 'lost'
@@ -120,5 +140,8 @@ export interface DamageResult {
   isCrit: boolean
   lengthFactor: number
   speedBonus: number
-  critMultiplier: number
+  // The individual weapon-die rolls this swing summed into `damage` — length
+  // 1 normally, `critCount` on a crit (2, or 3 for the Wizard's arcane crit).
+  // Story 11's floating damage popup shows these.
+  diceRolled: number[]
 }

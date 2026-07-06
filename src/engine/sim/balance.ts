@@ -1,3 +1,4 @@
+import abilitiesConfig from '../../config/abilities'
 import type { CombatConfig, Monster } from '../../domain/types'
 import { createBattle } from '../battle'
 import { expectedTypingTimeMs } from '../monster-typing'
@@ -6,6 +7,10 @@ import { createRng } from '../rng'
 export interface SimulatedPlayer {
   wpm: number
   accuracy: number
+  // Optional (Story 7) — a bare SimulatedPlayer falls back to computeDamage's
+  // own default weapon, so older callers/tests don't need updating.
+  weaponDie?: number
+  weaponAbilityMod?: number
 }
 
 export interface BalanceSimConfig {
@@ -22,6 +27,10 @@ export interface BalanceSimConfig {
 export interface BalanceResult {
   winRate: number
   medianDurationMs: number
+  // monster.hp / (average damage per landed player hit) — the ratio Story
+  // 13's "HP-scale decision" (m3-scope.html#open) tunes toward a healthy
+  // multi-prompt band, independent of absolute HP/damage scale.
+  hitsToKill: number
 }
 
 const median = (values: number[]): number => {
@@ -42,6 +51,8 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
   const typingTimeMs = expectedTypingTimeMs(prompt.length, player.wpm, combat)
   const durations: number[] = []
   let wins = 0
+  let totalDamageDealt = 0
+  let totalHitsLanded = 0
 
   for (let i = 0; i < battles; i += 1) {
     const rng = createRng(seed + i)
@@ -51,6 +62,9 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
       playerPrompts: () => prompt,
       monsterPrompts: () => prompt,
       rng,
+      weaponDie: player.weaponDie,
+      weaponAbilityMod: player.weaponAbilityMod,
+      damageScale: abilitiesConfig.damageScale,
     })
 
     let elapsedMs = 0
@@ -61,7 +75,13 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
       if (elapsedMs >= nextSubmitAtMs) {
         const currentPrompt = battle.getState().player.prompt
         const isHit = rng.next() < player.accuracy
+        const hpBefore = battle.getState().monster.hp
         battle.submitPlayerAttack(isHit ? currentPrompt : 'x'.repeat(currentPrompt.length))
+        const hpAfter = battle.getState().monster.hp
+        if (hpBefore > hpAfter) {
+          totalDamageDealt += hpBefore - hpAfter
+          totalHitsLanded += 1
+        }
         nextSubmitAtMs = elapsedMs + rng.sample(typingTimeMs, combat.typingVariance)
       }
     }
@@ -70,5 +90,11 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
     durations.push(elapsedMs)
   }
 
-  return { winRate: wins / battles, medianDurationMs: median(durations) }
+  const avgDamagePerHit = totalHitsLanded > 0 ? totalDamageDealt / totalHitsLanded : 0
+
+  return {
+    winRate: wins / battles,
+    medianDurationMs: median(durations),
+    hitsToKill: avgDamagePerHit > 0 ? monster.hp / avgDamagePerHit : Infinity,
+  }
 }

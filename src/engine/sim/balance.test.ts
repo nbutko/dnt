@@ -47,3 +47,34 @@ describe('balance harness', () => {
     expect(strong.winRate).toBeGreaterThanOrEqual(weak.winRate)
   })
 })
+
+// Story 7: baseDamage becomes a rolled weapon die + ability mod. This block
+// re-runs the harness with a baseline character (a Fighter's starting
+// longsword: d8, STR +2) and checks config/abilities.ts's damageScale keeps
+// hits-to-kill in the same multi-prompt band the pre-Story-7 flat baseDamage
+// produced (m3-scope.html#open's "HP-scale decision": Gray Ooze/slime ~2.5,
+// climbing toward the Grassland boss's ~7 — measured pre- and post-dice by
+// the same harness, see m3-implementation.html Story 7's report). Bands are
+// generous (not pinned to a single number) since Story 13 owns the real tune.
+describe('dice-era hits-to-kill (Story 7)', () => {
+  const BASELINE_FIGHTER = { wpm: 20, accuracy: 0.9, weaponDie: 8, weaponAbilityMod: 2 }
+
+  it.each([
+    { id: 'slime', minHits: 1.5, maxHits: 4 },
+    { id: 'goblin', minHits: 2, maxHits: 5 },
+    { id: 'skeleton', minHits: 2.5, maxHits: 6 },
+    { id: 'slime-king', minHits: 4.5, maxHits: 10 },
+  ])('$id sits in its hits-to-kill band', ({ id, minHits, maxHits }) => {
+    const result = simulateBattles({
+      monster: getMonster(id),
+      combat,
+      player: BASELINE_FIGHTER,
+      prompt: REPRESENTATIVE_TIER_1_LINE,
+      battles: 300,
+      seed: 5,
+    })
+
+    expect(result.hitsToKill).toBeGreaterThan(minHits)
+    expect(result.hitsToKill).toBeLessThan(maxHits)
+  })
+})

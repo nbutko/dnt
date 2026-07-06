@@ -118,6 +118,8 @@ describe('createBattle', () => {
       side: 'player',
       kind: 'hit',
       damage: afterHit.lastEvent?.damage,
+      isCrit: afterHit.lastEvent?.isCrit,
+      diceRolled: afterHit.lastEvent?.diceRolled,
     })
     expect(afterHit.monster.hp).toBeLessThan(steadyMonster.hp)
     const hpAfterFirstHit = afterHit.monster.hp
@@ -304,5 +306,73 @@ describe('createBattle', () => {
     }
     expect(battle.getState().status).toBe('lost')
     expect(battle.getState().player.hp).toBe(0)
+  })
+
+  it('guaranteedFirstCrit makes exactly the first landed hit a crit, not the second', () => {
+    // criticalChance 0 on this combat means the second/third hits could only
+    // crit via the guarantee, not a natural roll — isolating the guarantee.
+    const noNaturalCrits: CombatConfig = { ...combat, criticalChance: 0 }
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat: noNaturalCrits,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      guaranteedFirstCrit: true,
+    })
+
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().lastEvent?.isCrit).toBe(true)
+
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().lastEvent?.isCrit).toBe(false)
+
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().lastEvent?.isCrit).toBe(false)
+  })
+
+  it('a fumble fight (noCrits) never crits, even at criticalChance 1', () => {
+    const alwaysCrits: CombatConfig = { ...combat, criticalChance: 1 }
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat: alwaysCrits,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      noCrits: true,
+      fumbleDamageMultiplier: 0.75,
+    })
+
+    for (let i = 0; i < 3; i += 1) {
+      battle.submitPlayerAttack('jak')
+      expect(battle.getState().lastEvent?.isCrit).toBe(false)
+      expect(battle.getState().lastEvent?.diceRolled).toHaveLength(1)
+    }
+  })
+
+  it('the same seed + weapon produces the same damage/dice sequence (determinism)', () => {
+    const runDamages = (): (number | undefined)[] => {
+      const rng = createRng(7)
+      const battle = createBattle({
+        combat,
+        monster: steadyMonster,
+        playerPrompts: () => 'jak',
+        monsterPrompts: () => 'sad lad',
+        rng,
+        weaponDie: 8,
+        weaponAbilityMod: 2,
+        damageScale: 1.5,
+      })
+      const damages: (number | undefined)[] = []
+      for (let i = 0; i < 5; i += 1) {
+        battle.submitPlayerAttack('jak')
+        damages.push(battle.getState().lastEvent?.damage)
+      }
+      return damages
+    }
+
+    expect(runDamages()).toEqual(runDamages())
   })
 })

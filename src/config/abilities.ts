@@ -33,9 +33,13 @@ export interface AbilitiesConfig {
   // Mimic-sense deception DC, indexed by dungeon tier (index 0 = tier 1) —
   // climbs so deeper mimics hide better (m3-scope.html#mimic-sense).
   mimicDeceptionDcByTier: readonly number[]
-  // Multiplies (roll(weaponDie) + weaponAbilityMod) so per-hit damage lands
-  // near today's flat combat.baseDamage = 10 — the number Story 13's theory
-  // pass pins first, everything else rebalances around it.
+  // Multiplies (dice-total + weaponAbilityMod) so a baseline character's
+  // hits-to-kill (engine/sim/balance.ts's `hitsToKill`) lands near the
+  // pre-Story-7 flat-baseDamage band. Landed at 1.6 against a Fighter's
+  // starting longsword (d8, STR +2) vs. the Grassland roster — see
+  // balance.test.ts's "dice-era hits-to-kill" block and m3-implementation.html
+  // Story 7's report for the arithmetic. Story 13's full theory pass owns the
+  // real tuning; this is a placeholder landed by measurement, not derivation.
   damageScale: number
 }
 
@@ -49,7 +53,7 @@ const abilitiesConfig: AbilitiesConfig = {
   chaShopDiscountPctPerMod: 0.03,
   chaIntimidateWpmCutPctPerMod: 0.04,
   mimicDeceptionDcByTier: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-  damageScale: 1.5,
+  damageScale: 1.6,
 }
 
 export default abilitiesConfig

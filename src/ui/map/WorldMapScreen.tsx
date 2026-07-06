@@ -1,4 +1,4 @@
-import { toDungeon, toInn, type Screen } from '../../app/navigation'
+import { toDungeon, toInn, toShop, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import { getWeapon } from '../../config/weapons'
 import { resolveModifiers } from '../../engine/character/modifiers'
@@ -53,7 +53,12 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
             subtitle="Rest & Sheet"
             onSelect={() => onNavigate(toInn())}
           />
-          <HubCard variant="shop" title="The Shop" subtitle="Coming soon" />
+          <HubCard
+            variant="shop"
+            title="The Shop"
+            subtitle="Gear & potions"
+            onSelect={() => onNavigate(toShop())}
+          />
         </div>
 
         <TierTrail

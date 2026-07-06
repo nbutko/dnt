@@ -4,6 +4,7 @@ import CharacterCreateScreen from '../ui/create/CharacterCreateScreen'
 import DungeonScreen from '../ui/dungeon/DungeonScreen'
 import InnScreen from '../ui/inn/InnScreen'
 import WorldMapScreen from '../ui/map/WorldMapScreen'
+import ShopScreen from '../ui/shop/ShopScreen'
 import { toMap, type Screen } from './navigation'
 
 // Owns the current Screen and switches to the right one, once a hero exists.
@@ -27,6 +28,8 @@ const GameShellRouter = () => {
       return <InnScreen onNavigate={setScreen} />
     case 'dungeon':
       return <DungeonScreen tier={screen.tier} onNavigate={setScreen} />
+    case 'shop':
+      return <ShopScreen onNavigate={setScreen} />
     default:
       return null
   }

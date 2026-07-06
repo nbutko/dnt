@@ -8,7 +8,9 @@ export type Screen =
   | { name: 'map' }
   | { name: 'inn' }
   | { name: 'dungeon'; tier: number }
+  | { name: 'shop' }
 
 export const toMap = (): Screen => ({ name: 'map' })
 export const toInn = (): Screen => ({ name: 'inn' })
 export const toDungeon = (tier: number): Screen => ({ name: 'dungeon', tier })
+export const toShop = (): Screen => ({ name: 'shop' })

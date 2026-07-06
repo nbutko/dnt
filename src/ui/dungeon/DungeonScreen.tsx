@@ -2,12 +2,13 @@ import { useMemo, useRef, useState } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig from '../../config/rewards'
+import { getWeapon } from '../../config/weapons'
 import { getMonster } from '../../content/monsters'
 import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 import type { MonsterRole } from '../../domain/types'
+import { PLACEHOLDER_CHARACTER, resolveModifiers } from '../../engine/character/modifiers'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
 import { createRng } from '../../engine/rng'
-import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
 import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
 import { resolveFight, selectNode } from '../../state/dungeon-run/dungeon-run-reducer'
 import DungeonRunProvider, { useDungeonRun } from '../../state/dungeon-run/DungeonRunProvider'
@@ -160,7 +161,15 @@ interface DungeonRunViewProps {
 const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const { run, outcome, dispatch } = useDungeonRun()
   const { save, dispatch: saveDispatch } = useSave()
-  const modifiers = resolveModifiers(RETIRED_SKILL_TREE)
+  // The dungeon-run store doesn't carry active item buffs yet (Story 9 wires
+  // the Bag) — this is the one caller that will eventually assemble both the
+  // persistent character and those ephemeral buffs for the battle launch.
+  // No character yet until Story 4 lands creation — see modifiers.ts's
+  // PLACEHOLDER_CHARACTER.
+  const modifiers = resolveModifiers(
+    save.character ?? PLACEHOLDER_CHARACTER,
+    getWeapon(save.equippedWeapon),
+  )
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
 
@@ -330,7 +339,13 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
 // per mount means every dungeon visit regenerates a new layout — and closing
 // the screen throws the run away, by design (finding E).
 const DungeonScreen = ({ tier, onNavigate }: DungeonScreenProps) => {
-  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
+  const { save } = useSave()
+  // No character yet until Story 4 lands creation — see modifiers.ts's
+  // PLACEHOLDER_CHARACTER.
+  const { maxHearts } = resolveModifiers(
+    save.character ?? PLACEHOLDER_CHARACTER,
+    getWeapon(save.equippedWeapon),
+  )
 
   // A fresh random seed, computed once per mount → every dungeon visit
   // regenerates a new layout (finding E). GameShell remounts this screen on

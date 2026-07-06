@@ -1,22 +1,46 @@
 import type { TextTier } from './types'
 
-// The M2 skill tree (m2-implementation.html Story 4), retired from the save
-// in M3 Story 0 (SaveData.skillTree is gone — see domain/save.ts's v2->v3
-// migration). These two types stay only because engine/progression/
-// skill-effects.ts's resolveModifiers still takes a SkillTreeState until
-// Story 3 rewrites the seam to take a Character instead; delete both then.
-export type SkillBranchId = 'endurance' | 'wordsmith' | 'focus' | 'luck' | 'utility'
+// The M2 skill tree's SkillBranchId/SkillTreeState (m2-implementation.html
+// Story 4) are retired here in M3 Story 3 — the seam's *input* is now a
+// Character + Weapon + ActiveBuff[] (engine/character/modifiers.ts), not a
+// purchased-node count. config/skill-tree.ts and ui/inn/SkillBranch.tsx keep
+// a local copy of the id union for their own (still-dead, Story-5-scheduled-
+// for-deletion) types — they don't reach back into this file for it anymore.
 
-// Per-branch purchased-node count.
-export type SkillTreeState = Record<SkillBranchId, number>
-
-// What the skill tree actually changes about combat, folded into one bag by
-// resolveModifiers() (engine/progression/skill-effects.ts) so battle-store
-// never has to know which branch grants what.
+// What a Character + equipped Weapon + active consumable buffs add up to for
+// one battle, folded into one bag by resolveModifiers()
+// (engine/character/modifiers.ts) so battle-store never has to know which
+// ability, class feature, or item produced which number. Same output *role*
+// as M2's narrower PlayerModifiers, widened for M3's ability/weapon/buff
+// surface (m3-implementation.html#seams, seam 1).
 export interface PlayerModifiers {
+  // -- Endurance/HP (CON + level) --
   maxHp: number
   maxHearts: number
-  wordsmithMaxTier: TextTier
-  // Focus/Luck/Utility switch on in M5 (roadmap.html#m5):
-  // timeLimitBonus, critChanceBonus, critDamageBonus, powerUpSlots
+  // -- Wordsmith/INT (renamed from wordsmithMaxTier: INT drives it now, not a
+  // purchased branch) --
+  intTierCap: TextTier
+  // -- Focus/WIS: typing time budget --
+  timeBudgetBonusMs: number
+  // -- The encounter d20 (engine/dice/, Story 6): proficiency bonus + any
+  // item/class flat bonus (e.g. Luckstone), and whether it rolls twice --
+  encounterBonus: number
+  hasAdvantage: boolean
+  // -- Luck/DEX: crits and dodge --
+  critChanceBonus: number
+  critDamageMult: number
+  powerUpMult: number
+  dodgeChance: number
+  // -- CHA: enemy intimidation --
+  intimidateWpmCut: number
+  // -- The equipped weapon (Story 7 reads these in engine/damage.ts) --
+  weaponDie: number
+  weaponAbilityMod: number
+  critRange: number
+  // -- Class features + item flags --
+  guaranteedFirstCrit: boolean
+  fumbleImmune: boolean
+  sneakAttackDice: number
+  secondWind: { hpThresholdPct: number; healPct: number } | null
+  arcaneCritMult: number
 }

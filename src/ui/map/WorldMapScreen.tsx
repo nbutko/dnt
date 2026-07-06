@@ -1,6 +1,7 @@
 import { toDungeon, toInn, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
-import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
+import { getWeapon } from '../../config/weapons'
+import { PLACEHOLDER_CHARACTER, resolveModifiers } from '../../engine/character/modifiers'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
@@ -17,8 +18,13 @@ interface WorldMapScreenProps {
 const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
   const { save } = useSave()
   // Hearts are a per-run resource, restored at the Inn — outside a dungeon the
-  // player is at full, so show maxHearts on both counts (feedback #5).
-  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
+  // player is at full, so show maxHearts on both counts (feedback #5). No
+  // character yet until Story 4 lands creation — see modifiers.ts's
+  // PLACEHOLDER_CHARACTER.
+  const { maxHearts } = resolveModifiers(
+    save.character ?? PLACEHOLDER_CHARACTER,
+    getWeapon(save.equippedWeapon),
+  )
 
   return (
     <Frame maxWidth={1080}>
@@ -31,7 +37,12 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
         </div>
         {/* Status cluster, mirroring the Inn header (feedback #5). */}
         <div className="absolute top-0 right-0">
-          <StatusReadout xp={save.character?.xp ?? 0} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
+          <StatusReadout
+            xp={save.character?.xp ?? 0}
+            coins={save.coins}
+            hearts={maxHearts}
+            maxHearts={maxHearts}
+          />
         </div>
       </div>
 

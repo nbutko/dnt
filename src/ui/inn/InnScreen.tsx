@@ -1,5 +1,6 @@
 import { toMap, type Screen } from '../../app/navigation'
-import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
+import { getWeapon } from '../../config/weapons'
+import { PLACEHOLDER_CHARACTER, resolveModifiers } from '../../engine/character/modifiers'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import StatusReadout from '../common/StatusReadout'
@@ -16,7 +17,12 @@ interface InnScreenProps {
 const InnScreen = ({ onNavigate }: InnScreenProps) => {
   const { save } = useSave()
   // Full hearts outside a run — they only deplete mid-dungeon (feedback #5).
-  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
+  // No buffs at the Inn (it's never inside a run) and no character yet until
+  // Story 4 lands creation — see modifiers.ts's PLACEHOLDER_CHARACTER.
+  const { maxHearts } = resolveModifiers(
+    save.character ?? PLACEHOLDER_CHARACTER,
+    getWeapon(save.equippedWeapon),
+  )
 
   return (
     <Frame maxWidth={1080}>
@@ -40,7 +46,8 @@ const InnScreen = ({ onNavigate }: InnScreenProps) => {
       </div>
 
       <p className="text-center font-mono text-sm text-text-dim">
-        Rest &amp; Sheet coming soon — the skill tree has been retired for the D&amp;D character layer (M3).
+        Rest &amp; Sheet coming soon — the skill tree has been retired for the D&amp;D character
+        layer (M3).
       </p>
     </Frame>
   )

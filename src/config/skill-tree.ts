@@ -1,10 +1,16 @@
-import type { SkillBranchId } from '../domain/progression'
 import type { TextTier } from '../domain/types'
 
+// This file is dead code kept only for ui/inn/SkillBranch.tsx, both slated
+// for deletion in Story 5 (the Inn rework) — domain/progression.ts no longer
+// carries this id union since Story 3 retired the skill tree from the seam,
+// so it's copied here rather than reintroducing that dependency.
+type SkillBranchId = 'endurance' | 'wordsmith' | 'focus' | 'luck' | 'utility'
+
 // One node in a branch's strictly-sequential chain (must buy node n before
-// n+1 unlocks — see design/README.md #4). `hp`/`hearts`/`maxTier` are read by
-// resolveModifiers(); locked branches' nodes carry none of them since they
-// grant nothing yet (m2-scope.html#inn, m2-implementation.html Story 4).
+// n+1 unlocks — see design/README.md #4). `hp`/`hearts`/`maxTier` used to be
+// read by the old skill-tree resolveModifiers(), retired in Story 3; locked
+// branches' nodes carry none of them since they never granted anything
+// (m2-scope.html#inn, m2-implementation.html Story 4).
 export interface SkillTreeNode {
   cost: number
   label: string

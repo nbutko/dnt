@@ -77,6 +77,18 @@ export interface BattleConfig {
   // fumbleDamageMultiplier caps every hit. Same Story 12 TODO as above.
   noCrits?: boolean
   fumbleDamageMultiplier?: number
+  // Story 11's automatic class features (engine/character/modifiers.ts's
+  // PlayerModifiers, threaded in by state/battle-store.ts). All optional,
+  // defaulting to "no effect", so older tests/sim callers keep compiling.
+  // DEX dodge: chance [0,1] a monster hit is negated outright.
+  dodgeChance?: number
+  // Fighter Second Wind: once per battle, the first time player HP crosses
+  // <= hpThresholdPct of max, auto-heal healPct of max HP. null (the
+  // default) means the character has no Second Wind feature.
+  secondWind?: { hpThresholdPct: number; healPct: number } | null
+  // Rogue Sneak Attack: +sneakAttackDice d6 folded into the first landed hit
+  // of the fight and into every crit (engine/damage.ts's computeDamage).
+  sneakAttackDice?: number
 }
 
 export interface PlayerState {
@@ -113,17 +125,27 @@ export interface MonsterState {
 }
 
 export type BattleEventSide = 'player' | 'monster'
-export type BattleEventKind = 'hit' | 'miss' | 'expire'
+// 'dodge' (Story 11): a monster attack that landed but was negated by DEX
+// dodge — no damage, no HP loss. Emitted instead of 'hit' for that swing.
+export type BattleEventKind = 'hit' | 'miss' | 'expire' | 'dodge'
 
 export interface BattleEvent {
   side: BattleEventSide
   kind: BattleEventKind
   damage?: number
   // Player 'hit' only (Story 7): the individual weapon-die rolls this swing
-  // (length 1 normally, `critCount` on a crit) and whether it crit — Story
-  // 11's floating damage popup reads these to show the rolled number(s).
+  // (length 1 normally, `critCount` on a crit, plus any Sneak Attack d6s) and
+  // whether it crit — Story 11's floating damage popup reads these to show
+  // the rolled number(s).
   diceRolled?: number[]
   isCrit?: boolean
+  // Player 'hit' only (Story 11): true when Sneak Attack dice were folded
+  // into this swing (the first landed hit of the fight, or any crit).
+  isSneakAttack?: boolean
+  // Monster 'hit'/'dodge' only (Story 11): true the one tick Second Wind
+  // auto-heals — riding on the same event as the monster's swing rather than
+  // a separate kind, since both can land on the same tick.
+  secondWindTriggered?: boolean
 }
 
 export type BattleStatus = 'ongoing' | 'won' | 'lost'
@@ -141,7 +163,11 @@ export interface DamageResult {
   lengthFactor: number
   speedBonus: number
   // The individual weapon-die rolls this swing summed into `damage` — length
-  // 1 normally, `critCount` on a crit (2, or 3 for the Wizard's arcane crit).
-  // Story 11's floating damage popup shows these.
+  // 1 normally, `critCount` on a crit (2, or 3 for the Wizard's arcane crit),
+  // plus any Sneak Attack d6s appended on top. Story 11's floating damage
+  // popup shows these.
   diceRolled: number[]
+  // Rogue Sneak Attack (Story 11): true when this swing's diceRolled
+  // includes bonus d6s (the first landed hit of the fight, or any crit).
+  isSneakAttack: boolean
 }

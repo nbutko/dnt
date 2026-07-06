@@ -352,6 +352,198 @@ describe('createBattle', () => {
     }
   })
 
+  it('dodgeChance negates a monster hit: no HP loss, event kind is dodge not hit', () => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad',
+      rng,
+      dodgeChance: 1, // always dodges
+    })
+    let ticks = 0
+    while (battle.getState().status === 'ongoing' && ticks < 50) {
+      battle.tick(50)
+      ticks += 1
+    }
+    const state = battle.getState()
+    expect(state.player.hp).toBe(combat.playerMaxHp)
+    // Every monster swing that lands should show up as a dodge, never a hit.
+    expect(state.lastEvent?.side).toBe('monster')
+    if (state.lastEvent?.kind !== 'miss') {
+      expect(state.lastEvent?.kind).toBe('dodge')
+      expect(state.lastEvent?.damage).toBeUndefined()
+    }
+  })
+
+  it('dodgeChance 0 never dodges (a monster hit always lands as kind hit)', () => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad',
+      rng,
+      dodgeChance: 0,
+    })
+    let ticks = 0
+    let sawHit = false
+    while (battle.getState().status === 'ongoing' && ticks < 200) {
+      battle.tick(50)
+      ticks += 1
+      if (battle.getState().lastEvent?.kind === 'dodge') {
+        throw new Error('should never dodge at dodgeChance 0')
+      }
+      if (battle.getState().lastEvent?.kind === 'hit' && battle.getState().lastEvent?.side === 'monster') {
+        sawHit = true
+      }
+    }
+    expect(sawHit).toBe(true)
+  })
+
+  it('dodge probability over many seeded monster hits matches dodgeChance', () => {
+    const dodgeChance = 0.5
+    const fastFailMonster: Monster = { ...steadyMonster, hp: 1_000_000 }
+    let dodges = 0
+    let hits = 0
+    // One fresh battle per seed, recording only its FIRST monster-attack
+    // outcome — a clean Bernoulli sample across 200 independent trials,
+    // rather than letting one battle's early events starve the rest.
+    for (let seed = 0; seed < 200; seed += 1) {
+      const rng = createRng(seed + 1000)
+      const battle = createBattle({
+        combat,
+        monster: fastFailMonster,
+        playerPrompts: () => 'jak',
+        monsterPrompts: () => 'sad',
+        rng,
+        dodgeChance,
+      })
+      let ticks = 0
+      let recorded = false
+      while (!recorded && ticks < 500) {
+        battle.tick(50)
+        ticks += 1
+        const event = battle.getState().lastEvent
+        if (event?.side === 'monster' && event.kind === 'dodge') {
+          dodges += 1
+          recorded = true
+        } else if (event?.side === 'monster' && event.kind === 'hit') {
+          hits += 1
+          recorded = true
+        }
+      }
+    }
+    const observedRate = dodges / (dodges + hits)
+    expect(observedRate).toBeGreaterThan(0.3)
+    expect(observedRate).toBeLessThan(0.7)
+  })
+
+  it('Second Wind fires exactly once, the first time HP crosses the threshold', () => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad',
+      rng,
+      secondWind: { hpThresholdPct: 0.5, healPct: 0.25 },
+    })
+    let ticks = 0
+    let triggers = 0
+    let sawHealBump = false
+    let prevHp = battle.getState().player.hp
+    // lastEvent isn't cleared on ticks where nothing happens — it's the same
+    // object reference until a NEW event actually fires — so track identity
+    // to count each occurrence once instead of re-counting a stale flag on
+    // every subsequent tick.
+    let prevEventRef = battle.getState().lastEvent
+    while (battle.getState().status === 'ongoing' && ticks < 2000) {
+      battle.tick(50)
+      ticks += 1
+      const state = battle.getState()
+      if (state.lastEvent && state.lastEvent !== prevEventRef) {
+        prevEventRef = state.lastEvent
+        if (state.lastEvent.secondWindTriggered) {
+          triggers += 1
+          if (state.player.hp > prevHp) sawHealBump = true
+        }
+      }
+      prevHp = state.player.hp
+    }
+    expect(triggers).toBe(1)
+    expect(sawHealBump).toBe(true)
+  })
+
+  it('no Second Wind (null) never triggers, even crossing the same HP fraction', () => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad',
+      rng,
+      secondWind: null,
+    })
+    let ticks = 0
+    while (battle.getState().status === 'ongoing' && ticks < 300) {
+      battle.tick(50)
+      ticks += 1
+      expect(battle.getState().lastEvent?.secondWindTriggered).toBeUndefined()
+    }
+  })
+
+  it('Sneak Attack dice add to the first landed hit, and to every crit, but not to an ordinary later hit', () => {
+    // criticalChance 0 isolates "first hit" from "crit" — no natural crits
+    // can occur, so any dice beyond the weapon's own show Sneak Attack.
+    const noNaturalCrits: CombatConfig = { ...combat, criticalChance: 0 }
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat: noNaturalCrits,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      weaponDie: 6,
+      sneakAttackDice: 2,
+    })
+
+    battle.submitPlayerAttack('jak')
+    const firstHit = battle.getState().lastEvent
+    expect(firstHit?.isSneakAttack).toBe(true)
+    // 1 weapon die + 2 sneak d6 = 3 dice total.
+    expect(firstHit?.diceRolled).toHaveLength(3)
+
+    battle.submitPlayerAttack('jak')
+    const secondHit = battle.getState().lastEvent
+    expect(secondHit?.isSneakAttack).toBeUndefined()
+    expect(secondHit?.diceRolled).toHaveLength(1)
+  })
+
+  it('Sneak Attack dice fold into every crit, even after the first hit', () => {
+    const alwaysCrits: CombatConfig = { ...combat, criticalChance: 1 }
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat: alwaysCrits,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      weaponDie: 6,
+      critCount: 2,
+      sneakAttackDice: 1,
+    })
+
+    battle.submitPlayerAttack('jak') // first hit: forced sneak attack too
+    battle.submitPlayerAttack('jak') // a later hit that also crits (chance 1)
+    const laterHit = battle.getState().lastEvent
+    expect(laterHit?.isCrit).toBe(true)
+    expect(laterHit?.isSneakAttack).toBe(true)
+    // 2 weapon-die crit rolls + 1 sneak d6 = 3 dice.
+    expect(laterHit?.diceRolled).toHaveLength(3)
+  })
+
   it('the same seed + weapon produces the same damage/dice sequence (determinism)', () => {
     const runDamages = (): (number | undefined)[] => {
       const rng = createRng(7)

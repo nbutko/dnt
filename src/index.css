@@ -115,3 +115,30 @@ body {
 .die-tumble {
   animation: die-tumble 0.5s ease-in-out infinite;
 }
+
+/* The battle-screen "juice" flashes (M3 Story 11, ui/common/Flash.tsx,
+   wireframe turn 8): a floating damage/crit number or a labeled reaction
+   ("Dodged!", "Second Wind!", "Sneak Attack!") drifts up and fades over one
+   beat. A single play-once run (not looping like die-tumble) since
+   BattleScreen mounts/unmounts each Flash instance for its own lifetime. */
+@keyframes flash-float {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scale(1);
+  }
+}
+.animate-flash-float {
+  animation: flash-float 1.4s ease-out forwards;
+}

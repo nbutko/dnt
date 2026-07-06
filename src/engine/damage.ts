@@ -90,6 +90,15 @@ export interface ComputeDamageParams {
   // A fumble also caps damage at this flat multiplier (m3-scope.html#open:
   // "the fumble/inspiration magnitudes") — 1 (no cap) outside a fumble.
   fumbleDamageMultiplier?: number
+  // Rogue Sneak Attack (Story 11, PlayerModifiers.sneakAttackDice): how many
+  // extra d6 fold into this swing when it qualifies (see forceSneakAttack).
+  // 0 (the default) means no Sneak Attack feature at all.
+  sneakAttackDice?: number
+  // engine/battle.ts's job, not this function's: whether THIS swing is the
+  // fight's first landed hit (Sneak Attack always applies there, crit or
+  // not). A crit applies Sneak Attack regardless of this flag — see
+  // `appliesSneakAttack` below.
+  forceSneakAttack?: boolean
 }
 
 // Base hit = (sum of `critCount` weapon-die rolls on a crit, else 1 roll,
@@ -114,12 +123,23 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
     forceCrit = false,
     noCrits = false,
     fumbleDamageMultiplier = 1,
+    sneakAttackDice = 0,
+    forceSneakAttack = false,
   } = params
   const lf = lengthFactor(charCount, combat)
   const sb = speedBonus(timeUsedMs, timeLimitMs)
   const isCrit = rollIsCrit(combat, rng, { forceCrit, noCrits })
   const rollCount = isCrit ? critCount : 1
-  const diceRolled = Array.from({ length: rollCount }, () => rollDie(rng, weaponDie))
+  const weaponDiceRolled = Array.from({ length: rollCount }, () => rollDie(rng, weaponDie))
+  // Sneak Attack (m3-scope.html#ability-mechanics): "the first landed hit
+  // each battle — and every crit — adds +Nd6." Rolled as its own d6s (not
+  // the weapon's die) and folded into the same swing's total before scaling,
+  // so it benefits from lengthFactor/speedBonus/gate like the rest of the hit.
+  const isSneakAttack = sneakAttackDice > 0 && (forceSneakAttack || isCrit)
+  const sneakDiceRolled = isSneakAttack
+    ? Array.from({ length: sneakAttackDice }, () => rollDie(rng, 6))
+    : []
+  const diceRolled = [...weaponDiceRolled, ...sneakDiceRolled]
   const diceTotal = diceRolled.reduce((sum, roll) => sum + roll, 0)
   const baseHit = (diceTotal + weaponAbilityMod) * damageScale
 
@@ -129,6 +149,7 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
     lengthFactor: lf,
     speedBonus: sb,
     diceRolled,
+    isSneakAttack,
   }
 }
 

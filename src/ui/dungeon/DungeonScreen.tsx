@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
+import abilitiesConfig from '../../config/abilities'
+import { getClass } from '../../config/classes'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig from '../../config/rewards'
 import { getWeapon } from '../../config/weapons'
 import { getMonster } from '../../content/monsters'
+import { abilityMod } from '../../domain/character'
 import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 import type { MonsterRole } from '../../domain/types'
+import { grantsForLevel } from '../../engine/character/leveling'
 import { resolveModifiers } from '../../engine/character/modifiers'
+import { rollMimicSense } from '../../engine/dice/mimic-sense'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
 import { createRng } from '../../engine/rng'
 import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
@@ -26,6 +31,7 @@ import ActiveBuffsStrip from './ActiveBuffsStrip'
 import Bag from './Bag'
 import DungeonGraphView from './DungeonGraph'
 import EncounterModal from './EncounterModal'
+import MimicWarningModal from './MimicWarningModal'
 import RewardModal from './RewardModal'
 
 interface DungeonScreenProps {
@@ -187,6 +193,31 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
   const graphScrollLeft = useRef(0)
 
+  // WIS mimic sense (m3-scope.html#mimic-sense, wireframe turn 5): a HIDDEN
+  // d20 + WIS + proficiency roll fired the instant a chest is selected — its
+  // own rng stream, seeded off the run's graph so it's still reproducible
+  // for a given dungeon, but never shares draws with the graph generator or
+  // any battle (both keep their own rng instances already).
+  const mimicSenseRng = useRef(createRng(run.graph.seed + 7919)).current
+  const mimicSenseMods = useMemo(() => {
+    const classDef = getClass(character.class)
+    const { proficiencyBonus } = grantsForLevel(character.class, character.level, character.abilities.con)
+    return {
+      wisMod: abilityMod(character.abilities.wis),
+      proficiencyBonus,
+      // Rogue Expertise (config/classes.ts's cunning.mimicExpertise): doubles
+      // proficiency on this specific check only.
+      expertise: classDef.feature.kind === 'cunning' && classDef.feature.mimicExpertise === true,
+    }
+  }, [character])
+  // Once a chest is sensed as a mimic (Back away or Open anyway), the
+  // knowledge is permanent for that chest (m3-scope.html#mimic-sense) — a
+  // re-select skips rolling again and goes straight to the warning.
+  const [knownMimicIds, setKnownMimicIds] = useState<Set<string>>(new Set())
+  // Holds the chest node id currently showing the "teeth on edge" warning
+  // (wireframe 5a) — null the rest of the time.
+  const [mimicWarningId, setMimicWarningId] = useState<string | null>(null)
+
   // A hidden encounter (mimic chest, or a ?-glyph waypoint/approach/boss), once
   // tapped, pauses on a reveal modal before the fight (feedback #13, round-2 #C)
   // — holds the tapped node id until the player hits Begin Battle. Null the rest
@@ -256,6 +287,23 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       handleWin(node)
       return
     }
+    // WIS mimic sense (wireframe turn 5): every chest reaching here is a
+    // mimic (a real chest short-circuited above) — a known one skips
+    // straight to the warning, otherwise roll the hidden check once.
+    if (node.kind === 'chest') {
+      if (knownMimicIds.has(id)) {
+        setMimicWarningId(id)
+        return
+      }
+      const dcByTier = abilitiesConfig.mimicDeceptionDcByTier
+      const dc = dcByTier[Math.min(tier, dcByTier.length) - 1]
+      const check = rollMimicSense(true, dc, mimicSenseMods, mimicSenseRng)
+      if (check.success) {
+        setKnownMimicIds((prev) => new Set(prev).add(id))
+        setMimicWarningId(id)
+        return
+      }
+    }
     if (REVEAL_KINDS.has(node.kind)) {
       setRevealId(id)
       return
@@ -268,6 +316,21 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     if (!revealId) return
     dispatch(selectNode(revealId))
     setRevealId(null)
+  }
+
+  // Back away (mimic-sense warning): skip it, no heart risk — the node just
+  // stays available, exactly as if it had never been tapped.
+  const handleMimicBackAway = (): void => {
+    setMimicWarningId(null)
+  }
+
+  // Open anyway: take the fight knowingly, for the XP — falls into the same
+  // reveal-modal path a non-sensed mimic already uses (feedback #13's "You
+  // encountered a Mimic!" beat), rather than a second, parallel launch path.
+  const handleMimicOpenAnyway = (): void => {
+    if (!mimicWarningId) return
+    setRevealId(mimicWarningId)
+    setMimicWarningId(null)
   }
 
   const body =
@@ -359,6 +422,9 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
             />
           )
         })()}
+      {mimicWarningId && (
+        <MimicWarningModal onBackAway={handleMimicBackAway} onOpenAnyway={handleMimicOpenAnyway} />
+      )}
     </>
   )
 }

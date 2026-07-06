@@ -14,6 +14,19 @@ export interface BattleStore {
   submit(input: string): void
 }
 
+// CHA intimidate / Bard debuff (m3-scope.html#ability-mechanics): cut the
+// monster's effective wpm once, at fight start — baked into the Monster
+// object handed to createBattle, so every prompt this fight reads the
+// already-debuffed wpm without re-applying it per prompt. Floored at 10% of
+// the original wpm so an extreme cut (or a very negative CHA inflating it
+// the other way) can never zero out or invert the monster's speed. A pure,
+// synchronous export (unlike createBattleStore below) so it's headlessly
+// testable without the async text-bank lookup.
+export const intimidatedMonster = (monster: Monster, intimidateWpmCut: number): Monster => ({
+  ...monster,
+  wpm: monster.wpm * Math.max(0.1, 1 - intimidateWpmCut),
+})
+
 // The useSyncExternalStore adapter over one createBattle() instance. Also
 // where the async content lookup (text banks) happens once, at setup, so the
 // battle engine itself only ever sees a resolved, synchronous PromptSource.
@@ -43,7 +56,7 @@ export const createBattleStore = async (
 
   const battle = createBattle({
     combat: { ...combat, playerMaxHp: modifiers.maxHp },
-    monster,
+    monster: intimidatedMonster(monster, modifiers.intimidateWpmCut),
     playerPrompts,
     monsterPrompts,
     rng,
@@ -54,6 +67,11 @@ export const createBattleStore = async (
     damageScale: abilitiesConfig.damageScale,
     critCount: modifiers.arcaneCritMult,
     guaranteedFirstCrit: modifiers.guaranteedFirstCrit,
+    // Story 11: DEX dodge, Fighter Second Wind, Rogue Sneak Attack — all
+    // resolve automatically inside engine/battle.ts and surface as a flash.
+    dodgeChance: modifiers.dodgeChance,
+    secondWind: modifiers.secondWind,
+    sneakAttackDice: modifiers.sneakAttackDice,
     // TODO(Story 12): noCrits + fumbleDamageMultiplier come from this
     // fight's frozen EncounterRoll (engine/dice/encounter-roll.ts's `fumble`
     // flag) — same TODO as servedTier/targetTier above: the encounter modal

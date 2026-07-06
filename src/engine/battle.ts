@@ -28,6 +28,9 @@ export const createBattle = (config: BattleConfig): Battle => {
     guaranteedFirstCrit = false,
     noCrits = false,
     fumbleDamageMultiplier,
+    dodgeChance = 0,
+    secondWind = null,
+    sneakAttackDice = 0,
   } = config
 
   let status: BattleStatus = 'ongoing'
@@ -36,8 +39,13 @@ export const createBattle = (config: BattleConfig): Battle => {
   let lastEvent: BattleEvent | undefined
   // guaranteedFirstCrit (the encounter d20's nat-20 "INSPIRED" result, Story
   // 6) only ever forces *one* swing — this fight's first landed hit — so it
-  // has to be tracked here, not per-call in computeDamage.
+  // has to be tracked here, not per-call in computeDamage. Sneak Attack
+  // (Story 11) reuses the same flag: it also always applies to that first hit.
   let playerHasLandedHit = false
+  // Fighter Second Wind (Story 11): fires at most once per battle, the first
+  // time HP crosses the threshold — tracked here since computeMonsterDamage
+  // has no notion of "already used this battle."
+  let secondWindUsed = false
 
   const playerTimeLimitFor = (promptText: string): number =>
     Math.max(
@@ -141,14 +149,38 @@ export const createBattle = (config: BattleConfig): Battle => {
       monsterTyper.advance(dtMs)
       const monsterTyperState = monsterTyper.getState()
       if (monsterTyperState.done) {
-        const damage = computeMonsterDamage({
+        const rawDamage = computeMonsterDamage({
           charCount: monsterPromptText.length,
           timeUsedMs: monsterTyperState.elapsedMs,
           timeLimitMs: monsterTyperState.timeLimitMs,
           combat,
         })
+        // DEX dodge (m3-scope.html#ability-mechanics): negate the hit
+        // outright, no HP loss — a flash-only reaction, never a prompt.
+        const dodged = dodgeChance > 0 && rng.next() < dodgeChance
+        const damage = dodged ? 0 : rawDamage
         playerHp = Math.max(0, playerHp - damage)
-        lastEvent = { side: 'monster', kind: 'hit', damage }
+        // Fighter Second Wind: the FIRST time HP crosses <= hpThresholdPct,
+        // once per battle. Never revives a killing blow (playerHp > 0) — it
+        // softens a dire fight, it isn't a resurrection.
+        const secondWindTriggered =
+          !secondWindUsed &&
+          secondWind !== null &&
+          playerHp > 0 &&
+          playerHp / combat.playerMaxHp <= secondWind.hpThresholdPct
+        if (secondWindTriggered) {
+          secondWindUsed = true
+          playerHp = Math.min(
+            combat.playerMaxHp,
+            playerHp + Math.round(combat.playerMaxHp * secondWind.healPct),
+          )
+        }
+        lastEvent = {
+          side: 'monster',
+          kind: dodged ? 'dodge' : 'hit',
+          damage: dodged ? undefined : damage,
+          secondWindTriggered: secondWindTriggered || undefined,
+        }
         checkOutcome()
         if (status === 'ongoing') advanceMonsterPrompt()
       } else if (monsterTyperState.failed) {
@@ -187,6 +219,10 @@ export const createBattle = (config: BattleConfig): Battle => {
         forceCrit: guaranteedFirstCrit && !playerHasLandedHit,
         noCrits,
         fumbleDamageMultiplier,
+        sneakAttackDice,
+        // Sneak Attack always lands on the fight's first hit, crit or not
+        // (see engine/damage.ts's isSneakAttack = forceSneakAttack || isCrit).
+        forceSneakAttack: !playerHasLandedHit,
       })
       playerHasLandedHit = true
       monsterHp = Math.max(0, monsterHp - result.damage)
@@ -196,6 +232,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         damage: result.damage,
         isCrit: result.isCrit,
         diceRolled: result.diceRolled,
+        isSneakAttack: result.isSneakAttack || undefined,
       }
 
       // Only draw a new prompt if the battle is still ongoing — otherwise

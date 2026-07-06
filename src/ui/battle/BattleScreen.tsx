@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { getMonster } from '../../content/monsters'
-import type { Monster } from '../../domain/types'
+import type { BattleEvent, Monster } from '../../domain/types'
 import type { PlayerModifiers } from '../../domain/progression'
 import { createBattleStore, type BattleStore } from '../../state/battle-store'
+import Flash, { type FlashVariant } from '../common/Flash'
 import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
 import { useGameLoop } from '../hooks/useGameLoop'
@@ -11,6 +12,79 @@ import HealthBar from './HealthBar'
 import Keyboard from './Keyboard'
 import PlayerPrompt from './PlayerPrompt'
 import TypedProgress from './TypedProgress'
+
+// How long one Flash instance stays mounted — matches index.css's
+// flash-float animation duration (Story 11, wireframe turn 8).
+const FLASH_DURATION_MS = 1400
+
+// Where a flash anchors within its (relatively-positioned) panel — fixed
+// wireframe-matched slots so simultaneous flashes never overlap: a player
+// hit's damage/crit number floats over the monster's HP bar; a dodge reads
+// top-left of the player panel, Sneak Attack top-right, Second Wind
+// bottom-right (8a's layout).
+type FlashSlot = 'monster-hit' | 'player-topleft' | 'player-topright' | 'player-bottomright'
+
+const SLOT_CLASS: Record<FlashSlot, string> = {
+  'monster-hit': 'absolute left-1/2 top-14 -translate-x-1/2',
+  'player-topleft': 'absolute left-2 -top-3',
+  'player-topright': 'absolute right-2 -top-3',
+  'player-bottomright': 'absolute right-3 bottom-3',
+}
+
+interface FlashInstance {
+  id: number
+  slot: FlashSlot
+  variant: FlashVariant
+  text: string
+  sublabel?: string
+}
+
+// Builds this tick's flash(es) from ONE fresh BattleEvent — a player hit can
+// carry both a damage/crit number AND a Sneak Attack label; a monster's
+// dodge is its own event; Second Wind rides on whichever monster event
+// triggered it (engine/battle.ts folds it in rather than using a separate
+// kind, since both can land on the same tick). No mid-typing input — purely
+// a reaction to what the engine already decided (m3-scope.html#ability-mechanics).
+const buildFlashes = (event: BattleEvent, nextId: () => number): FlashInstance[] => {
+  const flashes: FlashInstance[] = []
+
+  if (event.side === 'player' && event.kind === 'hit') {
+    const shown = Math.round(event.damage ?? 0)
+    const sublabel = event.diceRolled?.length
+      ? `🎲 ${event.diceRolled.join('+')}${event.isCrit ? ` ×${event.diceRolled.length}` : ''}`
+      : undefined
+    flashes.push({
+      id: nextId(),
+      slot: 'monster-hit',
+      variant: event.isCrit ? 'crit' : 'hit',
+      text: event.isCrit ? `CRIT ${shown}!` : `${shown}`,
+      sublabel,
+    })
+    if (event.isSneakAttack) {
+      flashes.push({
+        id: nextId(),
+        slot: 'player-topright',
+        variant: 'sneak-attack',
+        text: 'Sneak Attack!',
+      })
+    }
+  }
+
+  if (event.side === 'monster' && event.kind === 'dodge') {
+    flashes.push({ id: nextId(), slot: 'player-topleft', variant: 'dodge', text: 'Dodged!' })
+  }
+
+  if (event.secondWindTriggered) {
+    flashes.push({
+      id: nextId(),
+      slot: 'player-bottomright',
+      variant: 'second-wind',
+      text: '✚ Second Wind!',
+    })
+  }
+
+  return flashes
+}
 
 // The battle's outcome, in the dungeon-run's vocabulary — a clean 'win'|'lose'
 // so callers don't have to translate the engine's 'won'|'lost' status.
@@ -36,6 +110,47 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
     setInput('')
   }, [state.player.attempt])
 
+  // The Story 11 flash overlays. `state.lastEvent` isn't cleared on ticks
+  // where nothing new happened — it's the same object reference until a NEW
+  // event actually fires — so identity (not content) is what tells a fresh
+  // event from a stale re-read; see engine/battle.ts's own comment on the
+  // same subtlety.
+  const [flashes, setFlashes] = useState<FlashInstance[]>([])
+  const prevEventRef = useRef<BattleEvent | undefined>(undefined)
+  const nextFlashId = useRef(0)
+  const pendingTimeouts = useRef<number[]>([])
+
+  useEffect(() => {
+    const event = state.lastEvent
+    if (!event || event === prevEventRef.current) return
+    prevEventRef.current = event
+
+    const created = buildFlashes(event, () => {
+      nextFlashId.current += 1
+      return nextFlashId.current
+    })
+    if (created.length === 0) return
+
+    setFlashes((prev) => [...prev, ...created])
+    created.forEach((flash) => {
+      const timeoutId = window.setTimeout(() => {
+        setFlashes((prev) => prev.filter((f) => f.id !== flash.id))
+      }, FLASH_DURATION_MS)
+      pendingTimeouts.current.push(timeoutId)
+    })
+  }, [state.lastEvent])
+
+  // Clears any in-flight flash timers on unmount so a fight left mid-flash
+  // never calls setState on an unmounted screen.
+  useEffect(
+    () => () => {
+      pendingTimeouts.current.forEach((id) => window.clearTimeout(id))
+    },
+    [],
+  )
+
+  const flashesFor = (slot: FlashSlot): FlashInstance[] => flashes.filter((f) => f.slot === slot)
+
   // A win resolves straight into the dungeon's reward modal (feedback #1/#12):
   // hand the result up the moment the monster falls, with no intermediate
   // "Continue" button, so the modal's single Continue is the only press. A loss
@@ -59,13 +174,16 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
         Battle — Tier {monsterInfo.tier}
       </h1>
 
-      <section className="rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-monster-from to-panel-monster-to p-4">
+      <section className="relative rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-monster-from to-panel-monster-to p-4">
         <HealthBar
           label={monsterInfo.name}
           hp={state.monster.hp}
           maxHp={state.monster.maxHp}
           family="danger"
         />
+        {flashesFor('monster-hit').map((f) => (
+          <Flash key={f.id} text={f.text} variant={f.variant} sublabel={f.sublabel} className={SLOT_CLASS[f.slot]} />
+        ))}
         <div className="mt-3 flex items-start gap-4">
           <div className="flex-1 rounded border border-border-gold-dim bg-black/30 p-3">
             {state.monster.paused ? (
@@ -100,8 +218,13 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
         <span className="h-px flex-1 bg-border-gold-dim" />
       </div>
 
-      <section className="rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-player-from to-panel-player-to p-4">
+      <section className="relative rounded-lg border-2 border-border-gold bg-gradient-to-b from-panel-player-from to-panel-player-to p-4">
         <HealthBar label="You" hp={state.player.hp} maxHp={state.player.maxHp} family="gold" />
+        {(['player-topleft', 'player-topright', 'player-bottomright'] as const).flatMap((slot) =>
+          flashesFor(slot).map((f) => (
+            <Flash key={f.id} text={f.text} variant={f.variant} sublabel={f.sublabel} className={SLOT_CLASS[f.slot]} />
+          )),
+        )}
 
         <div className="mt-3 flex items-start gap-4">
           <div className="flex-1">

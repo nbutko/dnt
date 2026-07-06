@@ -220,6 +220,84 @@ describe('computeDamage', () => {
     expect(result.damage).toBeCloseTo(result.diceRolled[0] * 0.75)
   })
 
+  it('forceSneakAttack folds Nd6 into the swing even without a crit', () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 0 }
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      sneakAttackDice: 2,
+      forceSneakAttack: true,
+    })
+    expect(result.isCrit).toBe(false)
+    expect(result.isSneakAttack).toBe(true)
+    // 1 weapon d6 + 2 sneak d6 = 3 dice.
+    expect(result.diceRolled).toHaveLength(3)
+  })
+
+  it('a crit applies Sneak Attack too, even without forceSneakAttack', () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 1 }
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      sneakAttackDice: 1,
+    })
+    expect(result.isCrit).toBe(true)
+    expect(result.isSneakAttack).toBe(true)
+    // 2 weapon-die crit rolls + 1 sneak d6 = 3 dice.
+    expect(result.diceRolled).toHaveLength(3)
+  })
+
+  it('an ordinary (non-crit, non-forced) swing never applies Sneak Attack', () => {
+    const rng = createRng(1)
+    const combat = { ...baseCombat, criticalChance: 0 }
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      sneakAttackDice: 3,
+      forceSneakAttack: false,
+    })
+    expect(result.isSneakAttack).toBe(false)
+    expect(result.diceRolled).toHaveLength(1)
+  })
+
+  it('sneakAttackDice 0 (no feature) never applies Sneak Attack even when forced', () => {
+    const rng = createRng(1)
+    const result = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: baseCombat,
+      rng,
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      sneakAttackDice: 0,
+      forceSneakAttack: true,
+    })
+    expect(result.isSneakAttack).toBe(false)
+    expect(result.diceRolled).toHaveLength(1)
+  })
+
   it('is deterministic: the same seed produces the same dice/damage sequence', () => {
     const combat = { ...baseCombat, criticalChance: 0.5 }
     const run = () => {

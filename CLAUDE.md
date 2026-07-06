@@ -19,17 +19,20 @@ project for one kid, **not** a product for the world.
 | Stack, data model, persistence, hosting | [`docs/architecture.html`](docs/architecture.html) |
 | Text tiers, monster roster, content sourcing | [`docs/content-plan.html`](docs/content-plan.html) |
 
-### Current milestone: **M3 — the character sheet (the D&D layer)**
-- **Scope (what):** [`docs/m3-scope.html`](docs/m3-scope.html) — six abilities, D&D leveling (replaces the skill
-  tree), classes, dice (encounter d20 + weapon damage die), weapons, consumables, the Shop.
-- **Implementation (how):** [`docs/m3-implementation.html`](docs/m3-implementation.html) — stories 0–12, the
-  seam reuse, review findings. **This is the plan of record; follow its story order.**
-- **Wireframes (what it looks like):** [`docs/design/m3-wireframes.html`](docs/design/m3-wireframes.html) — 8
-  screens, match them exactly.
+### Milestone docs
 
-Prior milestones: M0 [`m0-implementation.html`](docs/m0-implementation.html) (combat spike, done);
-M2 [`m2-scope.html`](docs/m2-scope.html) + [`m2-implementation.html`](docs/m2-implementation.html) (progression
-loop, done — its tail has the post-playtest feedback logs).
+Each milestone has a **scope** (what) and an **implementation plan** (how) under `docs/`. The
+[roadmap](docs/roadmap.html) is the single source of truth for **which milestone is active** — check it rather
+than trusting a hard-coded "current" note here. When starting work in a milestone, follow its implementation
+plan's story order.
+
+- **M0** — combat-math spike: [m0-implementation](docs/m0-implementation.html)
+- **M2** — progression loop (map, dungeons, hearts, the Inn):
+  [m2-scope](docs/m2-scope.html) + [m2-implementation](docs/m2-implementation.html) (its tail holds the
+  post-playtest feedback logs)
+- **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop):
+  [m3-scope](docs/m3-scope.html) + [m3-implementation](docs/m3-implementation.html) +
+  [wireframes](docs/design/m3-wireframes.html)
 
 ## Working rules (non-negotiable)
 

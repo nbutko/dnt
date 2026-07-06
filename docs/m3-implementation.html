@@ -304,7 +304,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
 
 <h2 id="stories">Stories &amp; tasks</h2>
 <p>
-  Build order: <strong>0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13.</strong> Strictly bottom-up: the save
+  Build order: <strong>0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14.</strong> Strictly bottom-up: the save
   model and config data first, then the engine functions with their <a href="m0-implementation.html">Vitest</a>
   coverage, then the screens that consume them. The one deliberate ordering choice is that
   <strong>character creation (Story 4) lands right after the modifier seam (Story 3)</strong>, so the moment a
@@ -655,6 +655,69 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
   without anyone playing it by hand; the closed-form checks agree with the sim; the invariant sweep is green; and
   the placeholder numbers are a defensible <em>floor</em> handed to <a href="roadmap.html#m5">M5</a> — sane, not
   yet final.</p>
+</div>
+
+<div class="milestone" id="story-14">
+  <h3>Story 14 — Docs pass: bring the canonical docs current <span class="tag">docs</span></h3>
+  <p>
+    M3 rewrites enough of the game's actual rules that the <em>evergreen</em> docs now describe a game that no
+    longer exists — they still talk about a skill tree, a flat <code>baseDamage</code>, and a v2 save. This story
+    brings the <strong>current-state</strong> docs into line with what shipped. The governing rule:
+  </p>
+  <div class="callout decision">
+    <strong>Canonical docs describe the game <em>as it now is</em>; the planning record stays frozen.</strong>
+    Update the docs whose job is to be current (game-design, architecture, the pitch, the code map, this repo's
+    CLAUDE.md). <strong>Do not</strong> rewrite the point-in-time records — the scope docs, the implementation
+    plans (including this one), the wireframes, and the post-playtest logs are "how we got here," and editing them
+    to match the present erases the history that makes them useful. When they conflict, the canonical doc wins and
+    the historical one is simply older.
+  </div>
+  <p><strong>Refresh (current-state — must reflect the shipped M3):</strong></p>
+  <ul>
+    <li><a href="game-design.html">game-design.html</a> — the big one, the canonical rules. Its
+    <code>#skill-tree</code> section is <strong>retired</strong> → abilities + D&amp;D leveling; the
+    <code>#damage</code> formula flips flat <code>baseDamage</code> → <code>weapon die + ability mod</code>, crits
+    now <em>roll the dice again</em> (not a flat ×2), <code>powerUpMultiplier</code> is now driven by consumables,
+    and <code>critMultiplier</code> keys off DEX + the weapon's crit range, not a "Luck skill stat." The
+    derived-values table re-sources every row: max HP from level + CON (not the Endurance branch), time budget from
+    WIS (not Focus), served text tier from the <a href="#story-6">encounter d20 band capped by INT</a> (not
+    Wordsmith). Add the new rules: the six abilities, the four classes, the two dice, weapons, consumables, the
+    Shop.</li>
+    <li><a href="architecture.html">architecture.html</a> — the <code>#persistence</code> <code>SaveData</code>
+    example goes to <strong>v3</strong> (the <code>character</code> / <code>inventory</code> /
+    <code>equippedWeapon</code> shape, no <code>skillTree</code> field); the <code>#state</code> persistent-state row
+    ("coins, xp, skillTree, inventory") names the character; drop the "skill tree grid" aside in the Tailwind
+    rationale.</li>
+    <li><a href="index.html">index.html</a> — the pitch still says "spend XP in a skill tree that raises max
+    HP…"; rewrite it for D&amp;D leveling + abilities. Fix the game-design card blurb ("XP &amp; skill tree,
+    power-ups" → abilities / leveling / dice / gear) and guiding-principle #4 ("skill tree costs" → the leveling /
+    ability config). Leave the <em>M2 scope</em> card blurb as-is — it accurately describes that (historical) doc.</li>
+    <li><a href="codebase-architecture.html">codebase-architecture.html</a> — re-snapshot it against the real
+    post-M3 tree: the new <code>engine/character/</code> + <code>engine/dice/</code> + <code>ui/create/</code> +
+    <code>ui/shop/</code> dirs, the retired skill-tree files, <code>resolveModifiers</code> in its new home, the v3
+    save, the Screen union's <code>shop</code>, and the "dead hooks" section (which is now wrong — those hooks are
+    lit). Update its snapshot line from "post-M2, pre-M3-code."</li>
+    <li><a href="../CLAUDE.md">CLAUDE.md</a> (repo root) — flip "current milestone: M3" to done / point at M4;
+    move the now-<em>used</em> hooks (<code>powerUpMultiplier</code>, <code>bestWpm</code>,
+    <code>textTierRange</code>) out of the gotchas; update the save-version note and the seam's file path.</li>
+    <li><a href="roadmap.html">roadmap.html</a> — mark M3 delivered (its "how it grew" note stays; only the
+    status/tense moves to past). Light touch — the roadmap is mostly a stable build-order narrative.</li>
+    <li><a href="content-plan.html">content-plan.html</a> — light: note that weapons and consumables are now
+    config-catalogued content alongside the text tiers and roster, if it's worth a pointer; no rewrite.</li>
+    <li><a href="design/">design/</a> — fold the shipped M3 screens/tokens into the canonical
+    <a href="design/visual-spec.html">visual-spec.html</a> / <a href="design/README.md">README.md</a> /
+    <a href="design/tokens.json">tokens.json</a>, so <code>design/</code> stays the current source of truth. The
+    <a href="design/m3-wireframes.html">M3 wireframes</a> stay put as the original proposal — frozen, like the rest
+    of the planning record.</li>
+  </ul>
+  <p><strong>Leave frozen (historical — do <em>not</em> retro-edit):</strong>
+  <a href="m0-implementation.html">m0-implementation</a>, <a href="m2-scope.html">m2-scope</a>,
+  <a href="m2-implementation.html">m2-implementation</a> (and its post-playtest logs),
+  <a href="m3-scope.html">m3-scope</a>, this plan, and the wireframes.</p>
+  <p><strong>Done when:</strong> a fresh reader hitting game-design / architecture / index / the code map / CLAUDE.md
+  sees only the game that actually exists — no lingering skill tree, flat <code>baseDamage</code>, or v2 save — and
+  the historical planning docs are untouched. (Docs-only: skips the build/test gate, but verify each in a browser
+  per the <a href="index.html">working style</a>.)</p>
 </div>
 
 <h2 id="out-of-scope">Out of scope for M3</h2>

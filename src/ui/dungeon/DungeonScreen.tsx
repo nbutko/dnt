@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toMap, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig from '../../config/rewards'
@@ -10,7 +10,11 @@ import { resolveModifiers } from '../../engine/character/modifiers'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
 import { createRng } from '../../engine/rng'
 import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
-import { resolveFight, selectNode } from '../../state/dungeon-run/dungeon-run-reducer'
+import {
+  clearBuffs,
+  resolveFight,
+  selectNode,
+} from '../../state/dungeon-run/dungeon-run-reducer'
 import DungeonRunProvider, { useDungeonRun } from '../../state/dungeon-run/DungeonRunProvider'
 import { award, recordDefeat, unlockTier } from '../../state/save/save-reducer'
 import { useSave } from '../../state/save/SaveProvider'
@@ -18,6 +22,8 @@ import BattleScreen from '../battle/BattleScreen'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
 import StatusReadout from '../common/StatusReadout'
+import ActiveBuffsStrip from './ActiveBuffsStrip'
+import Bag from './Bag'
 import DungeonGraphView from './DungeonGraph'
 import EncounterModal from './EncounterModal'
 import RewardModal from './RewardModal'
@@ -165,12 +171,17 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // save.character is always real here — TS can't see that cross-component
   // invariant, hence the assertion.
   const character = save.character!
-  // The dungeon-run store doesn't carry active item buffs yet (Story 9 wires
-  // the Bag) — this is the one caller that will eventually assemble both the
-  // persistent character and those ephemeral buffs for the battle launch.
-  const modifiers = resolveModifiers(character, getWeapon(save.equippedWeapon))
+  // The one caller that assembles both the persistent character and the
+  // run's ephemeral item buffs for the battle launch (Story 9) — buffs reach
+  // combat through this resolveModifiers arg alone, no new plumbing.
+  const modifiers = resolveModifiers(character, getWeapon(save.equippedWeapon), run.activeBuffs)
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
+
+  // The Bag drawer (wireframe turn 6a): collapsed by default, opened from its
+  // HUD button, closed again the moment a node is picked (scope's drawer
+  // call) — it can't be left open mid-fight-prep.
+  const [bagOpen, setBagOpen] = useState(false)
 
   // Survives the battle (which unmounts the graph) so the graph re-mounts at the
   // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
@@ -224,11 +235,22 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     setReward(null)
   }
 
+  // Clears every active buff the instant the run ends — win or wipe (Story 9,
+  // finding E). Leaving via "Return to map" unmounts this whole provider and
+  // would drop them for free, but the run-end banner renders first while the
+  // provider is still mounted, so this covers that window explicitly.
+  useEffect(() => {
+    if (outcome !== 'ongoing') dispatch(clearBuffs())
+  }, [outcome, dispatch])
+
   // Tapping an available node: the real chest opens with no fight, resolving
   // straight to a win; a hidden encounter (mimic chest, or the ?-glyph
   // waypoint/approach/boss) reveals itself and waits on the modal before its
   // fight (feedback #13, round-2 #C); a plain fight opens a battle directly.
+  // Any of these also closes the Bag drawer (scope's drawer call) — it can't
+  // be left open once you've committed to a node.
   const handleSelect = (id: string): void => {
+    setBagOpen(false)
     const node = run.graph.nodes[id]
     if (node.kind === 'chest' && node.isRealChest) {
       handleWin(node)
@@ -291,14 +313,21 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
             </h1>
             <p className="mt-1 font-mono text-[11px] text-text-dim">{statusLine(run.graph)}</p>
           </div>
-          {/* XP/gold to the LEFT of the live hearts, one row (feedback #5). */}
-          <StatusReadout
-            xp={character.xp}
-            coins={save.coins}
-            hearts={run.heartsRemaining}
-            maxHearts={modifiers.maxHearts}
-          />
+          <div className="flex items-center gap-3">
+            {/* The Bag (wireframe turn 6a) sits over the graph, opened from this
+                HUD button — only while there's a graph to prep for. */}
+            {outcome === 'ongoing' && <Bag open={bagOpen} onToggle={() => setBagOpen((v) => !v)} />}
+            {/* XP/gold to the LEFT of the live hearts, one row (feedback #5). */}
+            <StatusReadout
+              xp={character.xp}
+              coins={save.coins}
+              hearts={run.heartsRemaining}
+              maxHearts={modifiers.maxHearts}
+            />
+          </div>
         </div>
+
+        {outcome === 'ongoing' && <ActiveBuffsStrip buffs={run.activeBuffs} />}
 
         {body}
       </Frame>

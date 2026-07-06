@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import type { ActiveBuff } from '../../domain/items'
 import { createRng } from '../../engine/rng'
 import {
+  addBuff,
+  clearBuffs,
   dungeonRunReducer,
   enter,
   initRun,
   resolveFight,
+  restoreHearts,
   runOutcome,
   selectNode,
   type DungeonRunState,
@@ -80,5 +84,81 @@ describe('dungeon-run reducer', () => {
     state = dungeonRunReducer(state, resolveFight('win', cursor))
     expect(state.graph.nodes.waypoint.state).toBe('available')
     expect(runOutcome(state)).toBe('ongoing')
+  })
+
+  describe('active buffs', () => {
+    const nextFightBuff: ActiveBuff = { itemId: 'bulls-strength', duration: 'next-fight' }
+    const oilOfSharpness: ActiveBuff = {
+      itemId: 'oil-of-sharpness',
+      duration: 'next-fight',
+      fightsRemaining: 3,
+    }
+    const restOfDungeonBuff: ActiveBuff = { itemId: 'luckstone', duration: 'rest-of-dungeon' }
+
+    it('using an item adds exactly one buff', () => {
+      const state = dungeonRunReducer(startRun(2), addBuff(nextFightBuff))
+      expect(state.activeBuffs).toEqual([nextFightBuff])
+    })
+
+    it('a next-fight buff (no fightsRemaining) clears after one resolved fight', () => {
+      let state = startRun(2)
+      state = dungeonRunReducer(state, addBuff(nextFightBuff))
+      const node = state.graph.nodes.entrance.edges[0]
+      state = dungeonRunReducer(state, resolveFight('win', node))
+      expect(state.activeBuffs).toEqual([])
+    })
+
+    it('a fightsRemaining:3 buff survives 2 fights and drops on the 3rd (win or lose both count)', () => {
+      let state = startRun(3)
+      state = dungeonRunReducer(state, addBuff(oilOfSharpness))
+      let cursor = state.graph.nodes.entrance.edges[0]
+      let next = nextFight(state, cursor)
+
+      state = dungeonRunReducer(state, resolveFight('lose', cursor))
+      expect(state.activeBuffs).toEqual([{ ...oilOfSharpness, fightsRemaining: 2 }])
+
+      state = dungeonRunReducer(state, resolveFight('win', cursor))
+      expect(state.activeBuffs).toEqual([{ ...oilOfSharpness, fightsRemaining: 1 }])
+      cursor = next
+      next = nextFight(state, cursor)
+
+      state = dungeonRunReducer(state, resolveFight('win', cursor))
+      expect(state.activeBuffs).toEqual([])
+    })
+
+    it('a rest-of-dungeon buff persists across fights until clearBuffs', () => {
+      let state = startRun(3)
+      state = dungeonRunReducer(state, addBuff(restOfDungeonBuff))
+      const node = state.graph.nodes.entrance.edges[0]
+      state = dungeonRunReducer(state, resolveFight('win', node))
+      expect(state.activeBuffs).toEqual([restOfDungeonBuff])
+
+      state = dungeonRunReducer(state, clearBuffs())
+      expect(state.activeBuffs).toEqual([])
+    })
+
+    it('clearBuffs empties everything, including next-fight and rest-of-dungeon buffs together', () => {
+      let state = startRun(2)
+      state = dungeonRunReducer(state, addBuff(nextFightBuff))
+      state = dungeonRunReducer(state, addBuff(restOfDungeonBuff))
+      state = dungeonRunReducer(state, clearBuffs())
+      expect(state.activeBuffs).toEqual([])
+    })
+  })
+
+  describe('restoreHearts', () => {
+    it('raises heartsRemaining', () => {
+      let state = startRun(3)
+      const node = state.graph.nodes.entrance.edges[0]
+      state = dungeonRunReducer(state, resolveFight('lose', node))
+      expect(state.heartsRemaining).toBe(2)
+      state = dungeonRunReducer(state, restoreHearts(1))
+      expect(state.heartsRemaining).toBe(3)
+    })
+
+    it("doesn't exceed maxHearts", () => {
+      const state = dungeonRunReducer(startRun(3), restoreHearts(5))
+      expect(state.heartsRemaining).toBe(3)
+    })
   })
 })

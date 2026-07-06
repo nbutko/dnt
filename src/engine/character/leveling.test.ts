@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ASI_LEVELS, PROFICIENCY_BY_LEVEL, XP_THRESHOLDS } from '../../config/leveling'
 import type { AbilityScores } from '../../domain/character'
-import { applyAsi, grantsForLevel, levelForXp } from './leveling'
+import { applyAsi, grantsForLevel, levelForXp, xpProgress } from './leveling'
 
 const baseAbilities: AbilityScores = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
 
@@ -21,6 +21,48 @@ describe('levelForXp', () => {
 
   it('never exceeds the table length even for absurd XP', () => {
     expect(levelForXp(10_000_000)).toBe(XP_THRESHOLDS.length)
+  })
+})
+
+describe('xpProgress', () => {
+  it('reads 0 fraction at the start of level 1, against the level-2 threshold', () => {
+    expect(xpProgress(0)).toEqual({
+      level: 1,
+      nextLevel: 2,
+      nextThreshold: XP_THRESHOLDS[1],
+      fraction: 0,
+      isMax: false,
+    })
+  })
+
+  it('reads a fractional progress partway to the next threshold (the wireframe\'s 3,600/6,500 shape)', () => {
+    const progress = xpProgress(3600)
+    expect(progress.level).toBe(4)
+    expect(progress.nextLevel).toBe(5)
+    expect(progress.nextThreshold).toBe(XP_THRESHOLDS[4])
+    expect(progress.fraction).toBeCloseTo(3600 / XP_THRESHOLDS[4])
+    expect(progress.isMax).toBe(false)
+  })
+
+  it('never reports isMax/fraction 1 before the table actually runs out (fraction stays < 1 within a level)', () => {
+    const progress = xpProgress(XP_THRESHOLDS[XP_THRESHOLDS.length - 1] - 1)
+    expect(progress.isMax).toBe(false)
+    expect(progress.fraction).toBeLessThan(1)
+  })
+
+  it('reports isMax with a full bar and no next level once XP reaches the last threshold', () => {
+    expect(xpProgress(XP_THRESHOLDS[XP_THRESHOLDS.length - 1])).toEqual({
+      level: XP_THRESHOLDS.length,
+      nextLevel: null,
+      nextThreshold: null,
+      fraction: 1,
+      isMax: true,
+    })
+  })
+
+  it('stays maxed for absurd XP beyond the table', () => {
+    expect(xpProgress(10_000_000).isMax).toBe(true)
+    expect(xpProgress(10_000_000).fraction).toBe(1)
   })
 })
 

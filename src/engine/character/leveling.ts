@@ -48,6 +48,31 @@ export const levelForXp = (xp: number, cfg: LevelingConfig = DEFAULT_LEVELING_CO
   return level
 }
 
+// The character sheet's "XP to Level N" bar (Story 5, ui/inn/CharacterSheet).
+// Derives everything the bar shows from the raw XP total, so nothing about
+// progress is stored on the Character. `fraction` is the current total over
+// the NEXT level's threshold (matching the wireframe's own 3,600 / 6,500 =
+// 55% reading), clamped to [0,1]; at the level cap there is no next threshold,
+// so `isMax` is true and the bar reads full.
+export interface XpProgress {
+  level: number
+  nextLevel: number | null
+  nextThreshold: number | null
+  fraction: number
+  isMax: boolean
+}
+
+export const xpProgress = (xp: number, cfg: LevelingConfig = DEFAULT_LEVELING_CONFIG): XpProgress => {
+  const level = levelForXp(xp, cfg)
+  const isMax = level >= cfg.xpThresholds.length
+  if (isMax) {
+    return { level, nextLevel: null, nextThreshold: null, fraction: 1, isMax: true }
+  }
+  const nextThreshold = cfg.xpThresholds[level]
+  const fraction = nextThreshold > 0 ? Math.min(Math.max(xp / nextThreshold, 0), 1) : 0
+  return { level, nextLevel: level + 1, nextThreshold, fraction, isMax: false }
+}
+
 export interface LevelGrant {
   // HP added *at this level* (not cumulative) — level 1 is the full hit die
   // scaled (config/leveling.ts's exact call: a d10 Fighter's 10 * 4 = 40, a
@@ -87,19 +112,24 @@ export const grantsForLevel = (
   return { hpAdded, proficiencyBonus, grantsAsi, featuresUnlocked }
 }
 
-const MAX_ASI_SPEND = 2
+// Points a single ASI grants (5e's "+2 to one ability, or +1 to two" —
+// m3-scope.html#leveling), reused for two things that have to agree: how many
+// points state/save/save-reducer.ts's gainXp banks into pendingAsi per ASI
+// level crossed, and the most applyAsi below will let one spend dispatch
+// claim at once (so a character sitting on two unspent ASIs still spends them
+// as two separate 2-point decisions, matching how 5e actually plays it).
+export const ASI_POINTS_PER_LEVEL = 2
 
-// Validates the spend is <= 2 points total (5e's "+2 to one, or +1 to two"
-// ASI rule — m3-scope.html#leveling) and returns a NEW ability-scores object;
-// never mutates the one it's given. Throws on an over-spend rather than
-// silently clamping, matching config/classes.ts's getClass() precedent for
-// invalid input in this codebase.
+// Validates the spend is <= ASI_POINTS_PER_LEVEL total and returns a NEW
+// ability-scores object; never mutates the one it's given. Throws on an
+// over-spend rather than silently clamping, matching config/classes.ts's
+// getClass() precedent for invalid input in this codebase.
 export const applyAsi = (abilities: AbilityScores, spend: Partial<AbilityScores>): AbilityScores => {
   const entries = Object.entries(spend) as [keyof AbilityScores, number | undefined][]
   const totalSpent = entries.reduce((sum, [, delta]) => sum + (delta ?? 0), 0)
 
-  if (totalSpent > MAX_ASI_SPEND) {
-    throw new Error(`applyAsi: spend totals ${totalSpent}, but an ASI only grants ${MAX_ASI_SPEND} points`)
+  if (totalSpent > ASI_POINTS_PER_LEVEL) {
+    throw new Error(`applyAsi: spend totals ${totalSpent}, but an ASI only grants ${ASI_POINTS_PER_LEVEL} points`)
   }
   if (entries.some(([, delta]) => (delta ?? 0) < 0)) {
     throw new Error('applyAsi: spend cannot contain a negative delta')

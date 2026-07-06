@@ -3,13 +3,14 @@ import type { Ability, AbilityScores, Character } from '../../domain/character'
 import type { ItemId } from '../../domain/items'
 import type { SaveData } from '../../domain/save'
 import type { WeaponId } from '../../domain/weapons'
-import { levelForXp } from '../../engine/character/leveling'
+import { ASI_POINTS_PER_LEVEL, applyAsi as applyValidatedAsi, levelForXp } from '../../engine/character/leveling'
 
 export type SaveAction =
   | { type: 'award'; coins: number; xp: number }
   | { type: 'createCharacter'; character: Character }
   | { type: 'gainXp'; amount: number }
   | { type: 'applyAsi'; spend: Partial<AbilityScores> }
+  | { type: 'rest' }
   | { type: 'equipWeapon'; weapon: WeaponId }
   | { type: 'buyWeapon'; weapon: WeaponId; price: number }
   | { type: 'buyItem'; item: ItemId; price: number }
@@ -38,6 +39,18 @@ export const createCharacter = (character: Character): SaveAction => ({
 export const gainXp = (amount: number): SaveAction => ({ type: 'gainXp', amount })
 
 export const applyAsi = (spend: Partial<AbilityScores>): SaveAction => ({ type: 'applyAsi', spend })
+
+// The Inn's "Take a long rest" button (Story 5, RestPanel.tsx). Hearts are
+// already always full by the time the player is standing at the Inn — the
+// ephemeral dungeon-run store (state/dungeon-run/dungeon-run-reducer.ts) is
+// never persisted, and every dungeon entry starts a brand-new run at
+// maxHearts (ui/dungeon/DungeonScreen.tsx), so there is no persisted "spent
+// hearts" quantity today for a rest to restore. This action — and its no-op
+// reducer case below — is the seam a future persistent heart deficit (or any
+// other long-rest effect) would hook into; flagged for a human, since right
+// now dispatching it changes nothing observable besides the UI's own "you
+// rested" confirmation.
+export const rest = (): SaveAction => ({ type: 'rest' })
 
 export const equipWeapon = (weapon: WeaponId): SaveAction => ({ type: 'equipWeapon', weapon })
 
@@ -82,17 +95,21 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
       const xp = state.character.xp + action.amount
       const oldLevel = levelForXp(state.character.xp)
       const level = levelForXp(xp)
-      // Every ASI level strictly between the old and new level is one banked
-      // pendingAsi — a multi-level jump (a big boss/chest payout) can cross
-      // more than one at once.
-      const asiGained = ASI_LEVELS.filter((asiLevel) => asiLevel > oldLevel && asiLevel <= level).length
+      // Every ASI level strictly between the old and new level banks
+      // ASI_POINTS_PER_LEVEL points — a multi-level jump (a big boss/chest
+      // payout) can cross more than one at once, each its own 2-point grant
+      // (bug fix: this used to bank one raw unit per level crossed instead of
+      // per-level points, so a character could never actually spend a full
+      // ASI — engine/character/leveling.ts's applyAsi and domain/character.ts's
+      // pendingAsi both already assumed points).
+      const asiLevelsGained = ASI_LEVELS.filter((asiLevel) => asiLevel > oldLevel && asiLevel <= level).length
       return {
         ...state,
         character: {
           ...state.character,
           xp,
           level,
-          pendingAsi: state.character.pendingAsi + asiGained,
+          pendingAsi: state.character.pendingAsi + asiLevelsGained * ASI_POINTS_PER_LEVEL,
         },
       }
     }
@@ -101,19 +118,32 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
       if (!state.character) return state
       const entries = Object.entries(action.spend) as [Ability, number | undefined][]
       const totalSpent = entries.reduce((sum, [, delta]) => sum + (delta ?? 0), 0)
-      const abilities = { ...state.character.abilities }
-      for (const [ability, delta] of entries) {
-        if (delta) abilities[ability] += delta
+      // Reject a spend the character hasn't banked — without this check, a
+      // caller could apply more points than pendingAsi allows (the bug this
+      // routing fixes, m3-implementation.html Story 5's carried-over finding).
+      if (totalSpent <= 0 || totalSpent > state.character.pendingAsi) return state
+      // engine/character/leveling.ts's applyAsi is the one validated source of
+      // truth for "is this spend legal" (<=2 points, no negative deltas) — it
+      // throws on anything else, so an over-spend can never reach the save.
+      let abilities: AbilityScores
+      try {
+        abilities = applyValidatedAsi(state.character.abilities, action.spend)
+      } catch {
+        return state
       }
       return {
         ...state,
         character: {
           ...state.character,
           abilities,
-          pendingAsi: Math.max(0, state.character.pendingAsi - totalSpent),
+          pendingAsi: state.character.pendingAsi - totalSpent,
         },
       }
     }
+
+    // See the `rest` action creator above for why this is a no-op today.
+    case 'rest':
+      return state
 
     case 'equipWeapon':
       return { ...state, equippedWeapon: action.weapon }

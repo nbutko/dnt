@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3 Wireframes — The Character Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
+.wf-head{padding:40px 48px 8px}
+.wf-crumb{font:600 11px ui-monospace,Menlo,monospace;color:#a89a7a;text-decoration:none}
+.wf-crumb:hover{color:#e8c766}
+.wf-title{font:700 26px/1.15 'Cinzel',serif;letter-spacing:.06em;color:#e8c766;text-transform:uppercase;margin:16px 0 6px}
+.wf-tagline{font:400 14px/1.5 'EB Garamond',serif;color:#c9b892;max-width:760px;margin:0}
+.wf-meta{font:400 12px/1.6 system-ui,sans-serif;color:#8a7a5a;max-width:760px;margin:12px 0 0}
+.wf-meta a{color:#c9a227}
+.dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(255,255,255,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#c9a227;color:#1c0f0a;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 15px/1.2 system-ui,sans-serif;color:#ede1c3}
+.dv-tsub{font:400 12px/1.5 system-ui,sans-serif;color:#a8967a;margin:2px 0 0;max-width:900px}
+.dv-tsub a{color:inherit}
+.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(255,255,255,.12);color:#ede1c3;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.3 system-ui,sans-serif;color:rgba(237,225,195,.65)}
+.dv-card{max-width:100%;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.5);overflow:hidden}
+.dv-opt:target .dv-oid{background:#c9a227;color:#1c0f0a}
+.dv-next{margin:24px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(237,225,195,.45)}
+/* the shared "framed screen" the mocks live in */
+.scr{background:radial-gradient(ellipse at 50% 0%,#2a1710 0%,#140b07 65%);box-sizing:border-box;border:3px solid #7a5a22;outline:1px solid #3a2a10;outline-offset:-8px;font-family:'EB Garamond',serif;color:#ede1c3;padding:28px}
+.h-screen{font-family:'Cinzel',serif;letter-spacing:.12em;color:#e8c766;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+.pill{font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid #7a5a22;border-radius:14px;padding:4px 12px;background:#1c1608}
+.btn-gold{font-family:'Cinzel',serif;letter-spacing:.06em;color:#1c0f0a;background:linear-gradient(180deg,#e8c766,#c9a227);border:none;border-radius:6px;padding:10px 22px;font-size:14px;box-shadow:0 0 14px #e8c76655}
+.btn-ghost{font-family:'Cinzel',serif;letter-spacing:.06em;color:#c9b892;background:transparent;border:1px solid #7a5a22;border-radius:6px;padding:10px 22px;font-size:13px}
+/* responsive rectangular grids for character creation — never ragged */
+.hero-abil{display:grid;gap:12px;grid-template-columns:repeat(6,1fr);margin-bottom:8px}
+.hero-class{display:grid;gap:10px;grid-template-columns:repeat(4,1fr)}
+@media(max-width:1180px){.hero-abil{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.hero-abil{grid-template-columns:repeat(2,1fr)}.hero-class{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.hero-abil{grid-template-columns:repeat(1,1fr)}.hero-class{grid-template-columns:repeat(1,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="wf-head">
+  <a class="wf-crumb" href="../index.html">← Dungeons &amp; Typing</a>
+  <h1 class="wf-title">M3 Wireframes — The Character Sheet</h1>
+  <p class="wf-tagline">Stylized, low-art mocks for the D&amp;D layer: character creation, the reworked Inn, the Shop,
+  the encounter d20, chest premonitions, item &amp; weapon handling, and the new in-battle "juice" moments.</p>
+  <p class="wf-meta">Same palette and type tokens as the <a href="M0%20Wireframes.dc.html">M0 wireframes</a> and the
+  <a href="visual-spec.html">visual spec</a> — every screen is CSS shapes, no images. Hand-authored (not a Claude Design
+  canvas), but built to drop into the same review flow. Read against the <a href="../m3-scope.html">M3 scope doc</a>;
+  section anchors below link back to it. Numbers shown (scores, prices, DCs) are illustrative placeholders — the real
+  values are <a href="../m3-scope.html#open">M5 tuning knobs</a>.</p>
+</header>
+
+<!-- ============================================================ TURN 1 -->
+<section class="dv-turn" id="t1">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t1">1</a>
+  <div><span class="dv-tname">Character creation — roll a hero on an empty save</span>
+  <p class="dv-tsub">The one-screen flow that runs when <a href="../architecture.html#persistence">IndexedDB</a> holds no
+  valid save (<a href="../m3-scope.html#creation">M3 scope §creation</a>). Every field is pre-filled with a valid
+  random default, so a kid can mash one button and get a complete hero — but each piece is his to change. Rolled
+  stats (<code>4d6-drop-lowest</code>) with one reroll, not point-buy.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a> Roll step — tumbling dice, six ability cards, class &amp; name</div>
+<div class="dv-card" style="width:1080px">
+<div class="scr" style="width:1080px;min-height:560px">
+
+  <div style="text-align:center;margin-bottom:8px">
+    <div class="h-screen" style="font-size:24px">Create Your Hero</div>
+    <div class="mono" style="font-size:11px;color:#a89a7a;margin-top:4px">No save found — let's roll one up</div>
+  </div>
+
+  <div style="text-align:center;font-family:'EB Garamond',serif;font-style:italic;color:#c9b892;font-size:13px;margin:6px 0 18px">Step 1 · Roll your abilities</div>
+
+  <div class="hero-abil">
+    <!-- ability card template repeated 6× -->
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">STRENGTH</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#ede1c3;line-height:1.1;margin:4px 0">15</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#1c0f0a;background:#e8c766;border-radius:10px;padding:1px 10px">+2</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">6 5 4 <span style="opacity:.4;text-decoration:line-through">2</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">+ melee damage</div>
+    </div>
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">DEXTERITY</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#ede1c3;line-height:1.1;margin:4px 0">12</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#1c0f0a;background:#e8c766;border-radius:10px;padding:1px 10px">+1</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">5 4 3 <span style="opacity:.4;text-decoration:line-through">1</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">crits + dodge</div>
+    </div>
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">CONSTITUTION</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#ede1c3;line-height:1.1;margin:4px 0">14</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#1c0f0a;background:#e8c766;border-radius:10px;padding:1px 10px">+2</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">6 5 3 <span style="opacity:.4;text-decoration:line-through">2</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">+ max HP / level</div>
+    </div>
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">INTELLIGENCE</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#ede1c3;line-height:1.1;margin:4px 0">10</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#c9b892;background:rgba(255,255,255,.08);border-radius:10px;padding:1px 10px">+0</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">4 4 2 <span style="opacity:.4;text-decoration:line-through">1</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">hardest word tier</div>
+    </div>
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">WISDOM</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#ede1c3;line-height:1.1;margin:4px 0">13</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#1c0f0a;background:#e8c766;border-radius:10px;padding:1px 10px">+1</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">6 4 3 <span style="opacity:.4;text-decoration:line-through">2</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">+ time · perception</div>
+    </div>
+    <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:12px 10px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;color:#e8c766">CHARISMA</div>
+      <div class="mono" style="font-size:34px;font-weight:700;color:#c98d8d;line-height:1.1;margin:4px 0">8</div>
+      <div class="mono" style="display:inline-block;font-size:12px;font-weight:700;color:#ede1c3;background:#8b2020;border-radius:10px;padding:1px 10px">−1</div>
+      <div class="mono" style="font-size:12px;color:#c9b892;letter-spacing:2px;margin:8px 0 2px">3 3 2 <span style="opacity:.4;text-decoration:line-through">1</span></div>
+      <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a">cheaper Shop</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin:2px 0 22px">
+    <span class="pill" style="color:#e8c766;cursor:pointer">🎲 Roll again <span style="color:#a89a7a">(2 left)</span></span>
+  </div>
+
+  <div style="border-top:1px solid #3a2a10;padding-top:16px;display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:420px">
+      <div style="font-family:'EB Garamond',serif;font-style:italic;color:#c9b892;font-size:13px;margin-bottom:10px;text-align:center">Step 2 · Pick a class</div>
+      <div class="hero-class">
+        <div style="border:2px solid #e8c766;border-radius:8px;background:#1c1608;box-shadow:0 0 12px #e8c76655;padding:10px;text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:#e8c766">FIGHTER</div>
+          <div class="mono" style="font-size:10px;color:#c9b892;margin-top:3px">d10 · STR/CON</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a;margin-top:4px">Longsword · Second Wind</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center;opacity:.8">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:#c9b892">WIZARD</div>
+          <div class="mono" style="font-size:10px;color:#a89a7a;margin-top:3px">d6 · INT/WIS</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a;margin-top:4px">Wand · Arcane Mind</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center;opacity:.8">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:#c9b892">ROGUE</div>
+          <div class="mono" style="font-size:10px;color:#a89a7a;margin-top:3px">d8 · DEX/CHA</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a;margin-top:4px">Dagger · Cunning</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center;opacity:.8">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:#c9b892">BARD</div>
+          <div class="mono" style="font-size:10px;color:#a89a7a;margin-top:3px">d8 · CHA/WIS</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10.5px;color:#8a7a5a;margin-top:4px">Rapier · Silver Tongue</div>
+        </div>
+      </div>
+    </div>
+    <div style="width:280px">
+      <div style="font-family:'EB Garamond',serif;font-style:italic;color:#c9b892;font-size:13px;margin-bottom:10px;text-align:center">Step 3 · Name your hero</div>
+      <div style="display:flex;align-items:center;gap:8px;border:1px solid #7a5a22;border-radius:6px;background:#1c1608;padding:10px 12px">
+        <span style="font-family:'EB Garamond',serif;font-size:18px;color:#ede1c3">Bram Grumbletusk</span>
+        <span style="border-right:2px solid #e8c766;height:20px"></span>
+        <span class="mono" style="margin-left:auto;font-size:14px;color:#a89a7a;cursor:pointer" title="new random name">🎲</span>
+      </div>
+      <div class="mono" style="font-size:10px;color:#8a7a5a;margin-top:6px;text-align:center">random default · fully editable</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:24px">
+    <button class="btn-gold" style="font-size:15px;padding:12px 34px">Begin Adventure →</button>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a> Confirm step — "meet your hero" summary card</div>
+<div class="dv-card" style="width:430px">
+<div class="scr" style="width:430px;min-height:560px;padding:26px">
+  <div style="text-align:center;margin-bottom:14px">
+    <div class="h-screen" style="font-size:15px;letter-spacing:.18em;color:#a89a7a">Meet your hero</div>
+    <div style="font-family:'Cinzel',serif;font-size:30px;color:#e8c766;margin-top:6px">Bram Grumbletusk</div>
+    <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:14px;color:#c9b892">Level 1 Fighter · Hit die d10</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">STR</span><span class="mono" style="font-size:13px;color:#ede1c3">15 <span style="color:#e8c766">+2</span></span></div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">INT</span><span class="mono" style="font-size:13px;color:#ede1c3">10 <span style="color:#a89a7a">+0</span></span></div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">DEX</span><span class="mono" style="font-size:13px;color:#ede1c3">12 <span style="color:#e8c766">+1</span></span></div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">WIS</span><span class="mono" style="font-size:13px;color:#ede1c3">13 <span style="color:#e8c766">+1</span></span></div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">CON</span><span class="mono" style="font-size:13px;color:#ede1c3">14 <span style="color:#e8c766">+2</span></span></div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.6);padding:7px 11px"><span style="font-family:'Cinzel',serif;font-size:11px;color:#c9b892">CHA</span><span class="mono" style="font-size:13px;color:#ede1c3">8 <span style="color:#c98d8d">−1</span></span></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'EB Garamond',serif;font-size:13px;color:#a89a7a">Max HP</span><span class="mono" style="font-size:14px;color:#e8c766">42</span></div>
+    <div style="height:1px;background:#3a2a10"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'EB Garamond',serif;font-size:13px;color:#a89a7a">Hearts</span><span style="font-family:'Cinzel',serif;font-size:16px;color:#c94b4b">♥ ♥</span></div>
+    <div style="height:1px;background:#3a2a10"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'EB Garamond',serif;font-size:13px;color:#a89a7a">Weapon</span><span style="font-family:'EB Garamond',serif;font-size:13px;color:#ede1c3">Longsword <span class="mono" style="color:#c9b892">(d8, STR)</span></span></div>
+    <div style="height:1px;background:#3a2a10"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'EB Garamond',serif;font-size:13px;color:#a89a7a">Feature</span><span style="font-family:'EB Garamond',serif;font-size:13px;color:#ede1c3">Second Wind</span></div>
+  </div>
+
+  <div style="background:rgba(59,18,32,.3);border:1px solid #7a5a22;border-radius:6px;padding:10px 12px;font-family:'EB Garamond',serif;font-style:italic;font-size:12.5px;color:#c9b892;text-align:center;margin-bottom:20px">
+    A durable, forgiving start — swing a longsword, and shrug off a near-death blow once per fight.
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:center">
+    <button class="btn-ghost">↩ Reroll everything</button>
+    <button class="btn-gold">To the World Map →</button>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the reroll-limit exhausted state" · "add a one-line tooltip explaining what a modifier is" · "mock the very first tutorial battle right after this"</p>
+</section>
+
+<!-- ============================================================ TURN 2 -->
+<section class="dv-turn" id="t2">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t2">2</a>
+  <div><span class="dv-tname">The Inn, reworked — rest + character sheet (no more skill tree)</span>
+  <p class="dv-tsub">The skill tree is <a href="../m3-scope.html#leveling">retired</a>. The Inn is now the D&amp;D long rest
+  (restore hearts + HP) plus the character sheet where you review stats and spend any pending Ability Score
+  Improvements. XP is a running total, not a currency. Compare against the old
+  <a href="M0%20Wireframes.dc.html#4a">skill-tree mock (4a)</a> this replaces.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a> Inn screen — rest panel + full character sheet</div>
+<div class="dv-card" style="width:1080px">
+<div class="scr" style="width:1080px;min-height:520px">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="mono" style="font-size:12px;color:#a89a7a">← World Map</div>
+    <div class="h-screen" style="font-size:22px">The Inn</div>
+    <div style="display:flex;gap:8px">
+      <div class="pill" style="color:#c9b892">🪙 340</div>
+      <div class="pill" style="color:#e8c766">Lv 4</div>
+    </div>
+  </div>
+  <!-- Inn tabs: Rest & Sheet shown here; Armory is turn 7 -->
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px">
+    <span class="pill" style="color:#1c0f0a;background:#e8c766;border-color:#e8c766;font-weight:700">Rest &amp; Sheet</span>
+    <a class="pill" href="#7a" style="color:#c9b892;text-decoration:none">Armory →</a>
+  </div>
+
+  <div style="display:flex;gap:22px;align-items:stretch">
+
+    <!-- rest panel -->
+    <div style="width:250px;flex:none;border:2px solid #7a5a22;border-radius:10px;background:rgba(59,18,32,.25);padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.06em;color:#e8c766;margin-bottom:14px">A WARM BED</div>
+      <div style="font-family:'Cinzel',serif;font-size:26px;color:#c94b4b;letter-spacing:.08em">♥ <span style="opacity:.3">♡</span></div>
+      <div class="mono" style="font-size:10px;color:#a89a7a;margin:4px 0 14px">hearts 1 / 2 — spent</div>
+      <div style="width:100%;height:12px;border-radius:6px;background:#1c1608;border:1px solid #5a4a20;overflow:hidden;margin-bottom:4px">
+        <div style="width:100%;height:100%;background:linear-gradient(90deg,#8a6a1a,#e8c766)"></div>
+      </div>
+      <div class="mono" style="font-size:10px;color:#c9b892;margin-bottom:18px">HP 84 / 84 · always full here</div>
+      <button class="btn-gold" style="width:100%">Take a long rest</button>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:#8a7a5a;margin-top:10px">Restores your spent hearts. HP already resets to full after every battle.</div>
+    </div>
+
+    <!-- character sheet -->
+    <div style="flex:1;border:2px solid #7a5a22;border-radius:10px;background:rgba(28,22,8,.35);padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+        <div>
+          <span style="font-family:'Cinzel',serif;font-size:19px;color:#e8c766">Bram Grumbletusk</span>
+          <span style="font-family:'EB Garamond',serif;font-style:italic;font-size:13px;color:#c9b892;margin-left:8px">Level 4 Fighter</span>
+        </div>
+        <div class="mono" style="font-size:11px;color:#a89a7a">Proficiency <span style="color:#e8c766">+2</span></div>
+      </div>
+
+      <!-- XP bar -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="mono" style="font-size:10px;color:#a89a7a">XP to Level 5</span><span class="mono" style="font-size:10px;color:#c9b892">3,600 / 6,500</span></div>
+        <div style="height:9px;border-radius:5px;background:#1c1608;border:1px solid #5a4a20;overflow:hidden"><div style="width:55%;height:100%;background:linear-gradient(90deg,#4a7a3a,#7ac96a)"></div></div>
+      </div>
+
+      <!-- abilities -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px">
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">STR</div><div class="mono" style="font-size:20px;color:#ede1c3">16</div><div class="mono" style="font-size:11px;color:#e8c766">+3</div></div>
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">DEX</div><div class="mono" style="font-size:20px;color:#ede1c3">12</div><div class="mono" style="font-size:11px;color:#e8c766">+1</div></div>
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">CON</div><div class="mono" style="font-size:20px;color:#ede1c3">14</div><div class="mono" style="font-size:11px;color:#e8c766">+2</div></div>
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">INT</div><div class="mono" style="font-size:20px;color:#ede1c3">10</div><div class="mono" style="font-size:11px;color:#a89a7a">+0</div></div>
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">WIS</div><div class="mono" style="font-size:20px;color:#ede1c3">13</div><div class="mono" style="font-size:11px;color:#e8c766">+1</div></div>
+        <div style="border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.6);padding:8px 4px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:10px;color:#a89a7a">CHA</div><div class="mono" style="font-size:20px;color:#c98d8d">8</div><div class="mono" style="font-size:11px;color:#c98d8d">−1</div></div>
+      </div>
+
+      <!-- features + gear row -->
+      <div style="display:flex;gap:12px">
+        <div style="flex:1;border-top:1px solid #3a2a10;padding-top:10px">
+          <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.1em;margin-bottom:6px">CLASS FEATURES</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12.5px;color:#ede1c3">Second Wind <span style="color:#8a7a5a">· auto-heal once per battle</span></div>
+        </div>
+        <div style="flex:1;border-top:1px solid #3a2a10;padding-top:10px">
+          <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.1em;margin-bottom:6px">EQUIPPED</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12.5px;color:#ede1c3">Longsword <span class="mono" style="color:#8a7a5a">d8 · STR · crit 20</span></div>
+        </div>
+      </div>
+
+      <!-- pending ASI banner -->
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px;border:1px solid #e8c766;border-radius:8px;background:rgba(232,199,102,.08);box-shadow:0 0 12px #e8c76633;padding:10px 14px">
+        <span style="font-size:18px">✦</span>
+        <span style="font-family:'EB Garamond',serif;font-size:13px;color:#e8c766;flex:1">Ability Score Improvement available — you have <strong>+2 points</strong> to spend.</span>
+        <button class="btn-gold" style="padding:8px 16px;font-size:12px">Improve →</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a> Level-up overlay — spend an Ability Score Improvement</div>
+<div class="dv-card" style="width:460px">
+<div class="scr" style="width:460px;min-height:520px;padding:26px;border-color:#e8c766;box-shadow:inset 0 0 40px rgba(232,199,102,.06)">
+  <div style="text-align:center;margin-bottom:6px">
+    <div class="mono" style="font-size:11px;color:#7ac96a;letter-spacing:.2em">LEVEL UP</div>
+    <div style="font-family:'Cinzel',serif;font-size:30px;color:#e8c766;margin:4px 0">You reached Level 4!</div>
+    <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:13px;color:#c9b892">Ability Score Improvement · distribute <span style="color:#e8c766">+2 points</span></div>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:8px;margin:16px 0 6px">
+    <span class="pill" style="color:#e8c766">Points left: <strong style="font-size:14px">1</strong></span>
+  </div>
+
+  <!-- stepper rows -->
+  <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0">
+    <div style="display:flex;align-items:center;gap:12px;border:1px solid #7a5a22;border-radius:8px;background:rgba(28,22,8,.5);padding:8px 12px">
+      <div style="flex:1"><span style="font-family:'Cinzel',serif;font-size:13px;color:#e8c766">STRENGTH</span></div>
+      <span class="mono" style="font-size:13px;color:#a89a7a">15</span>
+      <span class="mono" style="color:#7ac96a">→</span>
+      <span class="mono" style="font-size:15px;color:#ede1c3">16</span>
+      <span class="mono" style="font-size:11px;color:#7ac96a">(+3)</span>
+      <div style="display:flex;gap:5px;margin-left:8px">
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;border:1px solid #7a5a22;color:#c9b892;display:flex;align-items:center;justify-content:center">−</div>
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;background:#e8c766;color:#1c0f0a;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px #e8c76688">+</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;border:1px solid #4a3a18;border-radius:8px;background:rgba(28,22,8,.35);padding:8px 12px">
+      <div style="flex:1"><span style="font-family:'Cinzel',serif;font-size:13px;color:#c9b892">CONSTITUTION</span></div>
+      <span class="mono" style="font-size:13px;color:#a89a7a">14</span>
+      <span class="mono" style="color:#a89a7a">→</span>
+      <span class="mono" style="font-size:15px;color:#ede1c3">14</span>
+      <span class="mono" style="font-size:11px;color:#a89a7a">(+2)</span>
+      <div style="display:flex;gap:5px;margin-left:8px">
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;border:1px solid #4a3a18;color:#6a5a3a;display:flex;align-items:center;justify-content:center">−</div>
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;border:1px solid #7a5a22;color:#c9b892;display:flex;align-items:center;justify-content:center">+</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;border:1px solid #4a3a18;border-radius:8px;background:rgba(28,22,8,.35);padding:8px 12px">
+      <div style="flex:1"><span style="font-family:'Cinzel',serif;font-size:13px;color:#c9b892">INTELLIGENCE</span></div>
+      <span class="mono" style="font-size:13px;color:#a89a7a">10</span>
+      <span class="mono" style="color:#a89a7a">→</span>
+      <span class="mono" style="font-size:15px;color:#ede1c3">10</span>
+      <span class="mono" style="font-size:11px;color:#a89a7a">(+0)</span>
+      <div style="display:flex;gap:5px;margin-left:8px">
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;border:1px solid #4a3a18;color:#6a5a3a;display:flex;align-items:center;justify-content:center">−</div>
+        <div class="mono" style="width:26px;height:26px;border-radius:5px;border:1px solid #7a5a22;color:#c9b892;display:flex;align-items:center;justify-content:center">+</div>
+      </div>
+    </div>
+    <div class="mono" style="text-align:center;font-size:10px;color:#8a7a5a;margin-top:2px">…DEX · WIS · CHA below</div>
+  </div>
+
+  <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:11.5px;color:#8a7a5a;text-align:center;margin:6px 0 16px">
+    Spend both points on one stat, or +1 to two of them. The only choice you make at level-up — everything else is automatic.
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:center">
+    <button class="btn-ghost">Reset</button>
+    <button class="btn-gold">Confirm (spend 1 more)</button>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the sheet after Strength hits 18" · "auto-open this overlay the moment a battle pushes you over a threshold" · "add the +1 max-HP-per-level note animating in"</p>
+</section>
+
+<!-- ============================================================ TURN 3 -->
+<section class="dv-turn" id="t3">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t3">3</a>
+  <div><span class="dv-tname">The Shop — coins finally get a sink</span>
+  <p class="dv-tsub">The Shop has sat locked on the world map since M2. M3 opens it (<a href="../m3-scope.html#shop">scope §shop</a>):
+  it sells <a href="../m3-scope.html#items">consumables</a> (restock every visit) and <a href="../m3-scope.html#weapons">weapons</a>
+  (one-off buys). Your CHA modifier discounts every price — surfaced as a banner so a low CHA is a felt tax, not a hidden one.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a> Storefront — consumables grid + weapon rack, with a buy-confirm tooltip</div>
+<div class="dv-card" style="width:1080px">
+<div class="scr" style="width:1080px;min-height:540px">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="mono" style="font-size:12px;color:#a89a7a">← World Map</div>
+    <div class="h-screen" style="font-size:22px">The Shop</div>
+    <div class="pill" style="color:#c9b892">🪙 340</div>
+  </div>
+
+  <!-- CHA discount banner -->
+  <div style="display:flex;align-items:center;gap:10px;border:1px solid #7a2020;border-radius:6px;background:rgba(139,32,32,.15);padding:8px 14px;margin-bottom:18px">
+    <span style="font-size:15px">🗣️</span>
+    <span style="font-family:'EB Garamond',serif;font-size:12.5px;color:#c98d8d;flex:1">Your <strong>Charisma −1</strong> rubs the keeper the wrong way — prices are marked <strong>up 5%</strong>. Raise CHA (or play a Bard) to charm them down.</span>
+  </div>
+
+  <div style="display:flex;gap:22px;align-items:flex-start">
+
+    <!-- consumables -->
+    <div style="flex:1">
+      <div class="mono" style="font-size:11px;color:#8a7a5a;letter-spacing:.14em;margin-bottom:10px">CONSUMABLES · restock each visit</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center">
+          <div style="font-size:20px">🧪</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#ede1c3;margin:3px 0">Potion of Healing</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">restore 1 heart</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 32</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center">
+          <div style="font-size:20px">💪</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#ede1c3;margin:3px 0">Bull's Strength</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">+dmg · next fight</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 25</div>
+        </div>
+        <div style="border:2px solid #e8c766;border-radius:8px;background:#1c1608;box-shadow:0 0 12px #e8c76644;padding:10px;text-align:center;position:relative">
+          <div style="font-size:20px">🍀</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#e8c766;margin:3px 0">Luckstone</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#c9b892">+2 rolls · rest of dungeon</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 90</div>
+          <!-- buy-confirm tooltip -->
+          <div style="position:absolute;left:50%;top:-8px;transform:translate(-50%,-100%);width:180px;background:#1c0f0a;border:1px solid #e8c766;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.6);padding:10px;z-index:2">
+            <div style="font-family:'EB Garamond',serif;font-size:11px;color:#c9b892;margin-bottom:8px">Buy Luckstone for <span style="color:#e8c766">🪙 90</span>? Leaves you 250.</div>
+            <div style="display:flex;gap:6px;justify-content:center"><button class="btn-ghost" style="padding:4px 10px;font-size:11px">Cancel</button><button class="btn-gold" style="padding:4px 12px;font-size:11px">Buy</button></div>
+            <div style="position:absolute;left:50%;bottom:-6px;transform:translate(-50%,0) rotate(45deg);width:10px;height:10px;background:#1c0f0a;border-right:1px solid #e8c766;border-bottom:1px solid #e8c766"></div>
+          </div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center">
+          <div style="font-size:20px">✨</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#ede1c3;margin:3px 0">Guidance</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">advantage · next roll</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 40</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center">
+          <div style="font-size:20px">🗡️</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#ede1c3;margin:3px 0">Oil of Sharpness</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">+crit · next 3 fights</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 70</div>
+        </div>
+        <div style="border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px;text-align:center">
+          <div style="font-size:20px">🧠</div>
+          <div style="font-family:'EB Garamond',serif;font-size:12px;color:#ede1c3;margin:3px 0">Elixir of Intellect</div>
+          <div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">INT cap +1 · next fight</div>
+          <div class="pill" style="display:inline-block;margin-top:6px;color:#e8c766;padding:2px 12px">🪙 60</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- weapons -->
+    <div style="width:300px;flex:none">
+      <div class="mono" style="font-size:11px;color:#8a7a5a;letter-spacing:.14em;margin-bottom:10px">WEAPON RACK · one-off</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px;border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px 12px">
+          <span style="font-size:20px">⚔️</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:13px;color:#ede1c3">Rapier</div><div class="mono" style="font-size:10px;color:#8a7a5a">d8 · DEX · crit 19–20</div></div>
+          <div class="pill" style="color:#e8c766">🪙 180</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.25);padding:10px 12px">
+          <span style="font-size:20px">🔨</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:13px;color:#ede1c3">Warhammer</div><div class="mono" style="font-size:10px;color:#8a7a5a">d10 · STR · crit 20</div></div>
+          <div class="pill" style="color:#e8c766">🪙 260</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;border:2px solid #4a3a18;border-radius:8px;background:rgba(28,22,8,.4);padding:10px 12px;opacity:.7">
+          <span style="font-size:20px">🪓</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:13px;color:#c9b892">Greataxe</div><div class="mono" style="font-size:10px;color:#8a7a5a">d12 · STR · −time</div></div>
+          <div class="pill" style="color:#8a7a5a">🪙 420</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;border:2px solid #4a3a18;border-radius:8px;background:rgba(28,22,8,.4);padding:10px 12px">
+          <span style="font-size:20px">🪄</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:13px;color:#c9b892">Wand</div><div class="mono" style="font-size:10px;color:#8a7a5a">d6 · INT · +1 to rolls</div></div>
+          <div class="pill" style="color:#e8c766">🪙 150</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the Bard's Silver Tongue stacking a bigger discount" · "grey out an item you can't afford" · "add a 'sell my old weapon' flow"</p>
+</section>
+
+<!-- ============================================================ TURN 4 -->
+<section class="dv-turn" id="t4">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t4">4</a>
+  <div><span class="dv-tname">The encounter d20 — rolled once, before you type</span>
+  <p class="dv-tsub">The marquee moment. When you commit to a fight, the encounter reveal modal rolls one dramatic d20
+  (<a href="../m3-scope.html#encounter-roll">scope §encounter-roll</a>). The total picks which of the dungeon's three
+  prompt-difficulty bands you'll type; a natural 1 fumbles, a natural 20 inspires. It happens <em>before</em> the clock
+  starts, so it can be as big as we like.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a> Normal result — d20 landed, band + bonus breakdown, Begin Battle</div>
+<div class="dv-card" style="width:520px">
+<div class="scr" style="width:520px;min-height:520px;padding:28px 30px">
+  <div style="text-align:center;margin-bottom:4px">
+    <div class="mono" style="font-size:11px;color:#a89a7a;letter-spacing:.16em">ENCOUNTER · TIER 2 FOREST</div>
+    <div style="font-family:'Cinzel',serif;font-size:20px;color:#e8c766;margin-top:4px">Goblin Boss blocks the path</div>
+  </div>
+
+  <!-- the die -->
+  <div style="display:flex;justify-content:center;margin:20px 0 10px">
+    <svg width="150" height="150" viewBox="0 0 100 100">
+<polygon points="61.09,8.28 12.19,18.99 48.93,7.59" fill="#9b7d1e" stroke="#9b7d1e" stroke-width="0.4"/>
+<polygon points="51.07,92.41 38.91,91.72 6.00,70.98" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 85.11,53.66 87.81,81.01" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 61.09,8.28 85.11,53.66" fill="#6a5515" stroke="#6a5515" stroke-width="0.4"/>
+<polygon points="51.07,92.41 85.11,53.66 87.81,81.01" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="34.55,47.46 12.19,18.99 6.00,70.98" fill="#a98821" stroke="#a98821" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 12.19,18.99" fill="#c8a127" stroke="#c8a127" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 6.00,70.98" fill="#786017" stroke="#786017" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 85.11,53.66" fill="#aa8921" stroke="#aa8921" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 85.11,53.66" fill="#786117" stroke="#786117" stroke-width="0.4"/>
+<line x1="51.07" y1="92.41" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="61.09" y2="8.28" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="48.93" y2="7.59" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="48.93" y2="7.59" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="38.91" y1="91.72" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="85.11" y1="53.66" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="61.09" y2="8.28" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="38.91" y2="91.72" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="51.07" y2="92.41" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="12.19" y2="18.99" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="12.19" y2="18.99" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<polygon points="6.00,70.98 12.19,18.99 48.93,7.59 61.09,8.28 94.00,29.02 87.81,81.01 51.07,92.41 38.91,91.72" fill="none" stroke="#e8c766" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#000" fill-opacity="0.45">15</text>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#fff4d0">15</text>
+    </svg>
+  </div>
+
+  <!-- breakdown -->
+  <div style="display:flex;justify-content:center;gap:6px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:#c9b892;margin-bottom:6px">
+    <span>15</span><span style="color:#8a7a5a">+</span>
+    <span title="proficiency">2 <span style="font-size:9px;color:#8a7a5a">prof</span></span><span style="color:#8a7a5a">+</span>
+    <span title="Luckstone">2 <span style="font-size:9px;color:#8a7a5a">luck</span></span>
+    <span style="color:#8a7a5a">=</span><span style="color:#e8c766;font-size:16px;font-weight:700">19</span>
+  </div>
+
+  <!-- band -->
+  <div style="border:2px solid #e8c766;border-radius:8px;background:rgba(232,199,102,.08);box-shadow:0 0 14px #e8c76633;padding:12px 16px;text-align:center;margin:12px 0 16px">
+    <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.06em;color:#e8c766">HIGH BAND</div>
+    <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:12.5px;color:#c9b892;margin-top:2px">A longer, nastier passage — it hits harder, but so do you.</div>
+  </div>
+
+  <!-- band ladder -->
+  <div style="display:flex;gap:6px;margin-bottom:16px">
+    <div style="flex:1;text-align:center;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.4);padding:6px 2px"><div class="mono" style="font-size:9px;color:#6a5a3a">1</div><div style="font-family:'EB Garamond',serif;font-size:10px;color:#8a7a5a">fumble</div></div>
+    <div style="flex:2;text-align:center;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.4);padding:6px 2px"><div class="mono" style="font-size:9px;color:#6a5a3a">2–7</div><div style="font-family:'EB Garamond',serif;font-size:10px;color:#8a7a5a">low</div></div>
+    <div style="flex:2;text-align:center;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.4);padding:6px 2px"><div class="mono" style="font-size:9px;color:#6a5a3a">8–13</div><div style="font-family:'EB Garamond',serif;font-size:10px;color:#8a7a5a">mid</div></div>
+    <div style="flex:2;text-align:center;border:2px solid #e8c766;border-radius:5px;background:rgba(232,199,102,.12);padding:5px 2px"><div class="mono" style="font-size:9px;color:#e8c766">14–19</div><div style="font-family:'EB Garamond',serif;font-size:10px;color:#e8c766">high ◄</div></div>
+    <div style="flex:1;text-align:center;border:1px solid #4a3a18;border-radius:5px;background:rgba(28,22,8,.4);padding:6px 2px"><div class="mono" style="font-size:9px;color:#6a5a3a">20</div><div style="font-family:'EB Garamond',serif;font-size:10px;color:#8a7a5a">inspired</div></div>
+  </div>
+
+  <div class="mono" style="font-size:9.5px;color:#6a5a3a;text-align:center;margin-bottom:14px">band capped by INT (+0) — you can read this tier</div>
+
+  <div style="display:flex;gap:10px;justify-content:center">
+    <button class="btn-ghost" title="Bard, once per dungeon">🎵 Reroll</button>
+    <button class="btn-gold" style="padding:12px 30px">Begin Battle →</button>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="4b">
+<div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a> Special faces &amp; class variants — nat 20, nat 1, Rogue advantage</div>
+<div class="dv-card" style="width:520px">
+<div class="scr" style="width:520px;min-height:520px;padding:24px">
+
+  <!-- NAT 20 -->
+  <div style="border:2px solid #7ac96a;border-radius:10px;background:rgba(122,201,106,.08);box-shadow:0 0 16px #7ac96a33;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:16px">
+    <svg width="70" height="70" viewBox="0 0 100 100" style="flex:none">
+<polygon points="61.09,8.28 12.19,18.99 48.93,7.59" fill="#368349" stroke="#368349" stroke-width="0.4"/>
+<polygon points="51.07,92.41 38.91,91.72 6.00,70.98" fill="#15331c" stroke="#15331c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 85.11,53.66 87.81,81.01" fill="#15331c" stroke="#15331c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 61.09,8.28 85.11,53.66" fill="#255a32" stroke="#255a32" stroke-width="0.4"/>
+<polygon points="51.07,92.41 85.11,53.66 87.81,81.01" fill="#15331c" stroke="#15331c" stroke-width="0.4"/>
+<polygon points="34.55,47.46 12.19,18.99 6.00,70.98" fill="#3b8f50" stroke="#3b8f50" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 12.19,18.99" fill="#46a95f" stroke="#46a95f" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 6.00,70.98" fill="#2a6538" stroke="#2a6538" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 85.11,53.66" fill="#3b9050" stroke="#3b9050" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 85.11,53.66" fill="#2a6639" stroke="#2a6639" stroke-width="0.4"/>
+<line x1="51.07" y1="92.41" x2="85.11" y2="53.66" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="61.09" y2="8.28" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="48.93" y2="7.59" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="48.93" y2="7.59" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="6.00" y2="70.98" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="38.91" y1="91.72" x2="6.00" y2="70.98" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="85.11" y1="53.66" x2="87.81" y2="81.01" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="85.11" y2="53.66" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="61.09" y2="8.28" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="85.11" y2="53.66" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="87.81" y2="81.01" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="38.91" y2="91.72" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="87.81" y2="81.01" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="51.07" y2="92.41" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="6.00" y2="70.98" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="85.11" y2="53.66" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="12.19" y2="18.99" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="12.19" y2="18.99" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="6.00" y2="70.98" stroke="#9cf07c" stroke-opacity="0.35" stroke-width="0.5"/>
+<polygon points="6.00,70.98 12.19,18.99 48.93,7.59 61.09,8.28 94.00,29.02 87.81,81.01 51.07,92.41 38.91,91.72" fill="none" stroke="#9cf07c" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#000" fill-opacity="0.45">20</text>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#eaffe0">20</text>
+    </svg>
+    <div>
+      <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.06em;color:#9cf07c">INSPIRED!</div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:12.5px;color:#c9e6b6;margin-top:2px">High band, and your first landed hit is a <strong>guaranteed crit</strong>. "A surge of focus."</div>
+    </div>
+  </div>
+
+  <!-- NAT 1 -->
+  <div style="border:2px solid #c94b4b;border-radius:10px;background:rgba(201,75,75,.08);box-shadow:0 0 16px #c94b4b33;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:16px">
+    <svg width="70" height="70" viewBox="0 0 100 100" style="flex:none">
+<polygon points="61.09,8.28 12.19,18.99 48.93,7.59" fill="#872a2a" stroke="#872a2a" stroke-width="0.4"/>
+<polygon points="51.07,92.41 38.91,91.72 6.00,70.98" fill="#341010" stroke="#341010" stroke-width="0.4"/>
+<polygon points="94.00,29.02 85.11,53.66 87.81,81.01" fill="#341010" stroke="#341010" stroke-width="0.4"/>
+<polygon points="94.00,29.02 61.09,8.28 85.11,53.66" fill="#5c1d1d" stroke="#5c1d1d" stroke-width="0.4"/>
+<polygon points="51.07,92.41 85.11,53.66 87.81,81.01" fill="#341010" stroke="#341010" stroke-width="0.4"/>
+<polygon points="34.55,47.46 12.19,18.99 6.00,70.98" fill="#932e2e" stroke="#932e2e" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 12.19,18.99" fill="#ae3737" stroke="#ae3737" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 6.00,70.98" fill="#682121" stroke="#682121" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 85.11,53.66" fill="#942f2f" stroke="#942f2f" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 85.11,53.66" fill="#692121" stroke="#692121" stroke-width="0.4"/>
+<line x1="51.07" y1="92.41" x2="85.11" y2="53.66" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="61.09" y2="8.28" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="48.93" y2="7.59" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="48.93" y2="7.59" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="6.00" y2="70.98" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="38.91" y1="91.72" x2="6.00" y2="70.98" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="85.11" y1="53.66" x2="87.81" y2="81.01" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="85.11" y2="53.66" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="61.09" y2="8.28" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="85.11" y2="53.66" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="87.81" y2="81.01" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="38.91" y2="91.72" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="87.81" y2="81.01" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="51.07" y2="92.41" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="6.00" y2="70.98" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="85.11" y2="53.66" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="12.19" y2="18.99" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="12.19" y2="18.99" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="6.00" y2="70.98" stroke="#ff9a9a" stroke-opacity="0.35" stroke-width="0.5"/>
+<polygon points="6.00,70.98 12.19,18.99 48.93,7.59 61.09,8.28 94.00,29.02 87.81,81.01 51.07,92.41 38.91,91.72" fill="none" stroke="#ff9a9a" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="56.91" y="78.11" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="40" fill="#000" fill-opacity="0.45">1</text>
+<text x="56.91" y="78.11" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="40" fill="#ffe6e6">1</text>
+    </svg>
+    <div>
+      <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.06em;color:#e88">FUMBLE</div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:12.5px;color:#e6b6b6;margin-top:2px">Low band, no crits, damage <strong>×0.75</strong> this fight. "You stumble." (A Potion of Heroism makes you immune.)</div>
+    </div>
+  </div>
+
+  <!-- ROGUE ADVANTAGE -->
+  <div style="border:1px solid #7a5a22;border-radius:10px;background:rgba(59,18,32,.25);padding:14px;margin-bottom:14px">
+    <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.12em;margin-bottom:10px">ROGUE · CUNNING — ADVANTAGE (roll two, keep higher)</div>
+    <div style="display:flex;align-items:center;gap:14px;justify-content:center">
+      <svg width="58" height="58" viewBox="0 0 100 100" style="opacity:.4">
+<polygon points="61.09,8.28 12.19,18.99 48.93,7.59" fill="#5c533e" stroke="#5c533e" stroke-width="0.4"/>
+<polygon points="51.07,92.41 38.91,91.72 6.00,70.98" fill="#242018" stroke="#242018" stroke-width="0.4"/>
+<polygon points="94.00,29.02 85.11,53.66 87.81,81.01" fill="#242018" stroke="#242018" stroke-width="0.4"/>
+<polygon points="94.00,29.02 61.09,8.28 85.11,53.66" fill="#3f392a" stroke="#3f392a" stroke-width="0.4"/>
+<polygon points="51.07,92.41 85.11,53.66 87.81,81.01" fill="#242018" stroke="#242018" stroke-width="0.4"/>
+<polygon points="34.55,47.46 12.19,18.99 6.00,70.98" fill="#655b43" stroke="#655b43" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 12.19,18.99" fill="#786c50" stroke="#786c50" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 6.00,70.98" fill="#474030" stroke="#474030" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 85.11,53.66" fill="#665b44" stroke="#665b44" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 85.11,53.66" fill="#484130" stroke="#484130" stroke-width="0.4"/>
+<line x1="51.07" y1="92.41" x2="85.11" y2="53.66" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="61.09" y2="8.28" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="48.93" y2="7.59" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="48.93" y2="7.59" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="6.00" y2="70.98" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="38.91" y1="91.72" x2="6.00" y2="70.98" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="85.11" y1="53.66" x2="87.81" y2="81.01" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="85.11" y2="53.66" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="61.09" y2="8.28" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="85.11" y2="53.66" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="87.81" y2="81.01" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="38.91" y2="91.72" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="87.81" y2="81.01" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="51.07" y2="92.41" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="6.00" y2="70.98" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="85.11" y2="53.66" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="12.19" y2="18.99" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="12.19" y2="18.99" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="6.00" y2="70.98" stroke="#8a7a5a" stroke-opacity="0.35" stroke-width="0.5"/>
+<polygon points="6.00,70.98 12.19,18.99 48.93,7.59 61.09,8.28 94.00,29.02 87.81,81.01 51.07,92.41 38.91,91.72" fill="none" stroke="#8a7a5a" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="56.91" y="78.11" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="40" fill="#000" fill-opacity="0.45">6</text>
+<text x="56.91" y="78.11" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="40" fill="#c9b892">6</text>
+      </svg>
+      <span style="font-family:'EB Garamond',serif;font-style:italic;font-size:12px;color:#8a7a5a">dropped</span>
+      <span class="mono" style="color:#7a5a22">→</span>
+      <svg width="66" height="66" viewBox="0 0 100 100">
+<polygon points="61.09,8.28 12.19,18.99 48.93,7.59" fill="#9b7d1e" stroke="#9b7d1e" stroke-width="0.4"/>
+<polygon points="51.07,92.41 38.91,91.72 6.00,70.98" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 85.11,53.66 87.81,81.01" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="94.00,29.02 61.09,8.28 85.11,53.66" fill="#6a5515" stroke="#6a5515" stroke-width="0.4"/>
+<polygon points="51.07,92.41 85.11,53.66 87.81,81.01" fill="#3c310c" stroke="#3c310c" stroke-width="0.4"/>
+<polygon points="34.55,47.46 12.19,18.99 6.00,70.98" fill="#a98821" stroke="#a98821" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 12.19,18.99" fill="#c8a127" stroke="#c8a127" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 6.00,70.98" fill="#786017" stroke="#786017" stroke-width="0.4"/>
+<polygon points="34.55,47.46 61.09,8.28 85.11,53.66" fill="#aa8921" stroke="#aa8921" stroke-width="0.4"/>
+<polygon points="34.55,47.46 51.07,92.41 85.11,53.66" fill="#786117" stroke="#786117" stroke-width="0.4"/>
+<line x1="51.07" y1="92.41" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="61.09" y2="8.28" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="48.93" y2="7.59" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="48.93" y2="7.59" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="38.91" y1="91.72" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="85.11" y1="53.66" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="61.09" y2="8.28" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="38.91" y2="91.72" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="51.07" y1="92.41" x2="87.81" y2="81.01" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="51.07" y2="92.41" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="94.00" y1="29.02" x2="85.11" y2="53.66" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="34.55" y1="47.46" x2="12.19" y2="18.99" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="61.09" y1="8.28" x2="12.19" y2="18.99" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<line x1="12.19" y1="18.99" x2="6.00" y2="70.98" stroke="#e8c766" stroke-opacity="0.35" stroke-width="0.5"/>
+<polygon points="6.00,70.98 12.19,18.99 48.93,7.59 61.09,8.28 94.00,29.02 87.81,81.01 51.07,92.41 38.91,91.72" fill="none" stroke="#e8c766" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#000" fill-opacity="0.45">17</text>
+<text x="56.91" y="74.71" text-anchor="middle" font-family="Cinzel,serif" font-weight="700" font-size="30" fill="#fff4d0">17</text>
+      </svg>
+      <span style="font-family:'EB Garamond',serif;font-size:12px;color:#e8c766">kept</span>
+    </div>
+  </div>
+
+  <!-- BARD REROLL -->
+  <div style="border:1px solid #7a5a22;border-radius:10px;background:rgba(59,18,32,.25);padding:12px 14px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:18px">🎵</span>
+    <span style="font-family:'EB Garamond',serif;font-size:12.5px;color:#c9b892;flex:1"><strong style="color:#ede1c3">Bard · Bardic Inspiration.</strong> A "Reroll" button beside Begin Battle re-rolls the d20 — you commit to the new one. Once per dungeon.</span>
+  </div>
+
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "animate the die tumbling before it settles" · "show Guidance (advantage from an item) framing" · "what the high-band prompt itself looks like when the fight starts"</p>
+</section>
+
+<!-- ============================================================ TURN 5 -->
+<section class="dv-turn" id="t5">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t5">5</a>
+  <div><span class="dv-tname">Premonitions — sensing mimics &amp; reading a chokepoint</span>
+  <p class="dv-tsub">A hidden <code>d20 + WIS + proficiency</code> vs the dungeon's mimic deception DC
+  (<a href="../m3-scope.html#mimic-sense">scope §mimic-sense</a>). <strong>Only a mimic ever trips it</strong> — a real
+  chest never does — so a warning is a trustworthy "this one's a mimic," while no warning stays ambiguous. WIS also gives a
+  soft threat read on hidden chokepoints. The check itself stays hidden; only a success surfaces.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="5a">
+<div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a> Mimic sense triggered — the "teeth on edge" warning modal</div>
+<div class="dv-card" style="width:560px">
+<div class="scr" style="width:560px;min-height:420px;padding:0;position:relative">
+  <!-- dimmed dungeon backdrop -->
+  <div style="position:absolute;inset:0;opacity:.35;padding:24px;box-sizing:border-box">
+    <div style="display:flex;gap:40px;align-items:center;justify-content:center;height:100%">
+      <div style="width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227"></div>
+      <div style="width:2px;height:2px"></div>
+      <div style="width:34px;height:34px;transform:rotate(45deg);background:rgba(40,34,24,.5);border:2px dashed #5a4a30"></div>
+      <div style="width:34px;height:34px;transform:rotate(45deg);background:#3b1220;border:2px solid #c9a227;box-shadow:0 0 10px #c9a22799"></div>
+    </div>
+  </div>
+  <!-- modal -->
+  <div style="position:relative;z-index:1;max-width:420px;margin:56px auto;background:#140b07;border:2px solid #a8683a;border-radius:12px;box-shadow:0 0 30px rgba(168,104,58,.35);padding:24px 26px;text-align:center">
+    <div style="font-size:30px;margin-bottom:8px">🫣</div>
+    <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:.04em;color:#e0a56a">A prickle of warning</div>
+    <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:15px;color:#ede1c3;margin:12px 0 6px;line-height:1.5">"Something about this chest sets your teeth on edge…"</div>
+    <div style="font-family:'EB Garamond',serif;font-size:12px;color:#a89a7a;margin-bottom:20px">It's a mimic. You're sure of it — and you'll remember.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn-gold">Back away</button>
+      <button class="btn-ghost">Open anyway <span style="color:#8a7a5a;font-size:11px">(take the fight for XP)</span></button>
+    </div>
+    <div style="margin-top:18px;border-top:1px solid #3a2a10;padding-top:10px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6a5a3a;font-style:italic">
+      GM whisper (hidden): d20 14 + WIS 1 + prof 2 = 17 vs DC 15 ✓
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="5b">
+<div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a> The quieter reads — chokepoint threat &amp; the ambiguous no-feeling chest</div>
+<div class="dv-card" style="width:340px">
+<div class="scr" style="width:340px;min-height:420px;padding:22px;display:flex;flex-direction:column;gap:16px">
+
+  <!-- chokepoint threat read -->
+  <div style="border:1px solid #7a5a22;border-radius:10px;background:rgba(59,18,32,.25);padding:16px">
+    <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.12em;margin-bottom:8px">WIS · CHOKEPOINT READ</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:46px;height:46px;border-radius:50%;background:#1c1608;border:2px solid #c94b4b;box-shadow:0 0 10px #c94b4b66;display:flex;align-items:center;justify-content:center;flex:none">
+        <span style="font-size:18px">⚠️</span>
+      </div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:13px;color:#e6b6b6;line-height:1.4">"This guardian feels <strong>unusually tough</strong>."</div>
+    </div>
+    <div style="font-family:'EB Garamond',serif;font-size:11px;color:#8a7a5a;margin-top:10px">A soft warning of danger — never the monster's actual name. Higher WIS reads more, and sooner.</div>
+  </div>
+
+  <!-- ambiguous no-feeling chest -->
+  <div style="border:1px solid #4a3a18;border-radius:10px;background:rgba(28,22,8,.4);padding:16px">
+    <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.12em;margin-bottom:8px">NO PREMONITION</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:38px;height:38px;transform:rotate(45deg);background:#3b1220;border:2px solid #c9a227;flex:none"></div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:13px;color:#c9b892;line-height:1.4">You feel nothing. Could be treasure… could be a mimic you didn't sense.</div>
+    </div>
+    <div style="font-family:'EB Garamond',serif;font-size:11px;color:#8a7a5a;margin-top:10px">Silence stays ambiguous on purpose — you can't back into the real chest just by never being warned.</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="btn-ghost" style="padding:7px 14px;font-size:12px">Leave it</button>
+      <button class="btn-gold" style="padding:7px 16px;font-size:12px">Open</button>
+    </div>
+  </div>
+
+  <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:#6a5a3a;text-align:center">Default: no false alarms on a real chest — reliability builds his trust in the mechanic.</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the Rogue's Expertise making the same DC nearly automatic" · "what 'Open anyway' → the mimic fight transition looks like" · "a permanent 'known mimic' marker on that chest node"</p>
+</section>
+
+<!-- ============================================================ TURN 6 -->
+<section class="dv-turn" id="t6">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t6">6</a>
+  <div><span class="dv-tname">Item consumption — from the dungeon map, before a fight</span>
+  <p class="dv-tsub">Hard rule from the brief: <strong>items are never used during a round — a round is pure typing</strong>
+  (<a href="../m3-scope.html#items">scope §items</a>). You open the bag from the dungeon map, spend a consumable, and its
+  buff applies to your next fight (or the rest of the run). All active buffs clear when the run ends. Owned items persist;
+  only the <em>buff</em> is per-dungeon. <strong>Design call:</strong> the bag is a <em>drawer you expand from a map
+  button</em>, not an always-on panel — the branching graph needs the room, and prepping is a deliberate beat, not
+  constant clutter. (The active-buffs strip, being tiny and glanceable, <em>does</em> stay pinned.)</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="6a">
+<div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a> Dungeon map — the bag drawer expanded from its button, over the graph</div>
+<div class="dv-card" style="width:1080px">
+<div class="scr" style="width:1080px;min-height:440px">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div>
+      <div class="h-screen" style="font-size:18px">Dungeon — Tier 2: Forest</div>
+      <div class="mono" style="font-size:11px;color:#a89a7a;margin-top:2px">Pick your next node — or prep first</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="pill" style="color:#e8c766;border-color:#e8c766;background:#1c1608;box-shadow:0 0 8px #e8c76644;position:relative">🎒 Bag <span style="color:#c9b892">(3)</span>
+        <span style="position:absolute;left:50%;top:-8px;transform:translate(-50%,-100%);font-family:'JetBrains Mono',monospace;font-size:9px;color:#7ac96a;white-space:nowrap">tap to open ▾</span>
+      </span>
+      <div style="font-family:'Cinzel',serif;font-size:18px;color:#c94b4b">♥ <span style="opacity:.35">♡</span></div>
+    </div>
+  </div>
+
+  <!-- active buffs strip -->
+  <div style="display:flex;align-items:center;gap:10px;border:1px solid #7ac96a55;border-radius:8px;background:rgba(122,201,106,.06);padding:8px 14px;margin:10px 0 18px">
+    <span class="mono" style="font-size:10px;color:#7ac96a;letter-spacing:.1em">ACTIVE BUFFS</span>
+    <span class="pill" style="color:#c9e6b6;border-color:#4a7a3a;background:rgba(74,122,58,.15)">💪 Bull's Strength · next fight</span>
+    <span class="pill" style="color:#c9e6b6;border-color:#4a7a3a;background:rgba(74,122,58,.15)">🍀 Luckstone · rest of dungeon</span>
+    <span style="font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:#8a7a5a;margin-left:auto">clears when you leave the dungeon</span>
+  </div>
+
+  <div style="display:flex;gap:22px;align-items:stretch;position:relative">
+    <!-- mini graph placeholder (now full-width; the bag floats over it) -->
+    <div style="flex:1;border:1px dashed #3a2a10;border-radius:10px;background:rgba(28,22,8,.25);position:relative;min-height:300px;overflow:hidden">
+      <svg width="100%" height="300" style="position:absolute;inset:0">
+        <line x1="60" y1="150" x2="170" y2="90" stroke="#e8c766" stroke-width="2"/>
+        <line x1="60" y1="150" x2="170" y2="210" stroke="#e8c766" stroke-width="2"/>
+        <line x1="170" y1="90" x2="290" y2="150" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="170" y1="210" x2="290" y2="150" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+        <line x1="290" y1="150" x2="410" y2="150" stroke="#5a4a30" stroke-width="2" stroke-dasharray="5,5"/>
+      </svg>
+      <div style="position:absolute;left:60px;top:150px;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:6px;background:radial-gradient(circle at 35% 30%,#e8c766,#8a6a1a);border:2px solid #c9a227;rotate:45deg"></div>
+      <div style="position:absolute;left:170px;top:90px;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center" class="mono"><span style="font-size:10px;color:#e8c766">A2</span></div>
+      <div style="position:absolute;left:170px;top:210px;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#1c1608;border:2px solid #e8c766;box-shadow:0 0 10px #e8c76677;display:flex;align-items:center;justify-content:center" class="mono"><span style="font-size:10px;color:#e8c766">B2</span></div>
+      <div style="position:absolute;left:290px;top:150px;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:rgba(40,34,24,.5);border:2px dashed #5a4a30"></div>
+      <div style="position:absolute;left:410px;top:150px;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(80,20,20,.35);border:2px dashed #6a2a2a;display:flex;align-items:center;justify-content:center" class="mono"><span style="font-size:9px;color:#a86a6a">BOSS</span></div>
+      <div style="position:absolute;right:12px;bottom:10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a5a3a">choose A2 or B2 →</div>
+    </div>
+
+    <!-- the bag: a drawer floating over the graph, opened from the HUD button -->
+    <div style="position:absolute;top:0;right:0;width:300px;border:2px solid #e8c766;border-radius:10px;background:#1a0f0a;box-shadow:0 14px 36px rgba(0,0,0,.7);padding:16px;z-index:5">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-family:'Cinzel',serif;font-size:14px;color:#e8c766">🎒 The Bag</span>
+        <span class="mono" style="font-size:14px;color:#a89a7a;cursor:pointer">✕</span>
+      </div>
+      <div class="mono" style="font-size:10px;color:#8a7a5a;margin-bottom:12px">use before you fight · closes when you pick a node</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #7a5a22;border-radius:6px;background:rgba(28,22,8,.5);padding:8px 10px">
+          <span style="font-size:16px">🧪</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:12.5px;color:#ede1c3">Potion of Healing <span class="mono" style="color:#8a7a5a">×2</span></div><div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">restore 1 heart · instant</div></div>
+          <button class="btn-gold" style="padding:5px 12px;font-size:11px">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #7a5a22;border-radius:6px;background:rgba(28,22,8,.5);padding:8px 10px">
+          <span style="font-size:16px">⚡</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:12.5px;color:#ede1c3">Potion of Speed <span class="mono" style="color:#8a7a5a">×1</span></div><div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#8a7a5a">+time budget · next fight</div></div>
+          <button class="btn-gold" style="padding:5px 12px;font-size:11px">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #4a3a18;border-radius:6px;background:rgba(28,22,8,.3);padding:8px 10px;opacity:.65">
+          <span style="font-size:16px">💪</span>
+          <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:12.5px;color:#c9b892">Bull's Strength <span class="mono" style="color:#8a7a5a">×0</span></div><div style="font-family:'EB Garamond',serif;font-size:10px;font-style:italic;color:#7ac96a">already active</div></div>
+          <span class="mono" style="font-size:10px;color:#7ac96a">✓</span>
+        </div>
+      </div>
+      <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:10.5px;color:#6a5a3a;text-align:center;margin-top:12px">Collapsed by default — the graph needs the room. Can't be opened mid-fight.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "confirm-use tooltip like the Shop's" · "what happens when you try to open the bag mid-battle (blocked)" · "a heart visibly refill when a Potion of Healing is used"</p>
+</section>
+
+<!-- ============================================================ TURN 7 -->
+<section class="dv-turn" id="t7">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t7">7</a>
+  <div><span class="dv-tname">Weapon assignment — the Inn's Armory (between dungeons only)</span>
+  <p class="dv-tsub">Unlike consumables, a weapon stays with you across dungeons until you swap it
+  (<a href="../m3-scope.html#weapons">scope §weapons</a>). <strong>Design call:</strong> you equip <em>only at the Inn</em>,
+  between runs — never mid-dungeon — so gear choice is a commitment you live with for the whole run, not a per-fight
+  fiddle. It's the Armory tab of the reworked <a href="#t2">Inn (turn 2)</a>. A weapon never adds an in-battle action; it
+  reshapes the math via its die, governing ability, and crit range. Selecting one shows a side-by-side compare.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="7a">
+<div class="dv-olabel"><a class="dv-oid" href="#7a">7a</a> The Inn's Armory tab — inventory + compare-and-equip panel</div>
+<div class="dv-card" style="width:1080px">
+<div class="scr" style="width:1080px;min-height:420px">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="mono" style="font-size:12px;color:#a89a7a">← The Inn</div>
+    <div class="h-screen" style="font-size:20px">The Armory</div>
+    <div class="mono" style="font-size:11px;color:#a89a7a">STR +3 · DEX +1 · INT +0</div>
+  </div>
+  <!-- Inn tabs -->
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px">
+    <span class="pill" style="color:#a89a7a">Rest</span>
+    <span class="pill" style="color:#a89a7a">Character</span>
+    <span class="pill" style="color:#1c0f0a;background:#e8c766;border-color:#e8c766;font-weight:700">Armory</span>
+  </div>
+  <div style="text-align:center;font-family:'EB Garamond',serif;font-style:italic;font-size:12px;color:#8a7a5a;margin-bottom:16px">Equip here between dungeons — no swapping once you're inside a run.</div>
+
+  <div style="display:flex;gap:22px;align-items:flex-start">
+    <!-- owned list -->
+    <div style="width:360px;flex:none;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px;border:2px solid #e8c766;border-radius:8px;background:#1c1608;box-shadow:0 0 12px #e8c76644;padding:12px 14px">
+        <span style="font-size:22px">⚔️</span>
+        <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:14px;color:#e8c766">Longsword</div><div class="mono" style="font-size:10px;color:#c9b892">d8 · STR · crit 20</div></div>
+        <span class="mono" style="font-size:10px;color:#1c0f0a;background:#e8c766;border-radius:10px;padding:2px 10px;font-weight:700">EQUIPPED</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;border:2px solid #c9a227;border-radius:8px;background:rgba(59,18,32,.3);padding:12px 14px;box-shadow:0 0 8px #c9a22733">
+        <span style="font-size:22px">🪓</span>
+        <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:14px;color:#ede1c3">Greataxe</div><div class="mono" style="font-size:10px;color:#c9b892">d12 · STR · −time</div></div>
+        <span class="mono" style="font-size:10px;color:#e8c766">◄ selected</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;border:2px solid #7a5a22;border-radius:8px;background:rgba(59,18,32,.2);padding:12px 14px">
+        <span style="font-size:22px">🗡️</span>
+        <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:14px;color:#c9b892">Dagger</div><div class="mono" style="font-size:10px;color:#8a7a5a">d4 · DEX · crit 19–20</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;border:2px solid #4a3a18;border-radius:8px;background:rgba(28,22,8,.35);padding:12px 14px;opacity:.7">
+        <span style="font-size:22px">🪄</span>
+        <div style="flex:1"><div style="font-family:'EB Garamond',serif;font-size:14px;color:#c9b892">Wand</div><div class="mono" style="font-size:10px;color:#8a7a5a">d6 · INT · +1 rolls</div></div>
+      </div>
+    </div>
+
+    <!-- compare panel -->
+    <div style="flex:1;border:2px solid #7a5a22;border-radius:10px;background:rgba(28,22,8,.35);padding:18px 20px">
+      <div class="mono" style="font-size:10px;color:#8a7a5a;letter-spacing:.14em;margin-bottom:14px">COMPARE</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center">
+        <!-- current -->
+        <div style="text-align:center">
+          <div style="font-size:26px">⚔️</div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:#c9b892;margin:4px 0">Longsword</div>
+          <div class="mono" style="font-size:10px;color:#8a7a5a">equipped</div>
+        </div>
+        <div class="mono" style="font-size:18px;color:#7a5a22">→</div>
+        <!-- selected -->
+        <div style="text-align:center">
+          <div style="font-size:26px">🪓</div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:#e8c766;margin:4px 0">Greataxe</div>
+          <div class="mono" style="font-size:10px;color:#e8c766">selected</div>
+        </div>
+      </div>
+
+      <div style="margin:16px 0;display:flex;flex-direction:column;gap:8px">
+        <div style="display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px">
+          <span style="text-align:right;color:#c9b892">d8</span><span style="text-align:center;color:#8a7a5a;font-size:10px">DAMAGE DIE</span><span style="color:#7ac96a">d12 ▲</span>
+        </div>
+        <div style="height:1px;background:#3a2a10"></div>
+        <div style="display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px">
+          <span style="text-align:right;color:#c9b892">+3 (STR)</span><span style="text-align:center;color:#8a7a5a;font-size:10px">ABILITY</span><span style="color:#ede1c3">+3 (STR)</span>
+        </div>
+        <div style="height:1px;background:#3a2a10"></div>
+        <div style="display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px">
+          <span style="text-align:right;color:#c9b892">20</span><span style="text-align:center;color:#8a7a5a;font-size:10px">CRIT</span><span style="color:#ede1c3">20</span>
+        </div>
+        <div style="height:1px;background:#3a2a10"></div>
+        <div style="display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px">
+          <span style="text-align:right;color:#c9b892">—</span><span style="text-align:center;color:#8a7a5a;font-size:10px">CATCH</span><span style="color:#c98d8d">−time ▼</span>
+        </div>
+      </div>
+
+      <div style="background:rgba(59,18,32,.3);border:1px solid #7a5a22;border-radius:6px;padding:10px 12px;font-family:'EB Garamond',serif;font-style:italic;font-size:12px;color:#c9b892;margin-bottom:16px">
+        Bigger ceiling and meaner crits, but a tighter typing clock — the Greataxe makes your WIS (time) matter more.
+      </div>
+
+      <div style="text-align:center">
+        <button class="btn-gold" style="padding:11px 30px">Equip Greataxe</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "a chest dropping a brand-new weapon straight into this screen" · "show the Wand's '+1 to encounter rolls' called out as a perk" · "lock a weapon your class can't use well"</p>
+</section>
+
+<!-- ============================================================ TURN 8 -->
+<section class="dv-turn" id="t8">
+<div class="dv-thd">
+  <a class="dv-tid" href="#t8">8</a>
+  <div><span class="dv-tname">What I'd add — the in-battle "juice" moments (the forgotten screen)</span>
+  <p class="dv-tsub">The one M3 surface not covered above: the battle screen itself. It barely changes structurally, but M3 layers
+  on a HUD strip (equipped weapon + active buffs) and the reactive flashes the <a href="../m3-scope.html#ability-mechanics">no-mid-typing rule</a>
+  demands — dodge, Second Wind, the per-hit weapon-die pop, crits. Built on the <a href="M0%20Wireframes.dc.html#2a">M0 vertical-duel layout (2a)</a>;
+  annotations mark only what's new.</p></div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="8a">
+<div class="dv-olabel"><a class="dv-oid" href="#8a">8a</a> Battle screen with M3 additions — HUD strip + live flashes</div>
+<div class="dv-card" style="width:640px">
+<div class="scr" style="width:640px;min-height:560px;position:relative;overflow:hidden">
+
+  <!-- new HUD strip -->
+  <div style="display:flex;align-items:center;gap:8px;border:1px solid #7a5a22;border-radius:8px;background:rgba(28,22,8,.5);padding:7px 12px;margin-bottom:16px">
+    <span class="pill" style="color:#e8c766;padding:2px 10px">⚔️ Longsword d8</span>
+    <span class="pill" style="color:#c9e6b6;border-color:#4a7a3a;background:rgba(74,122,58,.15);padding:2px 10px">💪 Bull's Str</span>
+    <span class="pill" style="color:#c9e6b6;border-color:#4a7a3a;background:rgba(74,122,58,.15);padding:2px 10px">🍀 Luck +2</span>
+    <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:12px;color:#c94b4b">♥ <span style="opacity:.35">♡</span></span>
+    <span style="position:absolute;left:12px;top:-9px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#7ac96a;background:#140b07;padding:0 6px">◄ NEW: weapon + active buffs</span>
+  </div>
+
+  <!-- monster panel with crit -->
+  <div style="background:linear-gradient(180deg,#3b1220,#2a0d17);border:2px solid #7a5a22;border-radius:8px;padding:14px 18px;margin-bottom:12px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.06em;color:#e8c766">GOBLIN BOSS</div>
+      <div class="mono" style="font-size:12px;color:#c98d8d">HP 96 / 150</div>
+    </div>
+    <div style="height:12px;border-radius:6px;background:#1c0b0e;border:1px solid #5a2020;overflow:hidden"><div style="width:64%;height:100%;background:linear-gradient(90deg,#8b2020,#c94b4b)"></div></div>
+    <!-- crit float — pops over the monster's HP bar -->
+    <div style="position:absolute;left:52%;top:44px;text-align:center;z-index:2">
+      <div style="font-family:'Cinzel',serif;font-size:28px;color:#9cf07c;text-shadow:0 0 12px #7ac96a,0 2px 4px #000;font-weight:700;transform:rotate(-6deg)">CRIT 34!</div>
+      <div class="mono" style="font-size:10px;color:#e8c766;background:#1c1608;border:1px solid #e8c766;border-radius:10px;padding:1px 8px;display:inline-block;margin-top:4px">🎲 d8→7 ×2</div>
+    </div>
+    <span style="position:absolute;right:14px;bottom:-9px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#7ac96a;background:#140b07;padding:0 6px">◄ NEW: weapon-die pop + crit</span>
+  </div>
+
+  <!-- vs divider -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 12px;color:#7a5a22;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em">
+    <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,#7a5a22)"></div>
+    <div style="width:9px;height:9px;background:#c9a227;transform:rotate(45deg)"></div>VS<div style="width:9px;height:9px;background:#c9a227;transform:rotate(45deg)"></div>
+    <div style="flex:1;height:1px;background:linear-gradient(90deg,#7a5a22,transparent)"></div>
+  </div>
+
+  <!-- player panel with dodge + second wind -->
+  <div style="background:linear-gradient(180deg,#241f3d40,#1a1226);border:2px solid #7a5a22;border-radius:8px;padding:14px 18px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.06em;color:#e8c766">BRAM</div>
+      <div class="mono" style="font-size:12px;color:#e0d0a0">HP 25 / 84</div>
+    </div>
+    <div style="height:12px;border-radius:6px;background:#1c1608;border:1px solid #5a4a20;overflow:hidden;margin-bottom:12px"><div style="width:30%;height:100%;background:linear-gradient(90deg,#8a6a1a,#e8c766)"></div></div>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:16px;background:#1c1608;border:1px solid #4a3a18;border-radius:5px;padding:10px 14px">
+      <span style="color:#6a6a5a">the goblin ch</span><span style="border-right:2px solid #e8c766">&nbsp;</span><span style="color:#4a4536">ief roars</span>
+    </div>
+    <div class="mono" style="font-size:12px;color:#a89a7a;margin-top:6px">&gt; the goblin ch<span style="opacity:.4">|</span> &nbsp; <span style="color:#e8c766">2.4s left</span></div>
+
+    <!-- flashes -->
+    <div style="position:absolute;left:16px;top:-12px;font-family:'Cinzel',serif;font-size:16px;color:#8fd0e8;text-shadow:0 0 8px #8fd0e8;transform:rotate(-4deg)">Dodged!</div>
+    <div style="position:absolute;right:18px;bottom:14px;font-family:'Cinzel',serif;font-size:15px;color:#7ac96a;text-shadow:0 0 8px #7ac96a">✚ Second Wind!</div>
+    <span style="position:absolute;left:-2px;top:6px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#7ac96a;background:#140b07;padding:0 4px">◄ NEW: auto flashes (no button)</span>
+  </div>
+
+  <!-- level-up toast -->
+  <div style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:#14240e;border:1px solid #7ac96a;border-radius:20px;box-shadow:0 0 16px #7ac96a55;padding:8px 18px">
+    <span style="font-size:14px">✦</span>
+    <span style="font-family:'Cinzel',serif;font-size:13px;color:#9cf07c;letter-spacing:.04em">You reached Level 5!</span>
+    <span style="font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:#c9e6b6">— visit the Inn to improve</span>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "isolate each flash into its own timed frame" · "a floating damage number for an ordinary (non-crit) hit" · "the win screen showing XP gained + any gear dropped"</p>
+</section>
+
+<footer style="padding:32px 48px 60px;font:12px/1.6 system-ui,sans-serif;color:#6a5a3a">
+  Hand-authored M3 wireframes · read alongside the <a href="../m3-scope.html" style="color:#c9a227">M3 scope doc</a> ·
+  all numbers are placeholders for the <a href="../roadmap.html#m5" style="color:#c9a227">M5 tuning pass</a>.
+</footer>
+
+</body>
+</html>

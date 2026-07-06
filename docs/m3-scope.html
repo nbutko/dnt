@@ -22,6 +22,13 @@
   "type the line" and becomes "type the line <em>as your character</em>." The core loop from M2 (map →
   dungeon → branching encounters → boss) is <strong>not</strong> touched; everything here hangs off of it.
 </p>
+<div class="callout why">
+  <strong>Stylized screen mocks for every surface below</strong> — character creation, the reworked Inn (rest,
+  sheet, Armory), the Shop, the encounter d20, chest premonitions, item &amp; weapon handling, and the in-battle
+  flashes — live in the <a href="design/m3-wireframes.html">M3 wireframes</a>. Several design calls captured in this
+  doc (equip-at-Inn-only, the bag drawer, the signed CHA price modifier, HP-full-at-the-Inn) were pinned down while
+  drawing those mocks.
+</div>
 
 <div class="callout decision">
   This milestone deliberately supersedes the old <a href="roadmap.html#m3">Roadmap M3</a> ("power-ups &amp;
@@ -105,12 +112,20 @@
   dnt's actual reward economy is an <a href="#open">M5 tuning question</a>, not a scope one.
 </p>
 <div class="callout decision">
-  <strong>The Inn becomes a "rest."</strong> With XP no longer spent on nodes, the Inn's job is the D&amp;D
-  long rest — restore hearts and HP to full — plus a character-sheet screen to review your stats and spend any
-  pending Ability Score Improvements. The skill-tree UI is retired; its five branches are absorbed into the
-  ability system (Endurance→CON &amp; the level HP/heart gains, Wordsmith→INT's tier cap, Focus→WIS, Luck→DEX
-  &amp; luck items, Utility→consumables). This also resolves the <a href="roadmap.html#m5">M5</a> "activate the
-  deferred Focus/Luck/Utility branches" task — there are no branches to activate anymore.
+  <strong>The Inn becomes a "rest," organized into tabs.</strong> With XP no longer spent on nodes, the Inn is
+  split into <strong>Rest &amp; Sheet</strong> (review stats, spend pending Ability Score Improvements, take a
+  long rest) and <strong>Armory</strong> (equip/swap your <a href="#weapons">weapon</a> — see there). The skill-tree
+  UI is retired; its five branches are absorbed into the ability system (Endurance→CON &amp; the level HP/heart
+  gains, Wordsmith→INT's tier cap, Focus→WIS, Luck→DEX &amp; luck items, Utility→consumables). This also resolves
+  the <a href="roadmap.html#m5">M5</a> "activate the deferred Focus/Luck/Utility branches" task — there are no
+  branches to activate anymore.
+</div>
+<div class="callout decision">
+  <strong>What the long rest actually restores: hearts, not HP.</strong> HP already resets to full at the start of
+  every battle (the M2 rule — HP is a per-battle pool; <a href="#reshaping">hearts</a> are the per-run lives). So a
+  character is <em>always at full HP when standing in the Inn</em>, and the "long rest" is really about recovering
+  spent <strong>hearts</strong> (plus clearing any lingering state). Mid-run heart recovery without the trip back is
+  the job of the <a href="#items">Potion of Healing</a>.
 </div>
 
 <h2 id="classes">Classes</h2>
@@ -123,8 +138,8 @@
   <tr><th>Class</th><th>Hit die</th><th>Favored abilities</th><th>Starting weapon</th><th>Signature feature</th></tr>
   <tr>
     <td><strong>Fighter</strong></td><td>d10 (toughest)</td><td>STR, CON</td><td>Longsword (d8)</td>
-    <td><strong>Second Wind:</strong> once per dungeon, automatically heal a chunk of HP when a battle turns
-    dire. The forgiving, durable default — the safe pick for a kid still building speed.</td>
+    <td><strong>Second Wind:</strong> once per battle, automatically heal a chunk of HP the first time a fight
+    turns dire (HP drops to ≤30%). The forgiving, durable default — the safe pick for a kid still building speed.</td>
   </tr>
   <tr>
     <td><strong>Wizard</strong></td><td>d6 (fragile)</td><td>INT, WIS</td><td>Wand (d6, arcane)</td>
@@ -311,6 +326,12 @@
   dungeons until you swap it. You equip one at a time. A weapon never adds an in-battle action (typing stays
   pure); it just reshapes the battle math passively via its die, its governing ability, and its crit range.
 </p>
+<div class="callout decision">
+  <strong>You equip only at the Inn's <a href="#leveling">Armory</a> tab, between dungeons — never mid-run.</strong>
+  Consumables are prepped from the dungeon map because they're spur-of-the-moment; a weapon is a run-long commitment
+  you live with, so swapping is locked once you enter a dungeon. This keeps gear choice meaningful (you can't hot-swap
+  the perfect weapon per encounter) and keeps the dungeon UI free of an equip screen.
+</div>
 <table>
   <tr><th>Weapon</th><th>Damage die</th><th>Ability</th><th>Crit range</th><th>Tier</th><th>Character</th></tr>
   <tr><td>Dagger</td><td>d4</td><td>DEX</td><td>19–20</td><td>1</td><td>Cheap, low base, crits twice as often — a crit-fishing starter.</td></tr>
@@ -339,6 +360,14 @@
   the run), and <strong>all active item effects clear when the run ends</strong> — win, wipe, or leave. Unused
   items stay in the bag; only the <em>buff</em> is per-dungeon.
 </p>
+<div class="callout decision">
+  <strong>The bag is an expandable drawer, not an always-on panel.</strong> On the dungeon map it lives behind a
+  <code>🎒 Bag</code> button that opens a drawer over the graph and closes when you pick a node — because the
+  branching path needs the screen room and prepping should be a deliberate beat, not permanent clutter. What
+  <em>does</em> stay pinned is a small <strong>active-buffs strip</strong> showing which effects are riding on your
+  next fight (e.g. "Bull's Strength · next fight," "Luckstone · rest of dungeon") and that they clear when you leave
+  — so the player always knows what's in effect without opening anything.
+</div>
 <table>
   <tr><th>Item</th><th>Effect in dnt</th><th>Duration</th><th>Tier</th></tr>
   <tr><td>Potion of Healing</td><td>restore 1 spent heart mid-run</td><td>instant</td><td>1</td></tr>
@@ -365,10 +394,16 @@
   The Shop has sat locked on the world map since M2 as a "Coming soon" placeholder. M3 opens it, and coins —
   earned and displayed all through M2 but with <strong>no sink whatsoever</strong> — finally have somewhere to
   go. It sells <a href="#items">consumables</a> and <a href="#weapons">weapons</a>; consumables restock each
-  visit, weapons are one-off purchases. Your <strong>CHA modifier discounts every price</strong> (and a Bard
+  visit, weapons are one-off purchases. Your <strong>CHA modifier adjusts every price</strong> (and a Bard
   stacks its Silver Tongue on top). This is the coin economy's only sink, the mirror of the Inn being XP's
   (now-retired) sink.
 </p>
+<div class="callout why">
+  <strong>The CHA price modifier is signed.</strong> A positive CHA charms the keeper into a discount; a
+  <em>negative</em> CHA (the dump-stat Fighter with CHA 8, mod −1) marks prices <em>up</em> instead — a small,
+  felt tax that makes CHA a real trade-off rather than a one-way freebie, and surfaces in the Shop as a visible
+  banner ("Charisma −1 → prices up 5%") so the kid understands why gold buys less.
+</div>
 
 <h2 id="loot">What treasure and monsters drop</h2>
 <p>

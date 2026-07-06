@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3 Scope: The Character Sheet — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M3 Scope: The Character Sheet</h1>
+  <p class="tagline">Abilities, levels, dice, weapons, items, and a Shop — the D&amp;D layer that turns a typist into a hero.</p>
+</header>
+<main>
+
+<p>
+  <a href="m2-scope.html">M2</a> answered "what happens between battles?" — the map, dungeons, hearts, coins,
+  XP. M3 answers "<em>who is the kid playing?</em>" It takes the parts of Dungeons &amp; Dragons we haven't
+  captured yet — a character with ability scores, a class, a level, dice rolls, weapons, and a bag of
+  consumables — and wires each of them into the typing loop that already works, so that a battle stops being
+  "type the line" and becomes "type the line <em>as your character</em>." The core loop from M2 (map →
+  dungeon → branching encounters → boss) is <strong>not</strong> touched; everything here hangs off of it.
+</p>
+
+<div class="callout decision">
+  This milestone deliberately supersedes the old <a href="roadmap.html#m3">Roadmap M3</a> ("power-ups &amp;
+  juice"). Power-ups survive here as <a href="#items">consumable items</a>, but the milestone's real job grew:
+  it's the whole D&amp;D character layer, since M4 is shipping and M5 is tuning — <strong>every mechanical
+  element has to be in the game before the M5 balance pass can tune it.</strong> Screen-shake/SFX "juice"
+  rides along where the dice and damage already create natural animation moments, but it is not the point of
+  M3 and never blocks it.
+</div>
+
+<div class="callout why">
+  <strong>Design north star for M3:</strong> when a real D&amp;D rule and a typing-game need can be made the
+  same thing, make them the same thing. Ability modifiers <em>are</em> the numbers in the damage/HP/time
+  formulas; the attack roll <em>is</em> which passage you get; the damage die <em>is</em> the number that pops
+  when you land a hit. The kid should be able to learn how his character works and, without noticing, be
+  learning how D&amp;D works.
+</div>
+
+<h2 id="abilities">The character sheet: six abilities</h2>
+<p>
+  The heart of M3 is the standard six D&amp;D ability scores. Each score's <em>modifier</em> —
+  <code>mod = floor((score − 10) / 2)</code>, exactly as in 5e — feeds directly into a combat number that
+  already exists (see the <a href="game-design.html#damage">damage/HP/time formulas</a>). Every ability has one
+  <strong>primary</strong> effect that carries its weight, plus a lighter <strong>flavor</strong> effect, so
+  no stat is ever a dump stat but the sheet still stays legible to a 10-year-old.
+</p>
+<table>
+  <tr><th>Ability</th><th>D&amp;D essence</th><th>Primary effect in dnt</th><th>Flavor effect</th></tr>
+  <tr><td><strong>STR</strong></td><td>raw power</td><td>+ melee attack damage (adds to the weapon die)</td><td>—</td></tr>
+  <tr><td><strong>DEX</strong></td><td>finesse, reflexes</td><td>+ crit chance (and finesse-weapon damage)</td><td><em>dodge:</em> chance to shrug off an incoming hit</td></tr>
+  <tr><td><strong>CON</strong></td><td>endurance</td><td>+ max HP gained every level</td><td>—</td></tr>
+  <tr><td><strong>INT</strong></td><td>knowledge</td><td>the highest prompt tier you're allowed to be served</td><td>arcane-weapon damage</td></tr>
+  <tr><td><strong>WIS</strong></td><td>awareness, composure</td><td>+ typing time budget per prompt (ms)</td><td><em>perception:</em> sense mimics &amp; read encounter threat</td></tr>
+  <tr><td><strong>CHA</strong></td><td>force of personality</td><td>cheaper Shop prices (charm the keeper)</td><td><em>intimidate:</em> the enemy hits weaker / slower</td></tr>
+</table>
+<div class="callout why">
+  These are the mappings that survived a "does the fantasy match the mechanic?" test. STR→damage, CON→HP,
+  INT→"how hard a word can you handle," WIS→"how much time your composure buys you," CHA→"talk the shopkeeper
+  down / rattle the monster" all read true. DEX is the one that carries two things on purpose — precision
+  (crits) <em>and</em> nimbleness (dodging a hit) are both squarely DEX in D&amp;D, and giving it a defensive
+  angle keeps it from being a pure crit stat.
+</div>
+<div class="callout decision">
+  Modifiers, not raw scores, drive every formula — a score of 10–11 is a flat +0, so a fresh character with
+  average stats plays exactly like today's untuned baseline, and every point of a modifier is a small,
+  countable step (e.g. "+1 crit tier," "+one reading-buffer chunk"). Exact per-point magnitudes are a
+  <a href="#open">tuning knob</a>, deferred to <a href="roadmap.html#m5">M5</a> with the rest of the numbers.
+</div>
+
+<h2 id="leveling">Leveling, the D&amp;D way (this replaces the skill tree)</h2>
+<p>
+  M2 spent XP in a bespoke five-branch skill tree. M3 throws that out and uses D&amp;D's own progression,
+  because it's both more authentic and, once abilities exist, simpler: <strong>XP is no longer a currency you
+  spend — it's a total that carries you across level thresholds automatically,</strong> and levels hand out
+  the same three things every D&amp;D level does.
+</p>
+<ul>
+  <li><strong>Automatic on level-up (non-discretionary):</strong>
+    <ul>
+      <li><strong>Hit points</strong> — each level adds your class <a href="#classes">hit die</a> +
+      your CON modifier, scaled to dnt's existing HP magnitudes (a level-1 character sits near today's
+      <code>playerMaxHp = 40</code>).</li>
+      <li><strong>Proficiency bonus</strong> — the classic +2 / +3 / +4 / +5 / +6 ramp across the level
+      range. It's added to every <a href="#dice">encounter d20</a>, so simply leveling up makes your dice
+      land in tougher-but-stronger prompt bands more often. This is the single number that means "you are
+      just better at this now."</li>
+      <li><strong>Class features</strong> — each <a href="#classes">class</a> unlocks its signature perks at
+      set levels (e.g. a second Bardic Inspiration die, a bigger Sneak Attack).</li>
+    </ul>
+  </li>
+  <li><strong>Discretionary (the choice moment): Ability Score Improvements.</strong> At levels 4, 8, 12, 16,
+  and 19 — exactly the 5e cadence — the player gets +2 points to spend across the six abilities (or +1 to two
+  of them). This is where the kid shapes his hero: pump STR to hit harder, INT to read harder words, CON to
+  survive. It's the <em>only</em> thing he actively decides at level-up, which keeps the moment meaningful
+  instead of a wall of choices.</li>
+</ul>
+<p>
+  XP itself still comes from the <a href="m2-scope.html#xp-coins">same sources M2 already pays out</a>
+  (per-kill, boss, real chest, scaled by dungeon tier). The 5e XP-to-level table (0, 300, 900, 2700, 6500,
+  14000, …) is the starting point; whether it wants compressing so the kid levels at a satisfying pace against
+  dnt's actual reward economy is an <a href="#open">M5 tuning question</a>, not a scope one.
+</p>
+<div class="callout decision">
+  <strong>The Inn becomes a "rest."</strong> With XP no longer spent on nodes, the Inn's job is the D&amp;D
+  long rest — restore hearts and HP to full — plus a character-sheet screen to review your stats and spend any
+  pending Ability Score Improvements. The skill-tree UI is retired; its five branches are absorbed into the
+  ability system (Endurance→CON &amp; the level HP/heart gains, Wordsmith→INT's tier cap, Focus→WIS, Luck→DEX
+  &amp; luck items, Utility→consumables). This also resolves the <a href="roadmap.html#m5">M5</a> "activate the
+  deferred Focus/Luck/Utility branches" task — there are no branches to activate anymore.
+</div>
+
+<h2 id="classes">Classes</h2>
+<p>
+  Four classes at launch, each a distinct answer to "how do you want to type?" A class sets your hit die,
+  nudges your starting ability spread, hands you a starting weapon, and grants one signature feature that
+  grows with level. More classes are content, not scope — the framework holds any number.
+</p>
+<table>
+  <tr><th>Class</th><th>Hit die</th><th>Favored abilities</th><th>Starting weapon</th><th>Signature feature</th></tr>
+  <tr>
+    <td><strong>Fighter</strong></td><td>d10 (toughest)</td><td>STR, CON</td><td>Longsword (d8)</td>
+    <td><strong>Second Wind:</strong> once per dungeon, automatically heal a chunk of HP when a battle turns
+    dire. The forgiving, durable default — the safe pick for a kid still building speed.</td>
+  </tr>
+  <tr>
+    <td><strong>Wizard</strong></td><td>d6 (fragile)</td><td>INT, WIS</td><td>Wand (d6, arcane)</td>
+    <td><strong>Arcane Mind:</strong> your INT tier-cap sits one tier above normal, and your crits roll the
+    damage dice <em>three</em> times instead of two. A glass cannon that types the hard words for huge hits.</td>
+  </tr>
+  <tr>
+    <td><strong>Rogue</strong></td><td>d8</td><td>DEX, CHA</td><td>Dagger (d4, crits on 19–20)</td>
+    <td><strong>Cunning:</strong> Advantage on the encounter d20 (roll twice, keep the higher), a bonus damage
+    die on your first (and critical) hits, and Expertise on the WIS check that <a href="#mimic-sense">senses
+    mimics</a>.</td>
+  </tr>
+  <tr>
+    <td><strong>Bard</strong></td><td>d8</td><td>CHA, WIS</td><td>Rapier (d8, finesse)</td>
+    <td><strong>Silver Tongue:</strong> the Shop is markedly cheaper, enemies you face are slightly debuffed,
+    and you carry one Bardic Inspiration reroll per dungeon (re-roll any single encounter d20).</td>
+  </tr>
+</table>
+<div class="callout why">
+  Four is enough to make the choice feel real without a paradox-of-choice screen. They map cleanly onto typing
+  temperaments: Fighter = "let me just get better slowly and not die," Wizard = "I want the big numbers,"
+  Rogue = "I want luck and crits," Bard = "I want an easier economy and a safety-net reroll." Each is anchored
+  by its real 5e hit die and favored stats so the flavor is honest.
+</div>
+
+<h2 id="creation">Character creation</h2>
+<p>
+  Today a fresh save is just <code>defaultSave()</code>. In M3, when <a href="architecture.html#persistence">
+  IndexedDB</a> holds no valid save, the game opens a one-screen creation flow before the world map. Every step
+  is pre-filled with a valid random default, so a kid who just wants to play can mash one button and get a
+  complete, sensible character — but each piece is his to change:
+</p>
+<ol>
+  <li><strong>Roll your abilities.</strong> Six <code>4d6-drop-lowest</code> rolls, shown as actual tumbling
+  dice — the first and most literal "this is D&amp;D" moment, and a natural teaching beat for what the numbers
+  mean. A limited "roll again" re-rolls the whole set, so nobody starts the game stuck with a dud spread.</li>
+  <li><strong>Pick a class.</strong> Defaults to a random one of the four; the pick applies its hit die,
+  favored-ability bonuses, starting weapon, and feature.</li>
+  <li><strong>Name your hero.</strong> Defaults to a random fantasy name from a bundled list; freely editable
+  text.</li>
+</ol>
+<div class="callout decision">
+  Rolled stats (with a reroll), not point-buy. Point-buy is the "correct" balanced way and is exactly the kind
+  of spreadsheet a 10-year-old should never see. Rolling is the fun, chaotic, table-authentic way; the reroll
+  is the one guard rail so a genuinely unplayable spread never sticks. Any lingering imbalance gets smoothed by
+  levels and gear anyway.
+</div>
+
+<h2 id="dice">Dice: two rolls, neither interrupts typing</h2>
+<p>
+  Dice are the D&amp;D flavor we're missing most, but there's a hard constraint: <strong>while the kid is
+  actually typing, he can't spare attention for anything.</strong> The HP bars are already near the limit of
+  what he can track mid-line. So M3 uses two dice with opposite jobs, and neither ever asks him to stop typing
+  to look at one.
+</p>
+
+<h3 id="encounter-roll">1. The encounter d20 — rolled once, before you type</h3>
+<p>
+  The moment you commit to a fight, the <a href="m2-scope.html#chests">encounter reveal modal</a> (the one
+  built in M2 for mimics and chokepoints) rolls a single dramatic d20. This is the perfect home for it: it's a
+  discrete beat <em>before</em> the clock starts, so it can be as big and animated as we like. The roll decides
+  which of the dungeon's three prompt-difficulty bands you'll type this fight:
+</p>
+<pre><code>total = d20 + proficiencyBonus + item/class bonuses     (e.g. a Luckstone, a Wand)
+
+ natural 1  → FUMBLE:  low band, no crits, damage ×0.75 this fight  ("you stumble")
+ total 2–7  → low band     (the easy end of this dungeon's text-tier range)
+ total 8–13 → mid band
+ total 14–19→ high band    (the hard end — a longer/nastier passage that hits harder)
+ natural 20 → INSPIRED: high band, first landed hit is a guaranteed crit  ("a surge of focus")
+</code></pre>
+<ul>
+  <li><strong>Higher roll = harder passage that hits harder,</strong> which is why leveling (proficiency) and
+  luck items matter: they push you up the bands. It stays fair because the band is always
+  <strong>capped by your INT</strong> — you're never served a tier you literally can't read; if the dungeon
+  out-tiers your INT you get served your cap and eat the existing <a href="m2-scope.html#wordsmith-gate">
+  squared tier-gate penalty</a> (which INT now drives instead of the retired Wordsmith branch).</li>
+  <li><strong>Natural die vs. total</strong>, exactly as in D&amp;D: the band uses the modified <em>total</em>
+  (so a Luckstone can shove a mediocre roll into the high band), but the fumble and the inspiration trigger
+  only on a <em>natural</em> 1 or 20 — modifiers can't manufacture a crit.</li>
+  <li>The bands are read straight off each dungeon's <code>textTierRange</code> — the config field that exists
+  today but nothing currently consumes. Low = bottom of the range, high = top.</li>
+</ul>
+<div class="callout why">
+  This is also the fix for a real M2 wart: the player <em>perceived</em> prompt difficulty as randomly jumping
+  around within a dungeon (because it was silently pinned to each monster's <code>textTier</code>). Turning
+  that hidden randomness into a visible, named, buff-able d20 roll converts a "why did that get hard?" moment
+  into a "come on, twenty!" moment — same variance, wildly better feel.
+</div>
+
+<h3 id="damage-die">2. The weapon damage die — rolled every hit, automatically</h3>
+<p>
+  In D&amp;D, when you hit you roll your weapon's damage die (dagger d4, longsword d8, greataxe d12…). dnt does
+  the same: <strong>each time you complete a prompt correctly, we roll your equipped weapon's die and fold it
+  into the damage,</strong> then pop the result as a quick number over the monster. The kid never has to <em>do</em>
+  anything with it — it's automatic juice — but it gives every weapon a felt personality (a d12 greataxe swings
+  between feeble and devastating; a d4 dagger is steady) and turns "roll high" into a tiny thrill on every
+  single hit. This is the answer to "can we roll dice on every attack?" — <em>yes,</em> as long as the roll is
+  automatic and decorative, never a task.
+</p>
+<p>The damage formula absorbs this by replacing the flat <code>baseDamage</code> with the weapon die + ability mod:</p>
+<pre><code>hitDamage = (roll(weapon.damageDie) + abilityMod) × damageScale
+          × lengthFactor × speedBonus × critMult × powerUpMult × tierGatePenalty
+
+  abilityMod   = STR (melee) / DEX (finesse) / INT (arcane), per the weapon
+  damageScale  = constant chosen to keep magnitudes near today's baseDamage = 10
+  critMult     = on a crit, roll the damage dice TWICE (D&amp;D rule) — bigger AND swingier
+  powerUpMult  = set by consumable buffs (the existing, currently-unused hook)
+  lengthFactor, speedBonus, tierGatePenalty = unchanged from M2
+</code></pre>
+<div class="callout decision">
+  Two dice, two clearly separated jobs: the <strong>d20 decides the shape of the fight</strong> (which
+  passages, before typing), the <strong>weapon die decides the size of each blow</strong> (during typing, hands
+  off). Crits live in both worlds — a natural-20 encounter roll guarantees one, and a per-hit crit chance
+  (from DEX + the weapon's crit range) can fire on any blow — and both cash out the same exciting way: roll the
+  damage dice twice. That double-duty is what makes "you rolled a 20" and "that hit critted" both feel like the
+  same D&amp;D jackpot.
+</div>
+
+<h2 id="ability-mechanics">How abilities resolve: the no-mid-typing rule</h2>
+<p>
+  Each ability and class feature above is only a fantasy phrase until you pin down <em>what happens, and
+  when</em>. One governing constraint does most of that work: <strong>a round is pure typing, so nothing may
+  demand the player's attention while the clock is running.</strong> Every ability therefore resolves in one of
+  three safe windows:
+</p>
+<ul>
+  <li><strong>① On the map / node-select</strong> — before you commit to a fight (sensing mimics, reading a chokepoint's threat).</li>
+  <li><strong>② In the encounter modal</strong> — the pre-typing beat that already hosts the <a href="#dice">d20</a> (rerolls, the intimidate readout).</li>
+  <li><strong>③ Passively, folded into a formula</strong> — automatic; reactive or defensive ones fire as a <em>flash</em> over the character, never a prompt.</li>
+</ul>
+<div class="callout decision">
+  The hard rule: any ability that sounds reactive or defensive — dodge, Second Wind, intimidate — is
+  <strong>automatic plus a visual flash</strong>, because the kid cannot press a button mid-line. This isn't a
+  compromise; it keeps those abilities as pleasant surprises ("Dodged!") rather than one more thing to track
+  while racing a clock.
+</div>
+<table>
+  <tr><th>Ability / feature</th><th>Concrete rule</th><th>Window</th></tr>
+  <tr><td><strong>DEX — dodge</strong></td><td>On a monster hit, <code>P(dodge) = f(DEX mod)</code>; on a success, negate the damage and float <strong>"Dodged!"</strong>.</td><td>③ flash</td></tr>
+  <tr><td><strong>CHA — intimidate</strong> (+ Bard debuff)</td><td>At fight start, cut the monster's effective <strong>wpm</strong> by <code>f(CHA mod)</code> so it lands fewer hits; surfaced once in the encounter modal, then baked in.</td><td>② + ③</td></tr>
+  <tr><td><strong>WIS — perception</strong></td><td>Drives the mimic sense (below) and a soft threat read on hidden chokepoints (<em>"this guardian feels unusually tough"</em>) — never the monster's actual name.</td><td>①</td></tr>
+  <tr><td><strong>Fighter — Second Wind</strong></td><td>The first time battle HP crosses <strong>≤30%</strong>, auto-heal a chunk and flash <strong>"Second Wind!"</strong>. Once per battle.</td><td>③ flash</td></tr>
+  <tr><td><strong>Bard — Bardic Inspiration</strong></td><td>A <strong>"Reroll"</strong> button beside Begin Battle re-rolls the encounter d20 (you commit to the new roll). Once per dungeon.</td><td>②</td></tr>
+  <tr><td><strong>Rogue — Cunning (Advantage)</strong></td><td>Roll two d20 on the encounter, keep the higher. Automatic.</td><td>②</td></tr>
+  <tr><td><strong>Rogue — Sneak Attack</strong></td><td>The first landed hit each battle — and every crit — adds <code>+Nd6</code>. Automatic.</td><td>③</td></tr>
+  <tr><td><strong>Wizard — Arcane Mind</strong></td><td>Crits multiply ×3 instead of ×2 (stacks with a nat-20 guaranteed crit); the INT tier-cap sits one tier above the normal <code>f(INT)</code>.</td><td>③</td></tr>
+</table>
+
+<h3 id="mimic-sense">Sensing mimics</h3>
+<p>
+  The richest of these earns its own rules, and it replaces the vague "spot the real chest." When you select a
+  chest, a <strong>hidden</strong> check rolls <code>d20 + WIS mod + proficiency</code> (a Rogue adds Expertise
+  — double proficiency) against that dungeon's mimic <em>deception DC</em>, which climbs by tier so deeper
+  mimics hide better. Then:
+</p>
+<ul>
+  <li><strong>Only a mimic can ever trigger it — a real chest never does.</strong> So a warning is a trustworthy
+  "this one is a mimic!", while <em>no</em> warning stays ambiguous (a real chest, or a mimic you failed to
+  sense). You can't back into the real chest just by never being warned.</li>
+  <li><strong>On a success</strong> (a mimic, and you beat the DC): a modal — <em>"Something about this chest
+  sets your teeth on edge…"</em> — offers <strong>Back away</strong> (skip it; the node stays available, no
+  heart risk) or <strong>Open anyway</strong> (take the fight knowingly, for the XP). The knowledge is permanent
+  for that chest.</li>
+  <li><strong>On a failure, or any real chest:</strong> it simply opens — loot, or the mimic's ambush — exactly
+  as it does today.</li>
+</ul>
+<div class="callout why">
+  Probabilistic, not X-ray: a success reveals that <em>this</em> chest is a mimic, never which chest is the real
+  one, so it rewards perception without dissolving the core gamble. Because the DC scales with tier, WIS stays
+  worth raising all game — a stat you could out-level into irrelevance would be a dead stat.
+</div>
+<div class="callout decision">
+  <strong>Which rolls the player sees.</strong> The mimic check stays <em>hidden</em> — only a success ever
+  surfaces (as the warning), preserving the tension of every un-warned chest. Combat rolls do the opposite: the
+  encounter d20, crits, and dodges all <em>flash</em>, because seeing them is the fun. Default is <strong>no
+  false alarms</strong> on a real chest — reliability builds a 10-year-old's trust in the mechanic — though a
+  rare false positive is a spice dial we can turn on later if detection ever feels too safe.
+</div>
+
+<h2 id="weapons">Weapons: persistent gear</h2>
+<p>
+  A weapon is the one piece of <em>persistent</em> equipment — unlike consumables, it stays with you across
+  dungeons until you swap it. You equip one at a time. A weapon never adds an in-battle action (typing stays
+  pure); it just reshapes the battle math passively via its die, its governing ability, and its crit range.
+</p>
+<table>
+  <tr><th>Weapon</th><th>Damage die</th><th>Ability</th><th>Crit range</th><th>Tier</th><th>Character</th></tr>
+  <tr><td>Dagger</td><td>d4</td><td>DEX</td><td>19–20</td><td>1</td><td>Cheap, low base, crits twice as often — a crit-fishing starter.</td></tr>
+  <tr><td>Shortsword</td><td>d6</td><td>DEX / STR</td><td>20</td><td>1</td><td>Reliable, unfussy.</td></tr>
+  <tr><td>Longsword</td><td>d8</td><td>STR</td><td>20</td><td>2</td><td>The balanced benchmark.</td></tr>
+  <tr><td>Rapier</td><td>d8</td><td>DEX</td><td>19–20</td><td>2</td><td>Finesse; scales off DEX and crits often.</td></tr>
+  <tr><td>Wand</td><td>d6</td><td>INT</td><td>20</td><td>2</td><td>+1 to encounter rolls; arcane damage — pushes you into higher prompt bands.</td></tr>
+  <tr><td>Warhammer</td><td>d10</td><td>STR</td><td>20</td><td>3</td><td>Heavy, big damage, meaner crits.</td></tr>
+  <tr><td>Longbow</td><td>d8</td><td>DEX</td><td>20</td><td>3</td><td>Consistent; rewards steady typists.</td></tr>
+  <tr><td>Greataxe</td><td>d12</td><td>STR</td><td>20</td><td>3</td><td>Wildly swingy, brutal crits — but heavy: a slightly tighter typing time budget.</td></tr>
+</table>
+<div class="callout why">
+  Weapons and abilities reinforce each other rather than double-count: a big die (greataxe) is raw
+  ceiling, a wide crit range (dagger/rapier) is crit frequency, an arcane bonus (wand) is band access. A
+  STR-heavy Fighter wants the greataxe; a DEX Rogue wants the dagger's crit range; an INT Wizard wants the
+  wand. The greataxe's "−time budget" is the one risk/reward knob — it makes WIS (time) matter more when you
+  wield it — and is exactly the kind of number M5 will tune or cut.
+</div>
+
+<h2 id="items">Items: per-run consumable buffs</h2>
+<p>
+  Consumables are the "power-ups" the old roadmap promised, shaped by a firm rule from the brief:
+  <strong>items are never used during a round — a round is pure typing.</strong> You buy them at the Shop, they
+  sit in your inventory (persisting across sessions like any owned thing), and you spend them from the
+  <em>dungeon map</em>, before you pick your next fight. Their effect applies to the next fight (or the rest of
+  the run), and <strong>all active item effects clear when the run ends</strong> — win, wipe, or leave. Unused
+  items stay in the bag; only the <em>buff</em> is per-dungeon.
+</p>
+<table>
+  <tr><th>Item</th><th>Effect in dnt</th><th>Duration</th><th>Tier</th></tr>
+  <tr><td>Potion of Healing</td><td>restore 1 spent heart mid-run</td><td>instant</td><td>1</td></tr>
+  <tr><td>Potion of Greater Healing</td><td>restore 2 hearts</td><td>instant</td><td>2</td></tr>
+  <tr><td>Bull's Strength</td><td>+ attack damage (sets the <code>powerUpMult</code> hook)</td><td>next fight</td><td>1</td></tr>
+  <tr><td>Elixir of Might</td><td>bigger + attack damage</td><td>rest of dungeon</td><td>3</td></tr>
+  <tr><td>Potion of Speed</td><td>+ typing time budget / faster speed bonus</td><td>next fight</td><td>1</td></tr>
+  <tr><td>Guidance</td><td>Advantage on the next encounter d20</td><td>next fight</td><td>1</td></tr>
+  <tr><td>Luckstone</td><td>+2 to all encounter rolls</td><td>rest of dungeon</td><td>2</td></tr>
+  <tr><td>Oil of Sharpness</td><td>+ crit chance &amp; crit damage</td><td>next 3 fights</td><td>2</td></tr>
+  <tr><td>Elixir of Intellect</td><td>INT tier-cap +1 (reach a harder passage than usual)</td><td>next fight</td><td>2</td></tr>
+  <tr><td>Potion of Heroism</td><td>temporary bonus HP + immune to fumble</td><td>next fight</td><td>2</td></tr>
+</table>
+<div class="callout decision">
+  Two duration shapes only — "next fight" (cheap, single-use) and "rest of dungeon" (pricier, run-long) — plus
+  instant healing. That's enough expressive range without a status-effect engine. The <strong>Potion of
+  Healing is the concrete payoff of the "Heart Potion" hook</strong> M2 explicitly left dangling: mid-run heart
+  recovery without a trip to the Inn. Note several items buff the <a href="#dice">encounter d20</a> (Luckstone,
+  Guidance) — that's the brief's "a classic buff is a modifier to dice rolls," made literal.
+</div>
+
+<h2 id="shop">The Shop</h2>
+<p>
+  The Shop has sat locked on the world map since M2 as a "Coming soon" placeholder. M3 opens it, and coins —
+  earned and displayed all through M2 but with <strong>no sink whatsoever</strong> — finally have somewhere to
+  go. It sells <a href="#items">consumables</a> and <a href="#weapons">weapons</a>; consumables restock each
+  visit, weapons are one-off purchases. Your <strong>CHA modifier discounts every price</strong> (and a Bard
+  stacks its Silver Tongue on top). This is the coin economy's only sink, the mirror of the Inn being XP's
+  (now-retired) sink.
+</p>
+
+<h2 id="loot">What treasure and monsters drop</h2>
+<p>
+  M2 chests and kills paid out flat coins/XP. With gear and consumables now existing, the brief's "revise what
+  chests/monsters drop" opens up — kept simple:
+</p>
+<ul>
+  <li><strong>The real treasure chest</strong> can now drop a <em>weapon</em>, a <em>consumable</em>, or a coin
+  hoard, instead of only coins/XP — making the "which chest is real?" gamble genuinely exciting again.</li>
+  <li><strong>Mimics</strong> are unchanged — still a fight, still cost a heart on a loss; that tension is
+  already fun.</li>
+  <li><strong>Regular monsters</strong> keep dropping coins + XP (your Shop and leveling fuel).
+  <strong>Bosses</strong> add a larger payout and can guarantee a gear drop, so a first clear feels like a
+  real haul on top of the tier unlock.</li>
+</ul>
+
+<h2 id="reshaping">What this changes in the existing game</h2>
+<p>A checklist of the systems M3 rewires, so the implementation plan and the M5 tuning pass both know the blast radius:</p>
+<table>
+  <tr><th>System</th><th>Change</th></tr>
+  <tr><td>Skill tree</td><td><strong>Retired.</strong> Replaced by abilities + D&amp;D leveling. Removes <code>skill-tree</code> config, the tree UI, and the "activate Focus/Luck/Utility in M5" task.</td></tr>
+  <tr><td>The Inn</td><td>Becomes a rest (restore hearts + HP) + character-sheet screen for spending Ability Score Improvements. No more XP-node shopping.</td></tr>
+  <tr><td>XP</td><td>Stops being a spendable currency; becomes a running total that crosses level thresholds automatically.</td></tr>
+  <tr><td>Coins</td><td>Finally spendable — the Shop is their sink.</td></tr>
+  <tr><td>Damage formula</td><td>Flat <code>baseDamage</code> → <code>weapon die + ability mod</code>; crits roll the damage dice twice; the dormant <code>powerUpMultiplier</code> hook is now driven by consumables.</td></tr>
+  <tr><td>Prompt tier</td><td>Player-facing tier now comes from the <a href="#encounter-roll">encounter d20 band</a> (capped by INT), consuming the currently-dead <code>textTierRange</code> config. A monster's own <code>textTier</code> still governs the line the <em>monster</em> types.</td></tr>
+  <tr><td>Hearts</td><td>Max hearts now come from level milestones (a class-feature-style non-discretionary grant) instead of Endurance nodes; mid-run recovery via the Potion of Healing.</td></tr>
+</table>
+<p>The persistent <a href="architecture.html#persistence">SaveData</a> bumps to <strong>version 3</strong>, roughly:</p>
+<pre><code>{
+  "version": 3,
+  "character": {
+    "name": "Aldric",
+    "class": "fighter",
+    "level": 5,
+    "xp": 7100,
+    "abilities": { "str": 15, "dex": 12, "con": 14, "int": 10, "wis": 13, "cha": 8 },
+    "pendingAsi": 0
+  },
+  "coins": 120,
+  "equippedWeapon": "longsword",
+  "inventory": { "weapons": ["dagger", "longsword"], "consumables": { "potion-healing": 2, "luckstone": 1 } },
+  "hearts": { "max": 2 },
+  "highestUnlockedTier": 3,
+  "monstersDefeated": ["slime", "goblin"],
+  "stats": { "battlesWon": 7, "battlesLost": 2, "bestWpm": 28 }
+}</code></pre>
+<div class="callout decision">
+  Migration from a v2 save: rather than invent a character for an existing player, a v2→v3 bump can simply drop
+  the retired <code>skillTree</code> field and route the player through <a href="#creation">character
+  creation</a> once (keeping their coins/unlocks/defeated list). For our single real player mid-development,
+  wiping to a fresh v3 save is also perfectly acceptable — this is a solo project, not a live service. And
+  <code>stats.bestWpm</code>, persisted-but-never-written since M2, is worth actually wiring up while we're in
+  the save code.
+</div>
+
+<h2 id="open">Open questions</h2>
+<div class="callout open">
+  <strong>XP pacing.</strong> The real 5e XP table vs. a compressed one, and where the level cap sits relative
+  to the 11 dungeon tiers — needs a play-pace pass in <a href="roadmap.html#m5">M5</a>. Levels should feel
+  frequent early and meaningful late.
+</div>
+<div class="callout open">
+  <strong>Per-point magnitudes.</strong> Exactly how much a +1 modifier is worth in each formula (damage %,
+  crit %, time-budget ms, HP, INT tier-cap, Shop discount %, dodge chance, intimidate wpm cut), the per-tier
+  mimic <a href="#mimic-sense">deception DCs</a>, the Second Wind threshold/heal and the Sneak Attack die, plus
+  the <code>damageScale</code> that keeps the new weapon-die damage near today's feel, and the fumble/inspiration
+  magnitudes. All M5 knobs; M3 ships sensible placeholders.
+</div>
+<div class="callout decision">
+  <strong>HP scale: keep dnt's magnitude, borrow D&amp;D's <em>structure</em>, reject its low-level lethality.</strong>
+  What sets how many prompts a battle lasts is <em>hits-to-kill = monster HP ÷ player damage-per-hit</em> — a
+  ratio, independent of absolute scale. dnt already tunes that to a healthy multi-prompt band by scaling
+  monster HP and player damage together (tutorial Gray Ooze 40 HP ≈ 3–4 prompts; the Grassland boss 150 ≈ ~10;
+  and both sides climb in lockstep through the Tarrasque's 1447). D&amp;D's <em>low-level</em> ratios don't give
+  us that: a level-1 hero (~10 HP) and CR-⅛ fodder (a 7-HP goblin) one-shot each other — exactly the cheap feel
+  we're avoiding, and worst right where a beginner starts (D&amp;D only earns good resolution around level 5+).
+  So we keep dnt's larger numbers — they're the right order of magnitude, already roughly tuned, and they give
+  the per-hit <a href="#damage-die">weapon die</a> and the speed/length multipliers smooth resolution instead of
+  coin-flip swings — and we borrow D&amp;D only for the <em>relationships</em>: hit-die size sets relative class
+  toughness and the per-level HP step, the weapon die sets relative per-hit power and variance, mods/proficiency
+  are the +Ns. The one arbitrary number — today's 40 — stops being magic: level-1 HP = a hit-die-derived value ×
+  a scale factor (~3–4), so a d10 Fighter lands near 40 and a d6 Wizard a bit under. The exact scale factor and
+  per-tier hits-to-kill remain <a href="roadmap.html#m5">M5</a> knobs.
+</div>
+<div class="callout open">
+  <strong>Weapon/item pricing &amp; Shop restock.</strong> Prices, whether the Shop's stock is fixed or rotates
+  per visit, and whether weapons can also be found (chests) as well as bought. Economy-tuning territory.
+</div>
+<div class="callout open">
+  <strong>Does M3 want a light juice pass?</strong> The dice and damage numbers create obvious animation
+  moments (a tumbling d20, a crit flash, a floating damage number). Deciding how much of the old roadmap's
+  hit-flash / screen-shake / SFX list rides along now vs. waits is a scope-trim to make when the
+  implementation plan is written.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

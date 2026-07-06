@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Monster } from '../domain/types'
-import { intimidatedMonster } from './battle-store'
+import type { EncounterRoll } from '../engine/dice/encounter-roll'
+import type { Monster, TextTier } from '../domain/types'
+import type { PlayerModifiers } from '../domain/progression'
+import { intimidatedMonster, resolveFightTier, type FightEncounter } from './battle-store'
 
 const baseMonster: Monster = {
   id: 'goblin',
@@ -16,6 +18,102 @@ const baseMonster: Monster = {
   slack: 1.75,
   flavor: 'a goblin',
 }
+
+// A minimal PlayerModifiers — only the fields resolveFightTier reads
+// (intTierCap, guaranteedFirstCrit) are exercised; the rest are inert
+// placeholders so the object type-checks.
+const baseModifiers: PlayerModifiers = {
+  maxHp: 40,
+  maxHearts: 1,
+  intTierCap: 10 as TextTier,
+  timeBudgetBonusMs: 0,
+  encounterBonus: 0,
+  hasAdvantage: false,
+  critChanceBonus: 0,
+  critDamageMult: 1,
+  powerUpMult: 1,
+  dodgeChance: 0,
+  intimidateWpmCut: 0,
+  weaponDie: 8,
+  weaponAbilityMod: 2,
+  critRange: 20,
+  guaranteedFirstCrit: false,
+  fumbleImmune: false,
+  sneakAttackDice: 0,
+  secondWind: null,
+  arcaneCritMult: 2,
+}
+
+const rollWith = (overrides: Partial<EncounterRoll>): EncounterRoll => ({
+  natural: 10,
+  total: 10,
+  band: 'mid',
+  fumble: false,
+  inspired: false,
+  ...overrides,
+})
+
+const encounterWith = (
+  overrides: Partial<EncounterRoll>,
+  textTierRange: readonly [TextTier, TextTier] = [1, 3],
+): FightEncounter => ({ roll: rollWith(overrides), textTierRange })
+
+describe('resolveFightTier', () => {
+  it('with no encounter, falls back to the monster.textTier placeholder gated by INT', () => {
+    const capped = resolveFightTier(baseMonster, { ...baseModifiers, intTierCap: 1 as TextTier })
+    expect(capped.servedTier).toBe(1)
+    expect(capped.targetTier).toBe(1)
+    expect(capped.noCrits).toBe(false)
+    expect(capped.fumbleDamageMultiplier).toBe(1)
+  })
+
+  it('a low band picks the bottom of the dungeon range as both target and served tier', () => {
+    const result = resolveFightTier(baseMonster, baseModifiers, encounterWith({ band: 'low' }))
+    expect(result.targetTier).toBe(1)
+    expect(result.servedTier).toBe(1)
+  })
+
+  it('a high band picks the top of the range, capped by INT when it falls short', () => {
+    const uncapped = resolveFightTier(baseMonster, baseModifiers, encounterWith({ band: 'high' }))
+    expect(uncapped.targetTier).toBe(3)
+    expect(uncapped.servedTier).toBe(3)
+
+    const capped = resolveFightTier(
+      baseMonster,
+      { ...baseModifiers, intTierCap: 2 as TextTier },
+      encounterWith({ band: 'high' }),
+    )
+    expect(capped.targetTier).toBe(3)
+    expect(capped.servedTier).toBe(2)
+  })
+
+  it('a fumble disables crits and caps damage at 0.75, regardless of band', () => {
+    const result = resolveFightTier(baseMonster, baseModifiers, encounterWith({ band: 'low', fumble: true }))
+    expect(result.noCrits).toBe(true)
+    expect(result.fumbleDamageMultiplier).toBe(0.75)
+    expect(result.guaranteedFirstCrit).toBe(false)
+  })
+
+  it('an inspired natural 20 forces the first landed hit to crit', () => {
+    const result = resolveFightTier(
+      baseMonster,
+      baseModifiers,
+      encounterWith({ band: 'high', natural: 20, inspired: true }),
+    )
+    expect(result.guaranteedFirstCrit).toBe(true)
+    expect(result.noCrits).toBe(false)
+    expect(result.fumbleDamageMultiplier).toBe(1)
+  })
+
+  it('an existing guaranteedFirstCrit modifier still forces a crit on a non-inspired roll', () => {
+    const result = resolveFightTier(
+      baseMonster,
+      { ...baseModifiers, guaranteedFirstCrit: true },
+      encounterWith({ band: 'mid' }),
+    )
+    expect(result.guaranteedFirstCrit).toBe(true)
+  })
+})
 
 describe('intimidatedMonster', () => {
   it('cuts the monster wpm by the given fraction', () => {

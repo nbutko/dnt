@@ -17,6 +17,23 @@ const mulberry32 = (seed: number) => {
 // same way, predating this helper).
 export const rollDie = (rng: Rng, sides: number): number => Math.floor(rng.next() * sides) + 1
 
+// Folds a string (typically a dungeon node id) into a base seed to mint an
+// independent, reproducible rng stream per node — e.g. the encounter d20
+// (Story 12) and the real chest's loot roll each need their own stream, keyed
+// off the run's graph seed + the specific node, so neither shares draws with
+// the graph generator, the mimic-sense check (its own `graph.seed + 7919`
+// stream), or the battle's own rng. `salt` lets two different callers derive
+// distinct streams from the same node id (e.g. the encounter roll vs. the
+// chest loot roll) without colliding. Not itself an Rng — wrap the result in
+// createRng().
+export const seedFromString = (base: number, text: string, salt = 0): number => {
+  let hash = (base ^ salt) | 0
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (Math.imul(hash, 31) + text.charCodeAt(i)) | 0
+  }
+  return hash
+}
+
 export const createRng = (seed: number): Rng => {
   const random = mulberry32(seed)
 

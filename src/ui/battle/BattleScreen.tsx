@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { getMonster } from '../../content/monsters'
 import type { BattleEvent, Monster } from '../../domain/types'
 import type { PlayerModifiers } from '../../domain/progression'
-import { createBattleStore, type BattleStore } from '../../state/battle-store'
+import { createBattleStore, type BattleStore, type FightEncounter } from '../../state/battle-store'
 import Flash, { type FlashVariant } from '../common/Flash'
 import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
@@ -90,9 +90,13 @@ const buildFlashes = (event: BattleEvent, nextId: () => number): FlashInstance[]
 // so callers don't have to translate the engine's 'won'|'lost' status.
 export type BattleResultKind = 'win' | 'lose'
 
+// `wpm` (Story 12: SaveData.stats.bestWpm) rides along only on a win — the
+// battle's final BattleState.player.wpm, chars-typed over typing-time-used
+// across the whole fight (engine/battle.ts). Undefined on a loss; there's no
+// "final" reading worth banking for a wipe.
 interface ReadyBattleScreenProps {
   store: BattleStore
-  onResult: (result: BattleResultKind) => void
+  onResult: (result: BattleResultKind, wpm?: number) => void
 }
 
 // "Vertical Duel" layout (docs/design/visual-spec.html#layout): title, then
@@ -160,9 +164,9 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   useEffect(() => {
     if (state.status === 'won' && !resultSent.current) {
       resultSent.current = true
-      onResult('win')
+      onResult('win', state.player.wpm)
     }
-  }, [state.status, onResult])
+  }, [state.status, state.player.wpm, onResult])
 
   const secondsLeft = Math.max(0, state.player.timeLimitMs - state.player.elapsedMs) / 1000
   const monsterSecondsLeft =
@@ -281,25 +285,31 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
 interface BattleScreenProps {
   monster: Monster
   modifiers: PlayerModifiers
-  onResult: (result: BattleResultKind) => void
+  // This fight's frozen encounter roll (Story 6's EncounterModal, wired all
+  // the way through by Story 12) + the dungeon's textTierRange — undefined
+  // falls back to createBattleStore's pre-Story-12 monster.textTier
+  // placeholder, so an older caller/test still compiles.
+  encounter?: FightEncounter
+  onResult: (result: BattleResultKind, wpm?: number) => void
 }
 
 // Launched by the dungeon screen for one tapped node. The served text tier and
-// the damage gate come from `modifiers` (Story 6), computed once when the store
-// is built; on finish, `onResult` hands the outcome back so the dungeon can
-// resolve the fight and bank rewards.
-const BattleScreen = ({ monster, modifiers, onResult }: BattleScreenProps) => {
+// the damage gate come from `modifiers` + `encounter` (Story 6/12), computed
+// once when the store is built; on finish, `onResult` hands the outcome (plus
+// the fight's final wpm on a win) back so the dungeon can resolve the fight
+// and bank rewards.
+const BattleScreen = ({ monster, modifiers, encounter, onResult }: BattleScreenProps) => {
   const [store, setStore] = useState<BattleStore | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    createBattleStore(monster, modifiers).then((created) => {
+    createBattleStore(monster, modifiers, undefined, encounter).then((created) => {
       if (!cancelled) setStore(created)
     })
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one store per mount; a mid-fight monster/modifier change shouldn't restart the battle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one store per mount; a mid-fight monster/modifier/encounter change shouldn't restart the battle.
   }, [])
 
   if (!store) {

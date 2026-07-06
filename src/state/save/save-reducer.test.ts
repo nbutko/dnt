@@ -178,4 +178,24 @@ describe('saveReducer', () => {
     const s3 = saveReducer(s2, recordDefeat('goblin'))
     expect(s3.monstersDefeated).toEqual(['slime', 'goblin'])
   })
+
+  it('recordDefeat raises stats.bestWpm when the new wpm beats it', () => {
+    const s1 = saveReducer(defaultSave(), recordDefeat('slime', 22))
+    expect(s1.stats.bestWpm).toBe(22)
+
+    const s2 = saveReducer(s1, recordDefeat('goblin', 35))
+    expect(s2.stats.bestWpm).toBe(35)
+  })
+
+  it("recordDefeat never lowers stats.bestWpm on a slower win", () => {
+    const start = { ...defaultSave(), stats: { battlesWon: 0, battlesLost: 0, bestWpm: 30 } }
+    const result = saveReducer(start, recordDefeat('slime', 12))
+    expect(result.stats.bestWpm).toBe(30)
+  })
+
+  it('recordDefeat with no wpm arg defaults to 0 and never raises bestWpm', () => {
+    const start = { ...defaultSave(), stats: { battlesWon: 0, battlesLost: 0, bestWpm: 10 } }
+    const result = saveReducer(start, recordDefeat('slime'))
+    expect(result.stats.bestWpm).toBe(10)
+  })
 })

@@ -16,7 +16,7 @@ export type SaveAction =
   | { type: 'buyItem'; item: ItemId; price: number }
   | { type: 'consumeItem'; item: ItemId }
   | { type: 'unlockTier'; tier: number }
-  | { type: 'recordDefeat'; monsterId: string }
+  | { type: 'recordDefeat'; monsterId: string; wpm: number }
   | { type: 'hydrate'; save: SaveData }
 
 // Cost/price is passed in rather than looked up here: the reducer stays a
@@ -66,9 +66,14 @@ export const consumeItem = (item: ItemId): SaveAction => ({ type: 'consumeItem',
 
 export const unlockTier = (tier: number): SaveAction => ({ type: 'unlockTier', tier })
 
-export const recordDefeat = (monsterId: string): SaveAction => ({
+// `wpm` defaults to 0 so an older/direct caller that only cares about the
+// defeated-monster list (e.g. an existing test) still compiles — 0 can never
+// raise stats.bestWpm (finding F, m3-implementation.html: dead since M2)
+// since Math.max floors it at whatever's already banked.
+export const recordDefeat = (monsterId: string, wpm = 0): SaveAction => ({
   type: 'recordDefeat',
   monsterId,
+  wpm,
 })
 
 // Replaces the whole record wholesale — used once, by SaveProvider, after an
@@ -197,7 +202,14 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
         monstersDefeated: state.monstersDefeated.includes(action.monsterId)
           ? state.monstersDefeated
           : [...state.monstersDefeated, action.monsterId],
-        stats: { ...state.stats, battlesWon: state.stats.battlesWon + 1 },
+        stats: {
+          ...state.stats,
+          battlesWon: state.stats.battlesWon + 1,
+          // Story 12: finally writes the field persisted-but-never-written
+          // since M2 (finding F) — a personal-best floor, never lowered by a
+          // slower win.
+          bestWpm: Math.max(state.stats.bestWpm, action.wpm),
+        },
       }
 
     case 'hydrate':

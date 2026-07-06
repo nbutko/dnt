@@ -46,6 +46,11 @@ export const createBattle = (config: BattleConfig): Battle => {
   // time HP crosses the threshold — tracked here since computeMonsterDamage
   // has no notion of "already used this battle."
   let secondWindUsed = false
+  // Running WPM (Story 12: SaveData.stats.bestWpm) — accumulated across every
+  // correctly-submitted prompt this battle, chars-typed over typing-time-used,
+  // not the time budget (a fast miss-free run reads faster than a padded one).
+  let totalCharsTyped = 0
+  let totalTypingMs = 0
 
   const playerTimeLimitFor = (promptText: string): number =>
     Math.max(
@@ -81,6 +86,10 @@ export const createBattle = (config: BattleConfig): Battle => {
         elapsedMs: playerElapsedMs,
         paused: playerPauseRemainingMs > 0,
         pauseReason: playerPauseRemainingMs > 0 ? playerPauseReason : undefined,
+        wpm:
+          totalTypingMs > 0
+            ? totalCharsTyped / combat.avgWordLength / (totalTypingMs / 60000)
+            : 0,
       },
       monster: {
         id: monster.id,
@@ -205,6 +214,8 @@ export const createBattle = (config: BattleConfig): Battle => {
     if (input.length !== playerPrompt.length) return
 
     if (input === playerPrompt) {
+      totalCharsTyped += playerPrompt.length
+      totalTypingMs += playerElapsedMs
       const result = computeDamage({
         charCount: playerPrompt.length,
         timeUsedMs: playerElapsedMs,

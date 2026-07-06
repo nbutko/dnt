@@ -3,7 +3,7 @@ import { toMap, type Screen } from '../../app/navigation'
 import abilitiesConfig from '../../config/abilities'
 import { getClass } from '../../config/classes'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
-import rewardsConfig from '../../config/rewards'
+import rewardsConfig, { type RewardAmount } from '../../config/rewards'
 import { getWeapon } from '../../config/weapons'
 import { getMonster } from '../../content/monsters'
 import { abilityMod } from '../../domain/character'
@@ -11,17 +11,28 @@ import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 import type { MonsterRole } from '../../domain/types'
 import { grantsForLevel } from '../../engine/character/leveling'
 import { resolveModifiers } from '../../engine/character/modifiers'
+import {
+  DEFAULT_ENCOUNTER_ROLL_CONFIG,
+  type EncounterRoll,
+  type EncounterRollModifiers,
+} from '../../engine/dice/encounter-roll'
 import { rollMimicSense } from '../../engine/dice/mimic-sense'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
-import { createRng } from '../../engine/rng'
-import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
+import { createRng, seedFromString } from '../../engine/rng'
+import {
+  rewardForBossGear,
+  rewardForBossKill,
+  rewardForKill,
+  rollChestLoot,
+} from '../../engine/progression/rewards'
+import type { FightEncounter } from '../../state/battle-store'
 import {
   clearBuffs,
   resolveFight,
   selectNode,
 } from '../../state/dungeon-run/dungeon-run-reducer'
 import DungeonRunProvider, { useDungeonRun } from '../../state/dungeon-run/DungeonRunProvider'
-import { award, recordDefeat, unlockTier } from '../../state/save/save-reducer'
+import { award, buyItem, buyWeapon, recordDefeat, unlockTier } from '../../state/save/save-reducer'
 import { useSave } from '../../state/save/SaveProvider'
 import BattleScreen from '../battle/BattleScreen'
 import Frame from '../common/Frame'
@@ -32,7 +43,17 @@ import Bag from './Bag'
 import DungeonGraphView from './DungeonGraph'
 import EncounterModal from './EncounterModal'
 import MimicWarningModal from './MimicWarningModal'
-import RewardModal from './RewardModal'
+import RewardModal, { type RewardLoot } from './RewardModal'
+
+// Per-node, per-purpose rng streams (engine/rng.ts's seedFromString) — each a
+// distinct salt so the encounter d20, the real chest's loot roll, and the
+// boss's guaranteed-gear roll never share draws with each other, the graph
+// generator, the mimic-sense check (its own `graph.seed + 7919` stream), or
+// any battle's own rng. Arbitrary distinct primes; only their distinctness
+// matters.
+const ENCOUNTER_ROLL_SEED_SALT = 15485863
+const CHEST_LOOT_SEED_SALT = 32452867
+const BOSS_GEAR_SEED_SALT = 49979687
 
 interface DungeonScreenProps {
   tier: number
@@ -50,12 +71,16 @@ const roleForNode = (node: DungeonNode): MonsterRole => {
   return 'regular'
 }
 
-// Node kinds whose monster is hidden until you commit — they reveal in a modal
-// before the fight instead of dropping you straight in (mimic was feedback #13;
-// waypoint/approach/boss added in round-2 #C). A plain fight circle already
-// shows its monster, so it isn't gated. (A real chest is intercepted earlier —
+// Every fight-bearing node kind — a mimic chest (monster hidden until
+// committed, feedback #13), the waypoint/approach/boss chokepoints
+// (round-2 #C), AND, since Story 12 (finding C/D), a plain fight circle too:
+// every fight now rolls the encounter d20 before the clock starts
+// (m3-scope.html#encounter-roll: "the moment you commit to a fight..."), not
+// just the previously-hidden ones. A plain fight's monster was already
+// visible on the map, so its reveal copy skips the "you encountered" beat —
+// see revealCopy's 'fight' case below. (A real chest is intercepted earlier —
 // it has no fight — so the only chest reaching here is a mimic.)
-const REVEAL_KINDS = new Set<DungeonNode['kind']>(['chest', 'waypoint', 'approach', 'boss'])
+const REVEAL_KINDS = new Set<DungeonNode['kind']>(['fight', 'chest', 'waypoint', 'approach', 'boss'])
 
 interface RevealCopy {
   headline: string
@@ -68,6 +93,12 @@ interface RevealCopy {
 // the chokepoints and boss name the monster in the headline (round-2 #C).
 const revealCopy = (node: DungeonNode, name: string): RevealCopy => {
   switch (node.kind) {
+    case 'fight':
+      return {
+        headline: `${name} blocks the path`,
+        subtext: 'Roll for it before the clock starts.',
+        danger: false,
+      }
     case 'chest':
       return {
         headline: 'You encountered a Mimic!',
@@ -107,6 +138,10 @@ interface RewardView {
   coinsGained: number
   xpTotal: number
   coinsTotal: number
+  // A real chest's (or a boss's guaranteed) gear/consumable drop
+  // (m3-scope.html#loot, Story 12) — undefined for a plain kill or a
+  // coins-rolling chest.
+  loot?: RewardLoot
 }
 
 // The reward modal's heading, by what was just beaten/opened.
@@ -221,10 +256,57 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // A hidden encounter (mimic chest, or a ?-glyph waypoint/approach/boss), once
   // tapped, pauses on a reveal modal before the fight (feedback #13, round-2 #C)
   // — holds the tapped node id until the player hits Begin Battle. Null the rest
-  // of the time.
+  // of the time. Since Story 12, EVERY fight-bearing node reaches here (see
+  // REVEAL_KINDS above), so this is also where the encounter d20 lives.
   const [revealId, setRevealId] = useState<string | null>(null)
   const revealNode = revealId ? run.graph.nodes[revealId] : null
   const revealName = revealNode?.monsterId ? getMonster(revealNode.monsterId).name : undefined
+
+  // The Bard's "once per dungeon" Bardic Inspiration reroll budget
+  // (config/classes.ts's silver-tongue.rerollsPerDungeon) — ephemeral, per
+  // run, like every other dungeon-visit-scoped counter here.
+  const [rerollsUsedThisRun, setRerollsUsedThisRun] = useState(0)
+
+  // This fight's frozen EncounterRoll (Story 6's EncounterModal, committed to
+  // via Begin Battle) — ephemeral simulation state, never persisted. Threaded
+  // into BattleScreen -> createBattleStore so servedTier/targetTier and the
+  // fumble/inspired crit rule come from the band, not the monster's own
+  // textTier (finding C/D).
+  const [frozenEncounter, setFrozenEncounter] = useState<EncounterRoll | null>(null)
+
+  // Everything the reveal modal's `dice` prop needs to roll and grade the
+  // encounter d20 for whichever node is currently revealing (m3-scope.html
+  // #encounter-roll) — its own rng stream, seeded off the run's graph seed +
+  // the specific node id (engine/rng.ts's seedFromString), so it's
+  // reproducible per node without sharing draws with the graph generator, the
+  // mimic-sense check, or any battle's own rng. Keyed only on `revealId` (not
+  // modifiers/rerollsUsedThisRun) so a Bard's reroll — which itself bumps
+  // rerollsUsedThisRun — doesn't recreate the rng mid-reveal and reset the
+  // stream back to its starting seed; the modal already reads the very latest
+  // modifiers/rerollsUsedThisRun via closure each time this recomputes.
+  const encounterDice = useMemo(() => {
+    if (!revealId) return null
+    const rng = createRng(seedFromString(run.graph.seed, revealId, ENCOUNTER_ROLL_SEED_SALT))
+    const mods: EncounterRollModifiers = {
+      encounterBonus: modifiers.encounterBonus,
+      hasAdvantage: modifiers.hasAdvantage,
+      fumbleImmune: modifiers.fumbleImmune,
+    }
+    const classDef = getClass(character.class)
+    const canReroll =
+      classDef.feature.kind === 'silver-tongue' &&
+      rerollsUsedThisRun < classDef.feature.rerollsPerDungeon
+    return {
+      cfg: DEFAULT_ENCOUNTER_ROLL_CONFIG,
+      mods,
+      textTierRange: DUNGEON_TIERS[tier - 1].textTierRange,
+      intTierCap: modifiers.intTierCap,
+      rng,
+      canReroll,
+      onReroll: () => setRerollsUsedThisRun((n) => n + 1),
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately keyed on revealId alone; see comment above.
+  }, [revealId])
 
   // A win/real-chest resolves INTO this reward modal (feedback #1/#12): the win
   // is banked immediately, but the run isn't advanced until the player confirms
@@ -235,14 +317,44 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // later wipes still earns progress. Defeating the boss unlocks the next tier
   // (and reaches 12 past tier 11, finding D). The graph isn't advanced here: we
   // stash the reward + pre/post totals and let the modal's confirm do it, so the
-  // player sees what they earned first (feedback #1).
-  const handleWin = (node: DungeonNode): void => {
-    const amount =
-      node.kind === 'chest' && node.isRealChest
-        ? rewardForChest(tier, rewardsConfig)
-        : rewardForKill(tier, roleForNode(node), rewardsConfig)
+  // player sees what they earned first (feedback #1). `wpm` is this fight's
+  // final BattleScreen reading (Story 12: SaveData.stats.bestWpm) — 0 for a
+  // real chest, which never spins up a battle.
+  const handleWin = (node: DungeonNode, wpm = 0): void => {
+    let amount: RewardAmount
+    let loot: RewardLoot | undefined
+
+    if (node.kind === 'chest' && node.isRealChest) {
+      // The real chest's own rng stream (m3-scope.html#loot) — a weapon, a
+      // consumable, or a coin hoard; never shared with the mimic-sense,
+      // graph, or battle streams.
+      const lootRng = createRng(seedFromString(run.graph.seed, node.id, CHEST_LOOT_SEED_SALT))
+      const rolled = rollChestLoot(tier, lootRng, rewardsConfig)
+      if (rolled.kind === 'coins') {
+        amount = rolled.amount
+      } else if (rolled.kind === 'weapon') {
+        amount = { xp: 0, coins: 0 }
+        saveDispatch(buyWeapon(rolled.weaponId, 0))
+        loot = { kind: 'weapon', id: rolled.weaponId }
+      } else {
+        amount = { xp: 0, coins: 0 }
+        saveDispatch(buyItem(rolled.itemId, 0))
+        loot = { kind: 'consumable', id: rolled.itemId }
+      }
+    } else if (node.kind === 'boss') {
+      // Bosses add a larger payout AND guarantee gear on top of it
+      // (m3-scope.html#loot) — its own rng stream for the gear pick.
+      amount = rewardForBossKill(tier, rewardsConfig)
+      const gearRng = createRng(seedFromString(run.graph.seed, node.id, BOSS_GEAR_SEED_SALT))
+      const weaponId = rewardForBossGear(tier, gearRng)
+      saveDispatch(buyWeapon(weaponId, 0))
+      loot = { kind: 'weapon', id: weaponId }
+    } else {
+      amount = rewardForKill(tier, roleForNode(node), rewardsConfig)
+    }
+
     saveDispatch(award(amount.coins, amount.xp))
-    if (node.monsterId) saveDispatch(recordDefeat(node.monsterId))
+    if (node.monsterId) saveDispatch(recordDefeat(node.monsterId, wpm))
     if (node.kind === 'boss') saveDispatch(unlockTier(tier + 1))
     // save's xp/coins here are the pre-award totals (this render's snapshot),
     // so adding the gain gives the post total to display alongside it. xp now
@@ -255,6 +367,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       coinsGained: amount.coins,
       xpTotal: character.xp + amount.xp,
       coinsTotal: save.coins + amount.coins,
+      loot,
     })
   }
 
@@ -264,6 +377,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     if (!reward) return
     dispatch(resolveFight('win', reward.nodeId))
     setReward(null)
+    setFrozenEncounter(null)
   }
 
   // Clears every active buff the instant the run ends — win or wipe (Story 9,
@@ -311,11 +425,23 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     dispatch(selectNode(id))
   }
 
-  // Begin Battle on the reveal modal: commit the tapped node to its fight.
-  const handleBeginReveal = (): void => {
+  // Begin Battle on the reveal modal: freeze whatever the d20 rolled (Story
+  // 12) and commit the tapped node to its fight. `roll` is undefined only if
+  // `dice` was never supplied (it always is here, for every fight-bearing
+  // node — see encounterDice above), so this is effectively always set.
+  const handleBeginReveal = (roll?: EncounterRoll): void => {
     if (!revealId) return
+    setFrozenEncounter(roll ?? null)
     dispatch(selectNode(revealId))
     setRevealId(null)
+  }
+
+  // A loss also clears the frozen encounter roll — the next fight's Begin
+  // Battle always sets a fresh one before launching another BattleScreen, but
+  // clearing here keeps no stale roll sitting in state between fights.
+  const handleLose = (nodeId: string): void => {
+    dispatch(resolveFight('lose', nodeId))
+    setFrozenEncounter(null)
   }
 
   // Back away (mimic-sense warning): skip it, no heart risk — the node just
@@ -351,13 +477,18 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // header doesn't double-border around it. On a win it stays mounted while the
   // reward modal overlays it (a win doesn't clear activeNodeId until the modal's
   // Continue resolves the fight), so the modals below sit over either screen.
+  const encounterForBattle: FightEncounter | undefined = frozenEncounter
+    ? { roll: frozenEncounter, textTierRange: DUNGEON_TIERS[tier - 1].textTierRange }
+    : undefined
+
   const screen =
     activeNode && activeNode.monsterId && outcome === 'ongoing' ? (
       <BattleScreen
         monster={getMonster(activeNode.monsterId)}
         modifiers={modifiers}
-        onResult={(result) =>
-          result === 'win' ? handleWin(activeNode) : dispatch(resolveFight('lose', activeNode.id))
+        encounter={encounterForBattle}
+        onResult={(result, wpm) =>
+          result === 'win' ? handleWin(activeNode, wpm) : handleLose(activeNode.id)
         }
       />
     ) : (
@@ -406,6 +537,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
           coinsGained={reward.coinsGained}
           xpTotal={reward.xpTotal}
           coinsTotal={reward.coinsTotal}
+          loot={reward.loot}
           onConfirm={handleRewardConfirm}
         />
       )}
@@ -419,6 +551,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
               subtext={copy.subtext}
               danger={copy.danger}
               onBegin={handleBeginReveal}
+              dice={encounterDice ?? undefined}
             />
           )
         })()}

@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import RewardModal from './RewardModal'
+import RewardModal, { type RewardLoot } from './RewardModal'
 
-const renderModal = (onConfirm = vi.fn()) => {
+const renderModal = (onConfirm = vi.fn(), loot?: RewardLoot) => {
   render(
     <RewardModal
       title="Victory!"
@@ -11,6 +11,7 @@ const renderModal = (onConfirm = vi.fn()) => {
       coinsGained={5}
       xpTotal={112}
       coinsTotal={45}
+      loot={loot}
       onConfirm={onConfirm}
     />,
   )
@@ -39,5 +40,32 @@ describe('RewardModal', () => {
     const onConfirm = renderModal()
     await user.click(screen.getByRole('button', { name: /continue/i }))
     expect(onConfirm).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a "You found" line for a dropped weapon (Story 12 loot)', () => {
+    renderModal(vi.fn(), { kind: 'weapon', id: 'longsword' })
+    expect(screen.getByText(/you found/i).textContent).toContain('Longsword')
+  })
+
+  it('shows a "You found" line for a dropped consumable', () => {
+    renderModal(vi.fn(), { kind: 'consumable', id: 'potion-healing' })
+    expect(screen.getByText(/you found/i).textContent).toContain('Potion of Healing')
+  })
+
+  it('shows no loot line and no zero-gain rows when a chest drops gear instead of coins/XP', () => {
+    render(
+      <RewardModal
+        title="Treasure Claimed!"
+        xpGained={0}
+        coinsGained={0}
+        xpTotal={100}
+        coinsTotal={40}
+        loot={{ kind: 'weapon', id: 'dagger' }}
+        onConfirm={vi.fn()}
+      />,
+    )
+    expect(screen.queryByText(/XP/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/coins/)).not.toBeInTheDocument()
+    expect(screen.getByText(/you found/i)).toBeInTheDocument()
   })
 })

@@ -13,6 +13,18 @@ export interface RewardAmount {
   coins: number
 }
 
+// The real chest's three possible outcomes (m3-scope.html#loot, Story 12) —
+// relative weights, not required to sum to 1 (engine/progression/rewards.ts's
+// rollChestLoot normalizes). Placeholder split (Story 13/M5 tunes): coins
+// stays the single most-likely single outcome so a chest is never a *worse*
+// bet than before, but weapon+consumable together outweigh it so "which
+// chest is real?" pays off with a genuine gear gamble most of the time.
+export interface ChestLootWeights {
+  coins: number
+  weapon: number
+  consumable: number
+}
+
 export interface RewardConfig {
   // Base payout at tier 1, per monster role.
   base: Record<MonsterRole, RewardAmount>
@@ -20,6 +32,10 @@ export interface RewardConfig {
   realChest: RewardAmount
   // Each tier above 1 adds this fraction of the base amount.
   tierGrowth: number
+  chestLootWeights: ChestLootWeights
+  // "Bosses add a larger payout" (m3-scope.html#loot) — multiplies the
+  // boss's already-bigger base.boss reward on top of the tier-growth scaling.
+  bossPayoutMult: number
 }
 
 const rewardsConfig: RewardConfig = {
@@ -30,6 +46,8 @@ const rewardsConfig: RewardConfig = {
   },
   realChest: { xp: 30, coins: 24 },
   tierGrowth: 0.35,
+  chestLootWeights: { coins: 0.4, weapon: 0.25, consumable: 0.35 },
+  bossPayoutMult: 1.5,
 }
 
 export default rewardsConfig

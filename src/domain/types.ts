@@ -109,6 +109,11 @@ export interface PlayerState {
   // paused. Lets the UI show a different message for "ran out of time" vs
   // "typed the wrong thing" instead of one generic pause message.
   pauseReason?: 'expire' | 'miss'
+  // This battle's running WPM so far — (chars typed / combat.avgWordLength)
+  // over (typing time so far / 60000), accumulated across every correctly-
+  // submitted prompt (Story 12: finally lights up SaveData.stats.bestWpm).
+  // 0 before the first landed hit (nothing to divide by yet).
+  wpm: number
 }
 
 export interface MonsterState {

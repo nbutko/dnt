@@ -81,6 +81,46 @@ describe('createBattle', () => {
     expect(a.status).not.toBe('ongoing')
   })
 
+  it('player.wpm is 0 before any landed hit, then accumulates chars/time across hits (Story 12)', () => {
+    const rng = createRng(3)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'zzz zzz zzz zzz zzz', // long enough the monster never lands a hit mid-test
+      rng,
+    })
+    expect(battle.getState().player.wpm).toBe(0)
+
+    // 'jak' is 3 chars; avgWordLength is 5 -> 0.6 "words". 1000ms of typing
+    // time -> wpm = 0.6 / (1000 / 60000) = 36.
+    battle.tick(1000)
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().player.wpm).toBeCloseTo(36)
+
+    // A second, faster hit (500ms) folds into the running total: 6 chars / 5
+    // = 1.2 words over 1500ms total -> wpm = 1.2 / (1500 / 60000) = 48.
+    battle.tick(500)
+    battle.submitPlayerAttack('jak')
+    expect(battle.getState().player.wpm).toBeCloseTo(48)
+  })
+
+  it('a miss does not move player.wpm (no chars/time credited for a wrong or timed-out attack)', () => {
+    const rng = createRng(4)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'zzz zzz zzz zzz zzz',
+      rng,
+    })
+    battle.tick(1000)
+    battle.submitPlayerAttack('nope') // wrong length is ignored; wrong text (same length) below
+    expect(battle.getState().player.wpm).toBe(0)
+    battle.submitPlayerAttack('zzz')
+    expect(battle.getState().player.wpm).toBe(0)
+  })
+
   it('starts with full player HP and the monster at its own HP, prompts already loaded', () => {
     const rng = createRng(1)
     const battle = createBattle({

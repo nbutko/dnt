@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createRng } from '../rng'
+import { createRng, seedFromString } from '../rng'
 
 describe('createRng', () => {
   it('is deterministic for a given seed', () => {
@@ -43,5 +43,23 @@ describe('createRng', () => {
     const a = createRng(11)
     const b = createRng(11)
     expect(a.sample(50, 0.2)).toBe(b.sample(50, 0.2))
+  })
+})
+
+describe('seedFromString', () => {
+  it('is deterministic for the same base/text/salt', () => {
+    expect(seedFromString(42, 'fight-3')).toBe(seedFromString(42, 'fight-3'))
+  })
+
+  it('differs across node ids for the same base seed', () => {
+    expect(seedFromString(42, 'fight-3')).not.toBe(seedFromString(42, 'fight-4'))
+  })
+
+  it('differs across salts for the same base/text — independent streams', () => {
+    expect(seedFromString(42, 'fight-3', 1)).not.toBe(seedFromString(42, 'fight-3', 2))
+  })
+
+  it('differs across base seeds for the same text', () => {
+    expect(seedFromString(1, 'boss')).not.toBe(seedFromString(2, 'boss'))
   })
 })

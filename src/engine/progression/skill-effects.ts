@@ -21,3 +21,18 @@ export const resolveModifiers = (skillTree: SkillTreeState): PlayerModifiers => 
 
   return { maxHp, maxHearts, wordsmithMaxTier }
 }
+
+// M3 Story 0 retires SaveData.skillTree (the purchase mechanic is gone — the
+// Inn's buy button is retired in the same commit), but this function still
+// takes a SkillTreeState until Story 3 rewrites the seam to
+// resolveModifiers(character, weapon, activeBuffs, cfg). Every UI call site
+// passes this fixed "nothing purchased" tree in the meantime, so today's
+// screens keep compiling and behave exactly as a fresh save always did.
+// Delete this const in Story 3.
+export const RETIRED_SKILL_TREE: SkillTreeState = {
+  endurance: 0,
+  wordsmith: 0,
+  focus: 0,
+  luck: 0,
+  utility: 0,
+}

@@ -1,6 +1,6 @@
 import { toDungeon, toInn, type Screen } from '../../app/navigation'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
-import { resolveModifiers } from '../../engine/progression/skill-effects'
+import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import Legend from '../common/Legend'
@@ -18,7 +18,7 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
   const { save } = useSave()
   // Hearts are a per-run resource, restored at the Inn — outside a dungeon the
   // player is at full, so show maxHearts on both counts (feedback #5).
-  const { maxHearts } = resolveModifiers(save.skillTree)
+  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
 
   return (
     <Frame maxWidth={1080}>
@@ -31,7 +31,7 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
         </div>
         {/* Status cluster, mirroring the Inn header (feedback #5). */}
         <div className="absolute top-0 right-0">
-          <StatusReadout xp={save.xp} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
+          <StatusReadout xp={save.character?.xp ?? 0} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
         </div>
       </div>
 
@@ -40,7 +40,7 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
           <HubCard
             variant="inn"
             title="The Inn"
-            subtitle="Restore hearts · Skill tree"
+            subtitle="Rest & Sheet"
             onSelect={() => onNavigate(toInn())}
           />
           <HubCard variant="shop" title="The Shop" subtitle="Coming soon" />

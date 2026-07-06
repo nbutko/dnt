@@ -13,7 +13,7 @@ describe('save-storage', () => {
   })
 
   it('round-trips a save through saveSave -> flush -> loadSave', async () => {
-    const data = { ...defaultSave(), coins: 42, xp: 7, highestUnlockedTier: 3 }
+    const data = { ...defaultSave(), coins: 42, highestUnlockedTier: 3 }
     saveSave(data)
     await flushPendingSave()
 

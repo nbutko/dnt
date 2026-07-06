@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { CombatConfig } from '../../domain/types'
+import type { CombatConfig, TextTier } from '../../domain/types'
 import { computeDamage, critMultiplier, lengthFactor, speedBonus, tierGatePenalty } from '../damage'
 import { createRng } from '../rng'
 
@@ -121,7 +121,7 @@ describe('tierGatePenalty', () => {
     { servedTier: 10, monsterTextTier: 8, expected: 1 },
     { servedTier: 6, monsterTextTier: 8, expected: 0.5625 },
     { servedTier: 4, monsterTextTier: 8, expected: 0.25 },
-  ])(
+  ] satisfies { servedTier: TextTier; monsterTextTier: TextTier; expected: number }[])(
     'served $servedTier vs monster $monsterTextTier -> $expected',
     ({ servedTier, monsterTextTier, expected }) => {
       expect(tierGatePenalty(servedTier, monsterTextTier)).toBeCloseTo(expected)

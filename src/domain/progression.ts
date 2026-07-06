@@ -1,12 +1,13 @@
 import type { TextTier } from './types'
 
-// The rules behind the Inn (m2-implementation.html Story 4). SkillBranchId is
-// defined here (not domain/save.ts) since it's a progression-domain concept —
-// save.ts imports it back for the SaveData.skillTree shape.
+// The M2 skill tree (m2-implementation.html Story 4), retired from the save
+// in M3 Story 0 (SaveData.skillTree is gone — see domain/save.ts's v2->v3
+// migration). These two types stay only because engine/progression/
+// skill-effects.ts's resolveModifiers still takes a SkillTreeState until
+// Story 3 rewrites the seam to take a Character instead; delete both then.
 export type SkillBranchId = 'endurance' | 'wordsmith' | 'focus' | 'luck' | 'utility'
 
-// Per-branch purchased-node count — same shape as SaveData['skillTree'], but
-// named for what it is here rather than tied to the save's persistence role.
+// Per-branch purchased-node count.
 export type SkillTreeState = Record<SkillBranchId, number>
 
 // What the skill tree actually changes about combat, folded into one bag by

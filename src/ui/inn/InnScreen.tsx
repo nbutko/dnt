@@ -1,24 +1,22 @@
 import { toMap, type Screen } from '../../app/navigation'
-import { SKILL_TREE } from '../../config/skill-tree'
-import type { SkillBranchId } from '../../domain/progression'
-import { resolveModifiers } from '../../engine/progression/skill-effects'
-import { purchaseSkillNode } from '../../state/save/save-reducer'
+import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
 import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import StatusReadout from '../common/StatusReadout'
-import SkillBranch from './SkillBranch'
 
 interface InnScreenProps {
   onNavigate: (screen: Screen) => void
 }
 
-const BRANCH_ORDER: SkillBranchId[] = ['endurance', 'wordsmith', 'focus', 'luck', 'utility']
-
-// The Inn's skill tree (image 4a) — first screen that mutates the save.
+// The M2 skill tree is retired here (M3 Story 0 — save-reducer.ts's
+// purchaseSkillNode is gone, SaveData.skillTree is gone). Story 5 rebuilds
+// this screen into "Rest & Sheet" (restore hearts + spend Ability Score
+// Improvements); this is a bare placeholder in between so the Inn still
+// renders and compiles against the v3 save shape.
 const InnScreen = ({ onNavigate }: InnScreenProps) => {
-  const { save, dispatch } = useSave()
+  const { save } = useSave()
   // Full hearts outside a run — they only deplete mid-dungeon (feedback #5).
-  const { maxHearts } = resolveModifiers(save.skillTree)
+  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
 
   return (
     <Frame maxWidth={1080}>
@@ -31,23 +29,19 @@ const InnScreen = ({ onNavigate }: InnScreenProps) => {
           ← World Map
         </button>
         <h1 className="font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
-          The Inn — Skill Tree
+          The Inn
         </h1>
-        <StatusReadout xp={save.xp} coins={save.coins} hearts={maxHearts} maxHearts={maxHearts} />
-
+        <StatusReadout
+          xp={save.character?.xp ?? 0}
+          coins={save.coins}
+          hearts={maxHearts}
+          maxHearts={maxHearts}
+        />
       </div>
 
-      <div className="flex items-end justify-center gap-4.5">
-        {BRANCH_ORDER.map((branchId) => (
-          <SkillBranch
-            key={branchId}
-            branch={SKILL_TREE[branchId]}
-            purchasedCount={save.skillTree[branchId]}
-            xp={save.xp}
-            onPurchase={(cost) => dispatch(purchaseSkillNode(branchId, cost))}
-          />
-        ))}
-      </div>
+      <p className="text-center font-mono text-sm text-text-dim">
+        Rest &amp; Sheet coming soon — the skill tree has been retired for the D&amp;D character layer (M3).
+      </p>
     </Frame>
   )
 }

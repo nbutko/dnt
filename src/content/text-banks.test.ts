@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import textBank from './text-banks'
-import type { Rng } from '../domain/types'
+import type { Rng, TextTier } from '../domain/types'
 
 const fakeRng = (values: number[]): Rng => {
   let i = 0

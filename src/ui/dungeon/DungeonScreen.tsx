@@ -7,7 +7,7 @@ import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 import type { MonsterRole } from '../../domain/types'
 import { bossUnlocked, isComplete } from '../../engine/dungeon/graph'
 import { createRng } from '../../engine/rng'
-import { resolveModifiers } from '../../engine/progression/skill-effects'
+import { resolveModifiers, RETIRED_SKILL_TREE } from '../../engine/progression/skill-effects'
 import { rewardForChest, rewardForKill } from '../../engine/progression/rewards'
 import { resolveFight, selectNode } from '../../state/dungeon-run/dungeon-run-reducer'
 import DungeonRunProvider, { useDungeonRun } from '../../state/dungeon-run/DungeonRunProvider'
@@ -160,7 +160,7 @@ interface DungeonRunViewProps {
 const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const { run, outcome, dispatch } = useDungeonRun()
   const { save, dispatch: saveDispatch } = useSave()
-  const modifiers = resolveModifiers(save.skillTree)
+  const modifiers = resolveModifiers(RETIRED_SKILL_TREE)
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
 
@@ -194,14 +194,16 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     saveDispatch(award(amount.coins, amount.xp))
     if (node.monsterId) saveDispatch(recordDefeat(node.monsterId))
     if (node.kind === 'boss') saveDispatch(unlockTier(tier + 1))
-    // save.xp/coins here are the pre-award totals (this render's snapshot), so
-    // adding the gain gives the post total to display alongside it.
+    // save's xp/coins here are the pre-award totals (this render's snapshot),
+    // so adding the gain gives the post total to display alongside it. xp now
+    // lives on the character (v3) and folds in only once one exists — see
+    // save-reducer.ts's award case.
     setReward({
       nodeId: node.id,
       title: rewardTitle(node),
       xpGained: amount.xp,
       coinsGained: amount.coins,
-      xpTotal: save.xp + amount.xp,
+      xpTotal: (save.character?.xp ?? 0) + amount.xp,
       coinsTotal: save.coins + amount.coins,
     })
   }
@@ -283,7 +285,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
           </div>
           {/* XP/gold to the LEFT of the live hearts, one row (feedback #5). */}
           <StatusReadout
-            xp={save.xp}
+            xp={save.character?.xp ?? 0}
             coins={save.coins}
             hearts={run.heartsRemaining}
             maxHearts={modifiers.maxHearts}
@@ -328,8 +330,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
 // per mount means every dungeon visit regenerates a new layout — and closing
 // the screen throws the run away, by design (finding E).
 const DungeonScreen = ({ tier, onNavigate }: DungeonScreenProps) => {
-  const { save } = useSave()
-  const { maxHearts } = resolveModifiers(save.skillTree)
+  const { maxHearts } = resolveModifiers(RETIRED_SKILL_TREE)
 
   // A fresh random seed, computed once per mount → every dungeon visit
   // regenerates a new layout (finding E). GameShell remounts this screen on

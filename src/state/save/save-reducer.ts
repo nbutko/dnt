@@ -1,25 +1,53 @@
+import type { Ability, AbilityScores, Character } from '../../domain/character'
+import type { ItemId } from '../../domain/items'
 import type { SaveData } from '../../domain/save'
-import type { SkillBranchId } from '../../domain/progression'
+import type { WeaponId } from '../../domain/weapons'
 
 export type SaveAction =
   | { type: 'award'; coins: number; xp: number }
-  | { type: 'purchaseSkillNode'; branch: SkillBranchId; cost: number }
+  | { type: 'createCharacter'; character: Character }
+  | { type: 'gainXp'; amount: number }
+  | { type: 'applyAsi'; spend: Partial<AbilityScores> }
+  | { type: 'equipWeapon'; weapon: WeaponId }
+  | { type: 'buyWeapon'; weapon: WeaponId; price: number }
+  | { type: 'buyItem'; item: ItemId; price: number }
+  | { type: 'consumeItem'; item: ItemId }
   | { type: 'unlockTier'; tier: number }
   | { type: 'recordDefeat'; monsterId: string }
   | { type: 'hydrate'; save: SaveData }
 
-// Cost is passed in rather than looked up here: the reducer stays a pure
-// function of (state, action) with no import of config/skill-tree.ts (Story
-// 4), matching the "save never imports combat/config-that-knows-about-combat"
-// seam rule in m2-implementation.html. Callers (the Inn UI, Story 5) read
-// the cost from config before dispatching.
+// Cost/price is passed in rather than looked up here: the reducer stays a
+// pure function of (state, action) with no import of config/weapons.ts or
+// config/items.ts, matching the "save never imports combat/config-that-knows-
+// about-combat" seam rule (m2-implementation.html, carried into M3). Callers
+// (the Shop UI, Story 10) read the price from config before dispatching.
 export const award = (coins: number, xp: number): SaveAction => ({ type: 'award', coins, xp })
 
-export const purchaseSkillNode = (branch: SkillBranchId, cost: number): SaveAction => ({
-  type: 'purchaseSkillNode',
-  branch,
-  cost,
+export const createCharacter = (character: Character): SaveAction => ({
+  type: 'createCharacter',
+  character,
 })
+
+// Accumulates onto character.xp. TODO(M3 Story 2): once engine/character/
+// leveling.ts exists, detect level crossings here (levelForXp) and bank
+// pendingAsi for any ASI level passed (grantsForLevel) — HP/proficiency stay
+// derived at read time (Story 3), never stored. Until then this is a plain
+// accumulator; no auto-leveling happens yet.
+export const gainXp = (amount: number): SaveAction => ({ type: 'gainXp', amount })
+
+export const applyAsi = (spend: Partial<AbilityScores>): SaveAction => ({ type: 'applyAsi', spend })
+
+export const equipWeapon = (weapon: WeaponId): SaveAction => ({ type: 'equipWeapon', weapon })
+
+export const buyWeapon = (weapon: WeaponId, price: number): SaveAction => ({
+  type: 'buyWeapon',
+  weapon,
+  price,
+})
+
+export const buyItem = (item: ItemId, price: number): SaveAction => ({ type: 'buyItem', item, price })
+
+export const consumeItem = (item: ItemId): SaveAction => ({ type: 'consumeItem', item })
 
 export const unlockTier = (tier: number): SaveAction => ({ type: 'unlockTier', tier })
 
@@ -34,16 +62,82 @@ export const hydrate = (save: SaveData): SaveAction => ({ type: 'hydrate', save 
 
 export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
   switch (action.type) {
-    case 'award':
-      return { ...state, coins: state.coins + action.coins, xp: state.xp + action.xp }
+    case 'award': {
+      // Coins are always a save fact; xp only has somewhere to go once a
+      // character exists (pre-creation battles can't happen in the real flow
+      // — Story 4 gates the map behind creation).
+      const character = state.character
+        ? { ...state.character, xp: state.character.xp + action.xp }
+        : state.character
+      return { ...state, coins: state.coins + action.coins, character }
+    }
 
-    case 'purchaseSkillNode':
+    case 'createCharacter':
+      return { ...state, character: action.character }
+
+    case 'gainXp': {
+      if (!state.character) return state
       return {
         ...state,
-        xp: state.xp - action.cost,
-        skillTree: {
-          ...state.skillTree,
-          [action.branch]: state.skillTree[action.branch] + 1,
+        character: { ...state.character, xp: state.character.xp + action.amount },
+      }
+    }
+
+    case 'applyAsi': {
+      if (!state.character) return state
+      const entries = Object.entries(action.spend) as [Ability, number | undefined][]
+      const totalSpent = entries.reduce((sum, [, delta]) => sum + (delta ?? 0), 0)
+      const abilities = { ...state.character.abilities }
+      for (const [ability, delta] of entries) {
+        if (delta) abilities[ability] += delta
+      }
+      return {
+        ...state,
+        character: {
+          ...state.character,
+          abilities,
+          pendingAsi: Math.max(0, state.character.pendingAsi - totalSpent),
+        },
+      }
+    }
+
+    case 'equipWeapon':
+      return { ...state, equippedWeapon: action.weapon }
+
+    case 'buyWeapon':
+      return {
+        ...state,
+        coins: state.coins - action.price,
+        inventory: {
+          ...state.inventory,
+          weapons: state.inventory.weapons.includes(action.weapon)
+            ? state.inventory.weapons
+            : [...state.inventory.weapons, action.weapon],
+        },
+      }
+
+    case 'buyItem':
+      return {
+        ...state,
+        coins: state.coins - action.price,
+        inventory: {
+          ...state.inventory,
+          consumables: {
+            ...state.inventory.consumables,
+            [action.item]: state.inventory.consumables[action.item] + 1,
+          },
+        },
+      }
+
+    case 'consumeItem':
+      return {
+        ...state,
+        inventory: {
+          ...state.inventory,
+          consumables: {
+            ...state.inventory.consumables,
+            [action.item]: Math.max(0, state.inventory.consumables[action.item] - 1),
+          },
         },
       }
 

@@ -22,6 +22,8 @@ const steadyMonster: Monster = {
   id: 'test-monster',
   name: 'Test Monster',
   tier: 1,
+  role: 'regular',
+  habitat: 'Test',
   hp: 100,
   textTier: 1,
   wpm: 20,

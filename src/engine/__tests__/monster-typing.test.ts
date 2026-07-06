@@ -22,6 +22,8 @@ const baseMonster: Monster = {
   id: 'test',
   name: 'Test Monster',
   tier: 1,
+  role: 'regular',
+  habitat: 'Test',
   hp: 40,
   textTier: 1,
   wpm: 30,

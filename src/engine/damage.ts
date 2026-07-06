@@ -25,13 +25,21 @@ export const critMultiplier = (combat: CombatConfig, rng: Rng): CritResult => {
   return { multiplier: isCrit ? combat.criticalDamageMultiplier : 1, isCrit }
 }
 
-// Punishes fighting above your unlocked Wordsmith tier — the served prompt is
-// already easier (shorter/simpler), but that alone is only a linear discount
-// on damage, which speedBonus can offset. Squaring the tier ratio makes the
-// loss outrun anything speed can buy back (m2-scope.html#wordsmith-gate):
-// 1 at/above the monster's tier, 0.56 at 6/8, 0.25 at 4/8.
-export const tierGatePenalty = (servedTier: TextTier, monsterTextTier: TextTier): number =>
-  servedTier >= monsterTextTier ? 1 : (servedTier / monsterTextTier) ** 2
+// Punishes being served a lower tier than the encounter d20's band rolled
+// into — the served prompt is already easier (shorter/simpler), but that
+// alone is only a linear discount on damage, which speedBonus can offset.
+// Squaring the tier ratio makes the loss outrun anything speed can buy back
+// (m2-scope.html#wordsmith-gate, now INT/band-driven instead of Wordsmith):
+// 1 at/above the target tier, 0.56 at 6/8, 0.25 at 4/8.
+//
+// M3 Story 6 (m3-implementation.html finding D) reinterprets `targetTier`:
+// it used to be the monster's own textTier, but the player's served tier now
+// comes from the encounter d20's band (engine/dice/band.ts's
+// bandToServedTier), not the monster — so the gate compares against that
+// band's target tier instead. The monster's textTier keeps governing only
+// the line the monster itself types. Same squared-ratio math either way.
+export const tierGatePenalty = (servedTier: TextTier, targetTier: TextTier): number =>
+  servedTier >= targetTier ? 1 : (servedTier / targetTier) ** 2
 
 export interface ComputeDamageParams {
   charCount: number

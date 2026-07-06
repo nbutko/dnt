@@ -29,7 +29,14 @@ export const createBattleStore = async (
   seed = Date.now(),
 ): Promise<BattleStore> => {
   const rng = createRng(seed)
+  // TODO(Story 7/12): the encounter d20's band (engine/dice/encounter-roll.ts
+  // + band.ts, Story 6) is supposed to pick servedTier/targetTier from the
+  // dungeon's textTierRange, capped by INT — not the monster's own textTier.
+  // EncounterModal isn't wired into the live launch flow yet (that plumbing
+  // reaches into the battle-launch caller and this store together), so this
+  // still uses the pre-Story-6 monster.textTier as a placeholder until it is.
   const servedTier = Math.min(monster.textTier, modifiers.intTierCap) as TextTier
+  const targetTier = monster.textTier
   const playerPrompts = await textBank.makePromptSource(servedTier, rng)
   const monsterPrompts = await textBank.makePromptSource(monster.textTier, rng)
 
@@ -39,7 +46,7 @@ export const createBattleStore = async (
     playerPrompts,
     monsterPrompts,
     rng,
-    tierGatePenalty: tierGatePenalty(servedTier, monster.textTier),
+    tierGatePenalty: tierGatePenalty(servedTier, targetTier),
   })
 
   return {

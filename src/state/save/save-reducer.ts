@@ -1,7 +1,9 @@
+import { ASI_LEVELS } from '../../config/leveling'
 import type { Ability, AbilityScores, Character } from '../../domain/character'
 import type { ItemId } from '../../domain/items'
 import type { SaveData } from '../../domain/save'
 import type { WeaponId } from '../../domain/weapons'
+import { levelForXp } from '../../engine/character/leveling'
 
 export type SaveAction =
   | { type: 'award'; coins: number; xp: number }
@@ -28,11 +30,11 @@ export const createCharacter = (character: Character): SaveAction => ({
   character,
 })
 
-// Accumulates onto character.xp. TODO(M3 Story 2): once engine/character/
-// leveling.ts exists, detect level crossings here (levelForXp) and bank
-// pendingAsi for any ASI level passed (grantsForLevel) — HP/proficiency stay
-// derived at read time (Story 3), never stored. Until then this is a plain
-// accumulator; no auto-leveling happens yet.
+// Accumulates onto character.xp and auto-levels: every ASI level
+// (config/leveling.ts's ASI_LEVELS) crossed by this gain banks a pendingAsi.
+// HP/proficiency stay derived at read time (Story 3's resolveModifiers calls
+// engine/character/leveling.ts's grantsForLevel) — never stored here, so they
+// can't drift from the character's level/abilities.
 export const gainXp = (amount: number): SaveAction => ({ type: 'gainXp', amount })
 
 export const applyAsi = (spend: Partial<AbilityScores>): SaveAction => ({ type: 'applyAsi', spend })
@@ -77,9 +79,21 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
 
     case 'gainXp': {
       if (!state.character) return state
+      const xp = state.character.xp + action.amount
+      const oldLevel = levelForXp(state.character.xp)
+      const level = levelForXp(xp)
+      // Every ASI level strictly between the old and new level is one banked
+      // pendingAsi — a multi-level jump (a big boss/chest payout) can cross
+      // more than one at once.
+      const asiGained = ASI_LEVELS.filter((asiLevel) => asiLevel > oldLevel && asiLevel <= level).length
       return {
         ...state,
-        character: { ...state.character, xp: state.character.xp + action.amount },
+        character: {
+          ...state.character,
+          xp,
+          level,
+          pendingAsi: state.character.pendingAsi + asiGained,
+        },
       }
     }
 

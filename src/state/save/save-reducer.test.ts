@@ -50,6 +50,31 @@ describe('saveReducer', () => {
     const start = { ...defaultSave(), character: makeCharacter({ xp: 50 }) }
     const next = saveReducer(start, gainXp(25))
     expect(next.character?.xp).toBe(75)
+    expect(next.character?.level).toBe(1) // still under the 300 XP threshold for level 2
+  })
+
+  it('gainXp auto-levels once a threshold is crossed, without banking an ASI at a non-ASI level', () => {
+    const start = { ...defaultSave(), character: makeCharacter({ xp: 250, level: 1 }) }
+    const next = saveReducer(start, gainXp(100)) // 350 XP crosses the 300 threshold into level 2
+    expect(next.character?.xp).toBe(350)
+    expect(next.character?.level).toBe(2)
+    expect(next.character?.pendingAsi).toBe(0)
+  })
+
+  it('gainXp banks a pendingAsi when the crossed level is an ASI level', () => {
+    const start = { ...defaultSave(), character: makeCharacter({ xp: 2600, level: 3, pendingAsi: 0 }) }
+    const next = saveReducer(start, gainXp(200)) // 2800 XP crosses the 2700 threshold into level 4 (an ASI level)
+    expect(next.character?.level).toBe(4)
+    expect(next.character?.pendingAsi).toBe(1)
+  })
+
+  it('gainXp banks every ASI level a multi-level jump crosses', () => {
+    // A big payout jumping from level 1 (0 XP) straight past levels 4 and 8
+    // (both ASI levels) into level 9 (48000 XP threshold) banks 2 ASIs.
+    const start = { ...defaultSave(), character: makeCharacter({ xp: 0, level: 1, pendingAsi: 0 }) }
+    const next = saveReducer(start, gainXp(48_000))
+    expect(next.character?.level).toBe(9)
+    expect(next.character?.pendingAsi).toBe(2)
   })
 
   it('applyAsi spends pendingAsi points into abilities and no-ops without a character', () => {

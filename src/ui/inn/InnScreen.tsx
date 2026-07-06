@@ -9,6 +9,7 @@ import { useSave } from '../../state/save/SaveProvider'
 import Frame from '../common/Frame'
 import StatusReadout from '../common/StatusReadout'
 import Tabs, { type TabItem } from '../common/Tabs'
+import Armory from './Armory'
 import AsiPanel from './AsiPanel'
 import CharacterSheet from './CharacterSheet'
 import RestPanel from './RestPanel'
@@ -18,10 +19,13 @@ interface InnScreenProps {
 }
 
 // The M2 skill tree is retired (M3 Stories 0/3/5). The Inn is now the D&D long
-// rest + character sheet (wireframe turn 2). Tabbed so the Armory (Story 8)
-// joins as a second tab; only Rest & Sheet exists today.
-type InnTab = 'rest-sheet'
-const INN_TABS: readonly TabItem<InnTab>[] = [{ id: 'rest-sheet', label: 'Rest & Sheet' }]
+// rest + character sheet (wireframe turn 2), joined by the Armory (Story 8,
+// wireframe turn 7) as a second tab.
+type InnTab = 'rest-sheet' | 'armory'
+const INN_TABS: readonly TabItem<InnTab>[] = [
+  { id: 'rest-sheet', label: 'Rest & Sheet' },
+  { id: 'armory', label: 'Armory' },
+]
 
 const InnScreen = ({ onNavigate }: InnScreenProps) => {
   const { save, dispatch } = useSave()
@@ -61,16 +65,20 @@ const InnScreen = ({ onNavigate }: InnScreenProps) => {
 
       <Tabs tabs={INN_TABS} activeId={tab} onSelect={setTab} />
 
-      <div className="flex items-stretch gap-5">
-        <RestPanel maxHearts={maxHearts} maxHp={maxHp} />
-        <CharacterSheet
-          character={character}
-          weapon={weapon}
-          maxHp={maxHp}
-          proficiencyBonus={proficiencyBonus}
-          onImprove={() => setAsiOpen(true)}
-        />
-      </div>
+      {tab === 'rest-sheet' && (
+        <div className="flex items-stretch gap-5">
+          <RestPanel maxHearts={maxHearts} maxHp={maxHp} />
+          <CharacterSheet
+            character={character}
+            weapon={weapon}
+            maxHp={maxHp}
+            proficiencyBonus={proficiencyBonus}
+            onImprove={() => setAsiOpen(true)}
+          />
+        </div>
+      )}
+
+      {tab === 'armory' && <Armory />}
 
       {asiOpen && asiBudget > 0 && (
         <AsiPanel

@@ -18,8 +18,9 @@
   The player fights a monster by typing. The player and the monster each continuously race their own line
   of text against their own clock, independently — type yours correctly in time and you land a hit; if the
   monster finishes its own line in time, it hits back. Bigger/harder text chunks hit harder. Win the battle,
-  earn coins, XP, and power-ups. Spend XP in a skill tree that raises max HP, allowed text length, and
-  time limits, so the game gets harder <em>and</em> the player gets visibly better at typing over time.
+  earn coins, XP, and loot. XP levels up a real D&amp;D-style character — six ability scores, a class, dice
+  rolls — raising max HP, allowed text length, and time limits as it climbs; coins buy weapons and consumable
+  items at the Shop. So the game gets harder <em>and</em> the player gets visibly better at typing over time.
 </p>
 
 <p>
@@ -31,7 +32,7 @@
 <div class="card-grid">
   <a class="card" href="game-design.html">
     <span class="card-title">1. Game Design</span>
-    <span class="card-desc">The battle loop, combat math, HP/timers, XP &amp; skill tree, power-ups. The rules of the game.</span>
+    <span class="card-desc">The battle loop, combat math, abilities &amp; D&amp;D leveling, dice, weapons, and consumables. The rules of the game.</span>
   </a>
   <a class="card" href="content-plan.html">
     <span class="card-title">2. Content Plan</span>
@@ -76,7 +77,7 @@
   <li><strong>Playable early.</strong> The first milestone is a single ugly battle in the browser, not a fully designed game. See <a href="roadmap.html">Roadmap</a>.</li>
   <li><strong>Typing quality first, game juice second.</strong> If a feature doesn't make him type more, or type harder things, it's decoration — nice, but never blocks a milestone.</li>
   <li><strong>No accounts, no backend, no login.</strong> One kid, one Chromebook (for now). Progress saves locally. See <a href="architecture.html#persistence">Persistence</a>.</li>
-  <li><strong>Numbers should be easy to retune.</strong> Combat math, difficulty tiers, and skill tree costs all live in a few config files/objects, not scattered through code, so balance can change without a rewrite.</li>
+  <li><strong>Numbers should be easy to retune.</strong> Combat math, difficulty tiers, and every ability/leveling magnitude all live in a few config files/objects (<code>config/abilities.ts</code>, <code>config/leveling.ts</code>, …), not scattered through code, so balance can change without a rewrite.</li>
 </ul>
 
 <h2>Status</h2>

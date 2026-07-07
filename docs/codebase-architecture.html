@@ -19,7 +19,7 @@
   This is orientation, not gospel: the code is the source of truth, and this doc will drift. Its job is to make the
   <em>next</em> read cheap — to say "here is the shape, here are the rules, here is which file to open" so a change
   starts from a map instead of a search. Keep it roughly current when the shape changes; don't sweat line-level
-  detail. Snapshot taken during <a href="m3-implementation.html">M3 planning</a> (post-M2, pre-M3-code).
+  detail. Snapshot re-taken post-<a href="m3-implementation.html">M3</a> (the D&amp;D character layer has shipped).
 </p>
 
 <h2 id="stack">Stack</h2>
@@ -45,23 +45,27 @@
   <strong>The combat <code>engine/</code> never imports React. The persistent save never imports combat, and
   combat never imports the save.</strong> They meet at exactly one pure function —
   <code>resolveModifiers()</code> — which turns save data into a <code>PlayerModifiers</code> object the battle
-  consumes. This single seam is why milestones stay additive: you can swap what feeds it (M3 replaces the skill
-  tree with a character) without touching the combat math on the other side. <em>Grow the seam; don't route
-  around it.</em>
+  consumes. This single seam is why milestones stay additive: M3 swapped what feeds it (a Character + equipped
+  Weapon + active consumable buffs, replacing M2's skill tree) without touching the combat math on the other
+  side. <em>Grow the seam; don't route around it.</em>
 </div>
 
 <h2 id="tree">The <code>src/</code> tree</h2>
 <pre><code>src/
   App.tsx  main.tsx  index.css        # trivial root: &lt;GameShell/&gt;
   app/
-    GameShell.tsx                     # owns the current Screen; wraps SaveProvider; switch on screen.name
-    navigation.ts                     # Screen union + constructors (toMap/toInn/toDungeon) — the "router"
+    GameShell.tsx                     # owns the current Screen; wraps SaveProvider; gates on save.character; switch on screen.name
+    navigation.ts                     # Screen union + constructors (toMap/toInn/toDungeon/toShop) — the "router"
   config/                             # tuning + content STRUCTURE — data, never logic
     combat.ts                         #   CombatConfig instance (the committed combat knobs)
-    dungeon-tiers.ts                  #   the 11 tiers (habitat, wpmRange, textTierRange, rosterPool)
+    dungeon-tiers.ts                  #   the 11 tiers (habitat, wpmRange, textTierRange — now consumed, rosterPool)
     dungeon-generation.ts             #   fan-out generator knobs (path counts, chest counts, target total)
     rewards.ts                        #   per-kill / per-chest xp+coin formula
-    skill-tree.ts                     #   the 5 branches (Endurance/Wordsmith active; Focus/Luck/Utility locked)
+    abilities.ts                      #   every per-point ability MAGNITUDE (dice/tier-cap/dodge/shop/mimic-DC scales)
+    leveling.ts                       #   XP thresholds, ASI levels, proficiency-by-level, HP_SCALE
+    classes.ts                        #   the 4 launch classes: hit die, favored abilities, starting weapon, feature
+    weapons.ts                        #   the 8 launch weapons: die, ability, crit range, tier, price
+    items.ts                          #   the 10 launch consumables: effect, duration, tier, price
   content/                            # editable DATA + thin lookups
     monsters.json  monsters.ts        #   70 monster records; getMonster/byTier/byRole
     text/tier-01.json … tier-10.json  #   line banks per text tier
@@ -69,31 +73,53 @@
     keyboard-layout.ts
   domain/                             # PURE TYPES, no logic
     types.ts                          #   combat/monster/battle types + CombatConfig, TextTier, Rng
-    save.ts                           #   SaveData (v2) + defaultSave/migrate/isSaveData
+    character.ts                      #   Ability/AbilityScores/CharacterClass/Character + abilityMod()
+    weapons.ts  items.ts              #   Weapon/WeaponId; ItemId/Consumable/ActiveBuff
+    save.ts                           #   SaveData (v3) + defaultSave/migrate/isSaveData (migrates a v2 save)
     dungeon.ts                        #   DungeonGraph/DungeonNode/NodeKind/NodeState
-    progression.ts                    #   SkillBranchId/SkillTreeState/PlayerModifiers
+    progression.ts                    #   PlayerModifiers (widened for the ability/weapon/buff surface)
   engine/                             # ← PURE LOGIC, NO REACT (the load-bearing rule)
     battle.ts                         #   createBattle() — the combat state machine (the only place a fight lives)
-    damage.ts                         #   ALL core combat math (length/speed/crit/tier-gate/computeDamage)
+    damage.ts                         #   ALL core combat math (length/speed/crit-roll/tier-gate/computeDamage —
+                                       #   dice-based since M3: weapon die + ability mod, crit rolls dice again)
     monster-typing.ts                 #   the monster typing simulation
     rng.ts                            #   seedable mulberry32 PRNG (deterministic)
     dungeon/generate.ts  graph.ts     #   generateDungeon() + pure graph transitions
-    progression/skill-effects.ts      #   resolveModifiers() — THE save↔combat seam
+    character/                        #   THE save↔combat seam (M3) + the character-creation pure logic
+      modifiers.ts                    #     resolveModifiers() — Character + Weapon + ActiveBuff[] -> PlayerModifiers
+      leveling.ts                     #     levelForXp/xpProgress/grantsForLevel/applyAsi (derive-don't-store)
+      create.ts                      #     createNewCharacter/pickRandomName (character creation defaults)
+      ability-roll.ts                #     rollAbilityScores() — the 4d6-drop-lowest roll
+      pricing.ts                     #     shopPrice() — the one CHA/Bard-discount formula Shop + modifiers share
+    dice/                             #   the two dice (M3 Story 6/7)
+      encounter-roll.ts               #     rollEncounter() — the pre-fight d20 (fumble/low/mid/high/inspired)
+      band.ts                        #     bandToServedTier() — band -> this fight's served/target text tier
+      mimic-sense.ts                 #     rollMimicSense() — the hidden WIS check on selecting a chest node
     progression/rewards.ts            #   rewardForKill/rewardForChest
-    sim/balance.ts  dungeon-invariants.ts  # offline harnesses (test-only)
+    sim/balance.ts  combat-invariants.ts  dungeon-invariants.ts  # offline harnesses (test-only)
   state/                              # ← where logic meets React
-    battle-store.ts                   #   external store over createBattle(), read via useSyncExternalStore
+    battle-store.ts                   #   external store over createBattle(), read via useSyncExternalStore;
+                                       #   resolveFightTier() folds the encounter roll + fumble/inspired crit rule in
     save/                             #   PERSISTENT: SaveProvider + save-reducer + save-storage (IndexedDB)
-    dungeon-run/                      #   EPHEMERAL: DungeonRunProvider + dungeon-run-reducer (never persisted)
+    dungeon-run/                      #   EPHEMERAL: DungeonRunProvider + dungeon-run-reducer (never persisted;
+                                       #   now also owns active consumable buffs, see addBuff/restoreHearts)
   ui/
-    common/   Frame  nodeState  Legend  ResourcePill  StatusReadout  HeartsReadout  ModalOverlay
+    common/   Frame  nodeState  Legend  ResourcePill  StatusReadout  HeartsReadout  ModalOverlay  Tabs  Die
+    create/   CharacterCreateScreen  AbilityRoller  ClassPicker  HeroSummary  NameField
     battle/   BattleScreen  HealthBar  Keyboard  Key  PlayerPrompt  TypedProgress  BattleResult
     map/      WorldMapScreen  HubCard  TierCard  TierTrail
-    dungeon/  DungeonScreen  DungeonGraph  DungeonNode  graph-layout  EncounterModal  RewardModal
-    inn/      InnScreen  SkillBranch  SkillNode
+    dungeon/  DungeonScreen  DungeonGraph  DungeonNode  graph-layout  EncounterModal  MimicWarningModal
+              RewardModal  Bag  ActiveBuffsStrip
+    inn/      InnScreen (Rest &amp; Sheet / Armory tabs)  RestPanel  CharacterSheet  AsiPanel  Armory
+    shop/     ShopScreen  ShopItem  PriceTag
     hooks/    useBattle  useGameLoop
   test/setup.ts                       # jest-dom import
 </code></pre>
+<p>
+  Retired in M3: <code>config/skill-tree.ts</code>, <code>engine/progression/skill-effects.ts</code>, and
+  <code>ui/inn/SkillBranch.tsx</code>/<code>SkillNode.tsx</code> — the M2 skill tree and its seam implementation.
+  <code>domain/progression.ts</code> no longer exports <code>SkillBranchId</code>/<code>SkillTreeState</code>.
+</p>
 
 <h2 id="state">State: three lifetimes, five stores, no global library</h2>
 <p>
@@ -111,13 +137,15 @@
     drives <code>tick</code></td>
   </tr>
   <tr>
-    <td>Persistent / save</td><td>coins, xp, skillTree, hearts.max, highestUnlockedTier, stats</td>
+    <td>Persistent / save</td><td>the character (class/level/XP/abilities), coins, equipped weapon + owned
+    inventory, hearts.max, highestUnlockedTier, stats</td>
     <td>forever (survives reload)</td>
     <td><code>state/save/</code> — Context (<code>SaveProvider</code>/<code>useSave</code>) + <code>useReducer</code>,
     mirrored to IndexedDB (debounced)</td>
   </tr>
   <tr>
-    <td>Ephemeral / run</td><td>the generated graph, which nodes are cleared, hearts <em>remaining</em></td>
+    <td>Ephemeral / run</td><td>the generated graph, which nodes are cleared, hearts <em>remaining</em>, active
+    consumable buffs</td>
     <td>one dungeon visit (discarded on death/leave/reload)</td>
     <td><code>state/dungeon-run/</code> — a second Context + <code>useReducer</code>, scoped under the dungeon
     screen, <strong>never</strong> touched by IndexedDB</td>
@@ -136,12 +164,17 @@
 
 <h2 id="navigation">Navigation: a screen state machine, not a router</h2>
 <p>
-  <code>app/navigation.ts</code> defines <code>Screen = { name:'map' } | { name:'inn' } | { name:'dungeon'; tier }</code>
-  with constructor helpers. <code>app/GameShell.tsx</code> holds one <code>useState&lt;Screen&gt;</code> and
-  <code>switch</code>es on <code>screen.name</code>, passing <code>onNavigate</code> down. Battle is <em>not</em> a
-  top-level screen — it's launched <em>inside</em> <code>DungeonScreen</code> so the ephemeral run stays mounted,
-  and returns its result via an <code>onResult('win'|'lose')</code> callback. The Shop is a "Coming soon"
-  <code>HubCard</code> with no screen yet. Four screens for one kid on one device is why there's no router library.
+  <code>app/navigation.ts</code> defines
+  <code>Screen = { name:'map' } | { name:'inn' } | { name:'dungeon'; tier } | { name:'shop' }</code>
+  with constructor helpers (<code>toMap</code>/<code>toInn</code>/<code>toDungeon</code>/<code>toShop</code>).
+  <code>app/GameShell.tsx</code> holds one <code>useState&lt;Screen&gt;</code>, <code>switch</code>es on
+  <code>screen.name</code>, and — ahead of any screen switch — gates on <code>save.character === null</code>: a
+  fresh or freshly-migrated save renders <code>CharacterCreateScreen</code> instead (not a <code>Screen</code>
+  variant itself — there's nowhere to navigate "back" to from it) until a character exists. Battle is <em>not</em>
+  a top-level screen either — it's launched <em>inside</em> <code>DungeonScreen</code> so the ephemeral run stays
+  mounted, and returns its result via an <code>onResult('win'|'lose')</code> callback. The Shop is now a real
+  screen (M3 Story 10), reachable from the map's Shop <code>HubCard</code>. Four <code>Screen</code> variants plus
+  the pre-map creation gate, for one kid on one device, is why there's still no router library.
 </p>
 
 <h2 id="combat">The combat engine (where the math lives)</h2>
@@ -152,12 +185,20 @@
   (exact-match). Player time limit =
   <code>max(floorMs, readingBufferMs + expectedTypingTimeMs(len, baselineWpm))</code>.</li>
   <li><code>engine/damage.ts</code> — <strong>all core math</strong>: <code>lengthFactor</code> (longer = harder),
-  <code>speedBonus</code> (fast finish = up to 2×), <code>critMultiplier</code>, <code>tierGatePenalty</code>
-  (squared tier-ratio when served below the monster's tier), and <code>computeDamage</code> =
-  <code>baseDamage × lengthFactor × speedBonus × crit × powerUpMultiplier × gatePenalty</code>.
-  <code>computeMonsterDamage</code> is the same minus crit &amp; power-ups (both player-only).
-  <strong>Note:</strong> <code>powerUpMultiplier</code> is plumbed but unused since M0 (M3's consumables light it
-  up).</li>
+  <code>speedBonus</code> (fast finish = up to 2×), <code>rollIsCrit</code>, <code>tierGatePenalty</code>
+  (squared tier-ratio when served below the fight's target tier), and <code>computeDamage</code> =
+  <code>(sum of weaponDie rolls + weaponAbilityMod) × damageScale × lengthFactor × speedBonus ×
+  powerUpMultiplier × tierGatePenalty × fumbleDamageMultiplier</code> — the M3 Story 7 rework: a flat
+  <code>baseDamage</code> became a rolled weapon die + ability mod, and a crit rolls <code>critCount</code> dice
+  (2 normally, 3 for the Wizard) and sums them instead of doubling a flat result. <code>computeMonsterDamage</code>
+  stays the old flat shape (<code>baseDamage × lengthFactor × speedBonus</code>, no dice/crit/power-ups, all
+  player-only). <strong>Now lit:</strong> <code>powerUpMultiplier</code> (driven by consumables like Bull's
+  Strength) is finally read by <code>computeDamage</code>. <strong>Still a gap:</strong> DEX's
+  <code>critChanceBonus</code>, a weapon's <code>critRange</code>, and a crit-boost item's
+  <code>critDamageMult</code> are all computed into <code>PlayerModifiers</code> (<code>engine/character/
+  modifiers.ts</code>) but <code>rollIsCrit</code>/<code>computeDamage</code> never read them — crit chance
+  today is still the flat <code>combat.criticalChance</code>, unchanged since M0. A known pending wiring gap
+  (a tuning-coupled pass, not an oversight), not yet scheduled to a story.</li>
   <li><code>engine/monster-typing.ts</code> — the monster typer: chars arrive on a noisy interval, each may be a
   typo per <code>accuracy</code>, typos aren't corrected until <code>attention</code> seconds pass;
   <code>timeLimitMs = expectedTypingTimeMs(...) × slack</code>.</li>
@@ -173,27 +214,39 @@
 
 <h2 id="seam">The one seam: <code>resolveModifiers()</code></h2>
 <p>
-  <code>engine/progression/skill-effects.ts</code> exports <code>resolveModifiers(skillTree): PlayerModifiers</code>
-  — currently folding purchased Endurance nodes into <code>maxHp</code>/<code>maxHearts</code> and the last
-  Wordsmith node into <code>wordsmithMaxTier</code>. It is the <strong>sole</strong> bridge from save data to
+  <code>engine/character/modifiers.ts</code> exports
+  <code>resolveModifiers(character, weapon, activeBuffs?, cfg?): PlayerModifiers</code> — its new M3 home,
+  replacing the retired <code>engine/progression/skill-effects.ts</code>. It folds a persistent
+  <code>Character</code>'s level/abilities, the equipped <code>Weapon</code>'s die/ability/crit range, the
+  character's class feature, and the run's ephemeral <code>ActiveBuff[]</code> into one <code>PlayerModifiers</code>
+  bag — <code>maxHp</code>/<code>maxHearts</code> (level + CON), <code>intTierCap</code> (INT), the encounter d20's
+  <code>encounterBonus</code>/<code>hasAdvantage</code>, DEX's <code>critChanceBonus</code>/<code>dodgeChance</code>,
+  CHA's <code>intimidateWpmCut</code>, the weapon's <code>weaponDie</code>/<code>weaponAbilityMod</code>/
+  <code>critRange</code>, and class-feature flags (<code>guaranteedFirstCrit</code>, <code>sneakAttackDice</code>,
+  <code>secondWind</code>, <code>arcaneCritMult</code>). It is the <strong>sole</strong> bridge from save data to
   combat numbers, called by <code>battle-store.ts</code> (which then builds the fight) and by the map/dungeon/Inn
-  screens (for <code>maxHearts</code>). <strong>This is the highest-leverage function in the codebase:</strong>
-  keep its output contract and you can rewrite everything feeding it without touching the engine. (M3 does exactly
-  that — see the <a href="m3-implementation.html#seams">M3 seams</a>.)
+  screens (for <code>maxHearts</code>/<code>maxHp</code>). <strong>Still the highest-leverage function in the
+  codebase:</strong> keep its output contract and you can rewrite everything feeding it without touching the
+  engine — M3 already did exactly that once (see <a href="m3-implementation.html#seams">M3 seams</a>).
 </p>
 
 <h2 id="save">The save file</h2>
 <p>
-  <code>domain/save.ts</code> defines <code>SaveData</code> (currently <code>version: 2</code>) —
-  <code>coins, xp, skillTree, hearts.max, highestUnlockedTier, monstersDefeated, stats</code>.
-  <code>isSaveData()</code> hard-requires <code>version === 2</code>; <code>migrate()</code> returns a fresh
-  default for anything else (no real migration path yet — a shape change wipes old saves unless you write one).
-  <code>state/save/</code>: <code>save-reducer.ts</code> (pure; actions <code>award</code>,
-  <code>purchaseSkillNode</code>, <code>unlockTier</code>, <code>recordDefeat</code>, <code>hydrate</code> — costs
-  are passed <em>in</em> so the reducer never imports config), <code>save-storage.ts</code> (IndexedDB, 250ms
-  debounced write), <code>SaveProvider.tsx</code> (hydrates on mount with a 4s timeout fallback, mirrors every
-  change). <strong>Dead fields worth knowing:</strong> <code>stats.battlesLost</code> and
-  <code>stats.bestWpm</code> exist but are never written.
+  <code>domain/save.ts</code> defines <code>SaveData</code> (now <code>version: 3</code>) —
+  <code>character</code> (null until creation), <code>coins</code>, <code>equippedWeapon</code>,
+  <code>inventory: { weapons, consumables }</code>, <code>hearts.max</code>, <code>highestUnlockedTier</code>,
+  <code>monstersDefeated</code>, <code>stats</code>. No more <code>xp</code>/<code>skillTree</code> at this level —
+  XP now lives on <code>character.xp</code>. <code>isSaveData()</code> hard-requires <code>version === 3</code>;
+  <code>migrate()</code> knows one real migration (a v2 save: keeps coins/tier-unlock/defeated-list/stats, drops
+  <code>skillTree</code>, sets <code>character: null</code> so the player is routed through character creation
+  once) and falls back to a fresh default for anything older/unrecognized. <code>state/save/</code>:
+  <code>save-reducer.ts</code> (pure; actions include <code>createCharacter</code>, <code>gainXp</code>,
+  <code>applyAsi</code>, <code>equipWeapon</code>, <code>buyWeapon</code>, <code>buyItem</code>,
+  <code>consumeItem</code>, <code>unlockTier</code>, <code>recordDefeat</code>, <code>hydrate</code> — costs are
+  passed <em>in</em> so the reducer never imports config), <code>save-storage.ts</code> (IndexedDB, 250ms debounced
+  write), <code>SaveProvider.tsx</code> (hydrates on mount with a 4s timeout fallback, mirrors every change).
+  <strong>Now lit (M3):</strong> <code>stats.bestWpm</code> is written on every win (a personal-best floor, never
+  lowered). <strong>Still dead:</strong> <code>stats.battlesLost</code> — no action increments it yet.
 </p>
 
 <h2 id="content-types">Content &amp; the key types</h2>
@@ -206,9 +259,9 @@
   nodes }</code>; nodes are <code>{ id, kind, state, monsterId?, edges, isRealChest? }</code>.
   <code>generateDungeon()</code> builds a two-fan-out graph; <code>graph.ts</code> has the pure transitions
   (<code>clearNode</code>, <code>availableNodes</code>, <code>bossUnlocked</code>, <code>isComplete</code>).
-  Config: <code>DungeonTier { tier, habitat, wpmRange, textTierRange, rosterPool }</code> — note
-  <code>textTierRange</code> is currently a <strong>dead field</strong> nothing consumes (M3's encounter d20 reads
-  it).</li>
+  Config: <code>DungeonTier { tier, habitat, wpmRange, textTierRange, rosterPool }</code> —
+  <code>textTierRange</code> was dead through M2; <code>engine/dice/band.ts</code>'s <code>bandToServedTier()</code>
+  is now its load-bearing consumer, turning the encounter d20's band into this fight's served text tier.</li>
   <li><strong>Text tiers</strong> — <code>TextTier = 1..10</code>; <code>TextBank { loadTier, makePromptSource }</code>
   with a degrade-to-nearest-easier fallback and a never-repeat-the-last-line picker; banks in
   <code>content/text/tier-0N.json</code>.</li>
@@ -218,10 +271,12 @@
 <p>
   Vitest, configured inside <code>vite.config.ts</code> (jsdom, globals, <code>src/test/setup.ts</code>). Tests are
   <strong>co-located</strong> as <code>*.test.ts(x)</code> siblings (the engine uses a <code>__tests__/</code>
-  subfolder). Well covered: the engine (battle, damage, monster-typing, rng), the dungeon (graph +
-  invariant sweep), progression (rewards, skill-effects), the balance sim, content (monsters, text-banks), state
-  (save-reducer, save-storage, SaveProvider, dungeon-run-reducer), and a few UI units (PlayerPrompt, TypedProgress,
-  graph-layout, RewardModal). Not covered: <code>battle-store</code>, the hooks, and the top-level screens.
+  subfolder). Well covered: the engine (battle, damage, monster-typing, rng, the character seam/leveling/
+  ability-roll/pricing, the encounter/band/mimic-sense dice), the dungeon (graph + invariant sweep), progression
+  (rewards), the balance sim + combat-invariants sweep, content (monsters, text-banks), state (save-reducer,
+  save-storage, SaveProvider, dungeon-run-reducer), and a growing set of UI units (PlayerPrompt, TypedProgress,
+  graph-layout, RewardModal), plus <code>battle-store</code> itself. Not covered: the hooks and most top-level
+  screens.
   <strong>The habit:</strong> engine/data logic is proven headlessly (unit tests + the
   <code>engine/sim/</code> harnesses) <em>before</em> the UI that consumes it — mirror it.
 </p>
@@ -233,7 +288,9 @@
   <tr><td>the damage math itself</td><td><code>engine/damage.ts</code></td></tr>
   <tr><td>how monsters type</td><td><code>engine/monster-typing.ts</code></td></tr>
   <tr><td>what a save holds / a save action</td><td><code>domain/save.ts</code> + <code>state/save/save-reducer.ts</code></td></tr>
-  <tr><td>how save data reaches combat</td><td><code>engine/progression/skill-effects.ts</code> (<code>resolveModifiers</code>)</td></tr>
+  <tr><td>how save data reaches combat</td><td><code>engine/character/modifiers.ts</code> (<code>resolveModifiers</code>)</td></tr>
+  <tr><td>an ability/leveling/class/weapon/item magnitude</td><td><code>config/abilities.ts</code> / <code>config/leveling.ts</code> / <code>config/classes.ts</code> / <code>config/weapons.ts</code> / <code>config/items.ts</code></td></tr>
+  <tr><td>the encounter d20 or mimic-sense check</td><td><code>engine/dice/encounter-roll.ts</code> / <code>band.ts</code> / <code>mimic-sense.ts</code></td></tr>
   <tr><td>the tier table / dungeon shape</td><td><code>config/dungeon-tiers.ts</code> + <code>engine/dungeon/generate.ts</code></td></tr>
   <tr><td>monster stats / roster</td><td><code>content/monsters.json</code></td></tr>
   <tr><td>typing prompts</td><td><code>content/text/tier-0N.json</code> + <code>content/text-banks.ts</code></td></tr>

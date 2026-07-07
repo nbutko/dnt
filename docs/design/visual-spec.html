@@ -123,6 +123,29 @@ font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</
   <p style="font-size:0.8rem;color:var(--text-dim);margin:6px 0 0">(abbreviated row for reference — see 2a mock for the full 5-row layout)</p>
 </div>
 
+<h2 id="m3">M3 screens reuse this exact system</h2>
+<p>
+  Character creation, the Inn's Rest &amp; Sheet/Armory tabs, the Shop, the encounter-d20 modal, and the Bag
+  (M3 — see <a href="README.md">README.md</a>'s "M3 screens" for the full per-screen breakdown) all reuse this
+  palette/type/shape system as-is — same gold family, same Cinzel/EB Garamond/JetBrains Mono trio, same 8px
+  panel radius. No new hue family was introduced. The one genuinely new component is the projected-icosahedron
+  <strong>d20</strong> (<code>ui/common/Die.tsx</code>), shared by the ability roller and the encounter-roll
+  modal, with three palette variants beyond the base gold:
+</p>
+<div class="swatch-row">
+  <div class="swatch"><div class="chip" style="background:#c8a127"></div><span class="name">die-gold (landed roll)</span><span class="hex">outline #e8c766</span></div>
+  <div class="swatch"><div class="chip" style="background:#3b8f50"></div><span class="name">die-inspired (nat 20)</span><span class="hex">outline #9cf07c</span></div>
+  <div class="swatch"><div class="chip" style="background:#932e2e"></div><span class="name">die-fumble (nat 1)</span><span class="hex">outline #ff9a9a</span></div>
+</div>
+<p>
+  A handful of new semantic tokens support these screens without expanding the hue families: node-state
+  variants for locked/dim text (<code>--color-node-locked-text</code>/<code>-text-dim</code>), a coin color
+  (<code>--color-coin: #c9b892</code>), and green/red banner treatments for the Shop's CHA discount/markup
+  banner and the encounter modal's fumble/inspired panels (both built from the existing danger-red and a new
+  muted green, never a third unrelated hue). See <code>tokens.json</code> and <code>src/index.css</code>'s
+  <code>@theme</code> block for the exact values.
+</p>
+
 <h2 id="assets">Assets checklist</h2>
 <ul>
   <li>Google Fonts: <strong>Cinzel</strong> (500, 700), <strong>EB Garamond</strong> (400, 400 italic), <strong>JetBrains Mono</strong> (400, 500, 700) — all free/open license, no local font files needed.</li>

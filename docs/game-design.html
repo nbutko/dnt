@@ -61,41 +61,65 @@
 
 <h2 id="damage">Damage</h2>
 <p>Base shape, tunable via a config object rather than hardcoded:</p>
-<pre><code>damage = baseDamage
+<pre><code>damage = (sum of weapon-die rolls + weaponAbilityMod) * damageScale
        * lengthFactor(text)
        * speedBonus(timeUsed, timeLimit)
-       * critMultiplier(luck)
        * powerUpMultiplier
-       * tierGatePenalty</code></pre>
+       * tierGatePenalty
+       * fumbleDamageMultiplier</code></pre>
 <ul>
-  <li><strong>lengthFactor</strong> — roughly <code>1 + (charCount - referenceLength) / referenceLength</code>, so a longer prompt swings harder. This is the direct payoff for the skill tree unlocking longer text. Clamp it to a small floor (<code>Math.max(0.25, …)</code>) so a very short prompt well under <code>referenceLength</code> can't drive damage to zero or negative.</li>
-  <li><strong>speedBonus</strong> — multiplier for finishing well under the time limit vs. barely making it. There is no separate accuracy factor: a typo already costs time (notice it, backspace, retype), so sloppy typing is automatically punished by a worse speedBonus rather than by a second penalty. Since an attack can only submit on an exact match anyway (see <a href="#submitting">Submitting an attack</a>), speed is the only axis left to reward.</li>
-  <li><strong>critMultiplier</strong> — rolled per attack against the player's Luck skill stat: a <code>criticalChance</code> to trigger, and a <code>criticalDamageMultiplier</code> applied when it does. See <a href="#skill-tree">skill tree</a>.</li>
-  <li><strong>powerUpMultiplier</strong> — 1.0 normally; things like "Double Strike" set it to 2.0 for one attack. Stacks multiplicatively with a crit if both happen to land on the same swing.</li>
-  <li><strong>tierGatePenalty</strong> — 1.0 when the player's Wordsmith-unlocked text tier covers the monster's own <code>textTier</code>; otherwise <code>(servedTier / monster.textTier) ** 2</code>, where <code>servedTier</code> is the player's own (lower) unlocked tier. Added in M2, once dungeons have monsters whose native text tier can outrun the player's unlocks — see the <a href="m2-scope.html#wordsmith-gate">M2 scope doc</a> for the full mechanic.</li>
+  <li><strong>weapon die + ability mod</strong> — one roll of the equipped weapon's damage die (a Dagger's d4 up
+  to a Greataxe's d12; see <a href="#weapons">Weapons</a>), plus the modifier of whichever ability governs that
+  weapon (STR for a melee weapon, DEX for a finesse one, INT for the Wizard's Wand). A crit doesn't multiply the
+  result — it <em>rolls the die again</em> and sums both: 2 dice normally, 3 for the Wizard's Arcane Mind class
+  feature. <code>damageScale</code> is the one config constant (<code>config/abilities.ts</code>) that keeps
+  dice-rolled hits in the same ballpark the old flat <code>baseDamage</code> used to occupy — see
+  <a href="#abilities">Abilities</a>.</li>
+  <li><strong>lengthFactor</strong> — unchanged in shape: roughly <code>1 + (charCount - referenceLength) /
+  referenceLength</code>, so a longer prompt swings harder — now the payoff for leveling INT high enough to be
+  served longer text (see <a href="#abilities">Abilities</a>), not a skill-tree unlock. Clamped to a small floor
+  (<code>Math.max(0.25, …)</code>) so a very short prompt well under <code>referenceLength</code> can't drive
+  damage to zero or negative.</li>
+  <li><strong>speedBonus</strong> — unchanged: multiplier for finishing well under the time limit vs. barely
+  making it. There is no separate accuracy factor: a typo already costs time (notice it, backspace, retype), so
+  sloppy typing is automatically punished by a worse speedBonus rather than by a second penalty.</li>
+  <li><strong>Crit chance</strong> — today, still a flat <code>combat.criticalChance</code> per swing, exactly
+  as in M0. DEX's crit-chance bonus and a weapon's crit range are both computed (see <a href="#abilities">Abilities</a>
+  / <a href="#weapons">Weapons</a>) but not yet read by the crit roll itself — a known pending wiring gap, not a
+  design decision; see <a href="codebase-architecture.html">Codebase Architecture</a>.</li>
+  <li><strong>powerUpMultiplier</strong> — 1.0 normally; a consumable like Bull's Strength or Elixir of Might
+  (see <a href="#consumables">Consumables</a>) raises it for a fight or a dungeon. Stacks multiplicatively with a
+  crit if both happen to land on the same swing.</li>
+  <li><strong>tierGatePenalty</strong> — 1.0 when the text tier the player is actually served covers this fight's
+  target tier; otherwise <code>(servedTier / targetTier) ** 2</code>. The served tier now comes from the
+  <a href="#encounter-d20">encounter d20</a>'s band, capped by the player's INT-driven tier cap — not a monster's
+  own <code>textTier</code> the way M2's Wordsmith gate worked (the monster's <code>textTier</code> still governs
+  only the line the monster itself types).</li>
+  <li><strong>fumbleDamageMultiplier</strong> — 1.0 normally; a fumbled encounter roll (natural 1) caps every hit
+  that fight at ×0.75 and suppresses crits outright — see <a href="#encounter-d20">the encounter d20</a>.</li>
 </ul>
 <p>
-  The monster's damage uses the same shape (minus Luck and <code>tierGatePenalty</code>, both player-only
-  concepts) with its own <code>baseDamage</code>/text, so difficulty is tuned by monster stats, not a
-  separate rulebook.
+  The monster's damage uses the same shape minus the dice/crit/power-up/tier-gate pieces (all player-only
+  concepts) — a flat <code>combat.baseDamage × lengthFactor × speedBonus</code> — so difficulty is tuned by
+  monster stats, not a separate rulebook.
 </p>
 
-<h2>HP &amp; timers</h2>
+<h2 id="hp-timers">HP &amp; timers</h2>
 <table>
   <tr><th>Stat</th><th>Base (level 1)</th><th>Grows via</th></tr>
-  <tr><td>Player max HP</td><td>100</td><td>Skill tree: Endurance branch</td></tr>
-  <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>Skill tree: Focus branch (more generous multiplier)</td></tr>
-  <tr><td>Max text tier the player can be given</td><td>Tier 1</td><td>Skill tree: Wordsmith branch (see <a href="m2-scope.html#wordsmith-gate">M2 scope</a>) — fighting a monster above your unlocked tier is allowed but non-linearly weak, not blocked</td></tr>
+  <tr><td>Player max HP</td><td>class hit die × 4 (e.g. 40 for a d10 Fighter, 24 for a d6 Wizard)</td><td>Level + CON modifier, derived at read time — never stored (see <a href="#leveling">Leveling</a>)</td></tr>
+  <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>WIS modifier (flat ms bonus) + a Potion of Speed; the Greataxe taxes it instead</td></tr>
+  <tr><td>Max text tier the player can be given</td><td>Tier 3 baseline before any INT investment</td><td>INT modifier (+3 tiers per point) caps the <a href="#encounter-d20">encounter d20</a>'s rolled band — fighting into a band above the cap is allowed but non-linearly weak, not blocked</td></tr>
   <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content-plan.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
 </table>
 <div class="callout why">
   Time limit is derived from text length ÷ an assumed baseline typing speed (expressed in WPM — the same unit
-  the monsters use — and converted to chars/sec via the standard 5 chars/word) rather than a flat number, so a
-  skill-tree upgrade to "allow longer text" doesn't accidentally also make attacks impossibly short. That
-  baseline WPM is the actual difficulty knob: <strong>15 WPM</strong> is a realistic beginner rate for the
-  target player, so assuming a baseline at or a touch below his real speed keeps early fights generous. The
-  game then gets harder mainly through longer text and tougher monsters; the Focus branch effectively lowers
-  the assumed baseline (more time) as it levels, keeping the clock fair rather than punishing.
+  the monsters use — and converted to chars/sec via the standard 5 chars/word) rather than a flat number, so an
+  INT-driven jump in served text tier doesn't accidentally also make attacks impossibly short. That baseline WPM
+  is the actual difficulty knob: <strong>15 WPM</strong> is a realistic beginner rate for the target player, so
+  assuming a baseline at or a touch below his real speed keeps early fights generous. The game then gets harder
+  mainly through longer text and tougher monsters; WIS's flat ms bonus effectively lowers the assumed baseline
+  (more time) as it levels, keeping the clock fair rather than punishing.
 </div>
 <div class="callout decision">
   Note: the divisor is a <em>typing speed</em>, not a raw chars/sec figure — a baseline of 15 <strong>WPM</strong>
@@ -162,52 +186,96 @@
   because the monster is clearly about to whiff).
 </p>
 
-<h2>Progression: coins, XP, skill tree</h2>
-<p>After a won battle: coins (spend on cosmetic stuff / power-up refills), XP (spend on the skill tree), and a chance at a power-up drop.</p>
+<h2>Progression: coins, XP, leveling</h2>
+<p>After a won battle: coins (spend at the <a href="#consumables">Shop</a>), XP (a running total that crosses
+5e-style level thresholds automatically — see <a href="#leveling">Leveling</a> — no longer a spendable currency),
+and a chance at loot.</p>
 <p>
   This is a per-battle system, separate from <strong>hearts</strong> — the run-level lives system that
   governs a whole dungeon attempt (lose all hearts, get sent back to the Inn and lose the dungeon's
   progress). Hearts, the world map, and dungeons themselves are a big enough system to get their own doc —
   see the <a href="m2-scope.html">M2 scope doc</a>.
 </p>
-<h3 id="skill-tree">Skill tree branches (starting set)</h3>
+
+<h3 id="abilities">The six abilities</h3>
+<p>
+  M3 replaces the M2 skill tree with six D&amp;D-style ability scores. Every score has a modifier via the
+  standard formula <code>floor((score - 10) / 2)</code> — 8 → -1, 10/11 → 0, 15 → +2, 20 → +5 — and every
+  ability-driven number in the game reads off that one modifier, not the raw score:
+</p>
 <table>
-  <tr><th>Branch</th><th>What it unlocks</th></tr>
-  <tr><td>Endurance</td><td>Node 1–2: +20 max HP each. Node 3–4: +1 max heart each (see <a href="m2-scope.html#inn">M2 scope</a>)</td></tr>
-  <tr><td>Wordsmith</td><td>Unlocks 2 more text tiers per node (5 nodes covering tiers 1→10) — raises the ceiling on prompt difficulty/length the player can be given, and avoids the <a href="#damage"><code>tierGatePenalty</code></a> against monsters at or below the unlocked tier (see <a href="m2-scope.html#wordsmith-gate">M2 scope</a>)</td></tr>
-  <tr><td>Focus</td><td>more generous time-limit multiplier</td></tr>
-  <tr><td>Luck</td><td>+ critical hit chance and/or critical damage multiplier per node (see <a href="#damage">Damage</a>)</td></tr>
-  <tr><td>Utility</td><td>+1 power-up inventory slot per node</td></tr>
+  <tr><th>Ability</th><th>Primary effect</th><th>Flavor effect</th></tr>
+  <tr><td>STR</td><td>+ melee/finesse weapon damage, as a % of the base hit per point of modifier</td><td>—</td></tr>
+  <tr><td>DEX</td><td>+ crit chance per point of modifier (computed, but not yet read by the crit roll — see <a href="#damage">Damage</a>)</td><td>chance to dodge an incoming monster hit entirely</td></tr>
+  <tr><td>CON</td><td>drives max HP alongside level (see <a href="#hp-timers">HP &amp; timers</a>)</td><td>—</td></tr>
+  <tr><td>INT</td><td>raises the tier cap on text the player can be served — a base of 3 tiers, +3 more per point of modifier</td><td>—</td></tr>
+  <tr><td>WIS</td><td>+ typing time budget, flat ms per point of modifier</td><td>—</td></tr>
+  <tr><td>CHA</td><td>Shop price discount, % per point of modifier (signed — a negative CHA marks prices <em>up</em>)</td><td>cuts the monster's effective WPM this fight</td></tr>
 </table>
-<div class="callout decision">
-  Hearts (max 1, +1 per Endurance node 3/4, so 3 max for now) are folded into Endurance rather than given
-  their own branch — both are "how much beating can I take before something resets," just at different
-  scales (a battle vs. a whole dungeon run). Keeps the tree at 5 branches instead of 6. See the
-  <a href="m2-scope.html#inn">M2 scope doc</a> for the full reasoning.
-</div>
-<div class="callout decision">
-  Luck replaces the earlier "Precision" branch. Precision existed to soften an accuracy penalty on damage —
-  now that mistakes are purely a time cost (no separate accuracy factor), there's nothing left for it to
-  flatten. A crit-chance branch fills that fifth slot with something that still rewards leveling up without
-  overlapping Focus (time) or Wordsmith (length).
-</div>
-<div class="callout decision">
-  Keep the tree small (4–5 branches, a handful of nodes each) for the first playable version. A sprawling
-  tree is a content/UI project of its own — expand it once the core loop is proven fun. See <a href="roadmap.html">Roadmap</a> M2.
+
+<h3 id="leveling">Leveling &amp; classes</h3>
+<p>
+  A real 5e-shaped leveling table replaces the skill tree's purchased nodes: 5e's own XP-threshold curve (0,
+  300, 900, 2700, 6500 …), a proficiency bonus that climbs +2 → +6 with level and folds into every
+  <a href="#encounter-d20">encounter d20</a>, and an Ability Score Improvement (2 points to spend, e.g. +2 to
+  one ability or +1 to two) banked at levels 4, 8, 12, 16, and 19 — spent at the Inn. Max HP is derived at read
+  time from the character's class hit die × level (never stored, so it can't drift), and max hearts (the
+  per-run lives, see <a href="m2-scope.html#inn">M2 scope</a>) now come from level milestones instead of a
+  purchased Endurance node.
+</p>
+<p>Four launch classes, each with one always-on feature:</p>
+<table>
+  <tr><th>Class</th><th>Hit die</th><th>Favored abilities</th><th>Feature</th></tr>
+  <tr><td>Fighter</td><td>d10</td><td>STR, CON</td><td>Second Wind — once per battle, auto-heals a fraction of max HP the first time HP drops to ≤30%</td></tr>
+  <tr><td>Wizard</td><td>d6</td><td>INT, WIS</td><td>Arcane Mind — crits roll the damage dice 3 times instead of 2, and the INT tier cap sits a tier higher</td></tr>
+  <tr><td>Rogue</td><td>d8</td><td>DEX, CHA</td><td>Cunning — advantage on the encounter d20 (roll twice, keep the higher), a Sneak Attack bonus die on the first landed hit and every crit, and Expertise (double proficiency) on the mimic-sense check</td></tr>
+  <tr><td>Bard</td><td>d8</td><td>CHA, WIS</td><td>Silver Tongue — a flat Shop discount (stacks with CHA), a debuff on this dungeon's monsters, and one encounter-d20 reroll per dungeon</td></tr>
+</table>
+<div class="callout why">
+  Every per-point magnitude above (the damage %, the ms bonus, the tier steps, the class-feature numbers) is a
+  Story 13 placeholder landed by theory, not feel — corralled into <code>config/abilities.ts</code> /
+  <code>config/leveling.ts</code> / <code>config/classes.ts</code> so the real playtest-driven numbers pass
+  (<a href="roadmap.html#m5">M5</a>) is a values edit, not a code change.
 </div>
 
-<h2>Power-ups</h2>
+<h3 id="encounter-d20">The encounter d20</h3>
+<p>
+  Every fight opens with a d20 roll (+ proficiency bonus + any item bonus, e.g. a Luckstone) before the clock
+  starts, and the total picks which of the dungeon's three prompt-difficulty bands the player types this fight:
+</p>
 <table>
-  <tr><th>Name</th><th>Effect</th></tr>
-  <tr><td>Double Strike</td><td>Next successful attack does 2x damage</td></tr>
-  <tr><td>Second Wind</td><td>Heal player 25% of max HP immediately</td></tr>
-  <tr><td>Slow Time</td><td>+50% time limit on the player's next attack only</td></tr>
-  <tr><td>Ward</td><td>Block the monster's next successful hit entirely</td></tr>
-  <tr><td>Sure Strike</td><td>Guarantees a critical hit on the player's next attack</td></tr>
+  <tr><th>Total</th><th>Result</th></tr>
+  <tr><td>natural 1</td><td>Fumble — low band, no crits, every hit capped at ×0.75 damage this fight</td></tr>
+  <tr><td>2–7</td><td>Low band — the bottom of the dungeon's text-tier range</td></tr>
+  <tr><td>8–13</td><td>Mid band — the range's rounded midpoint</td></tr>
+  <tr><td>14–19</td><td>High band — the top of the range</td></tr>
+  <tr><td>natural 20</td><td>Inspired — high band, and the first landed hit is a guaranteed crit</td></tr>
 </table>
 <p>
-  Power-ups are earned as drops and held in an inventory (size limited by the Utility skill branch). Player
-  chooses when to activate one during a battle — a tap/click, not something that interrupts typing.
+  The band's target tier is then capped by the player's INT-driven tier cap to produce the fight's actual
+  <em>served</em> tier, which is what feeds <a href="#damage">tierGatePenalty</a> — the same squared-ratio
+  math as before M3, just sourced from the d20's band instead of a monster's own text tier. A Rogue's Cunning
+  rolls this d20 twice and keeps the higher (advantage); a Guidance potion grants the same for one fight.
+</p>
+
+<h3 id="weapons">Weapons</h3>
+<p>
+  Eight launch weapons — Dagger, Shortsword, Longsword, Rapier, Wand, Warhammer, Longbow, Greataxe — each with
+  a damage die (d4 up to d12), a governing ability, a 5e-style crit range, and a price. Bought at the Shop,
+  equipped one at a time from the Inn's Armory; each class starts with one for free. The Greataxe (d12, the
+  hardest-hitting) taxes the typing time budget as its risk/reward tradeoff — see <a href="#damage">Damage</a>.
+</p>
+
+<h3 id="consumables">Consumables &amp; the Shop</h3>
+<p>
+  Ten consumable items — potions, elixirs, oils — bought with coins at the Shop and carried forever until
+  used. Each grants a buff lasting one fight, several fights, or the rest of the dungeon (never persisted past
+  the run, same rule as hearts): instant healing, a power-up-style damage multiplier (Bull's Strength, Elixir
+  of Might), extra typing time (Potion of Speed), encounter-roll help (Guidance's advantage, a Luckstone's flat
+  bonus), a crit-chance/damage buff (Oil of Sharpness), a temporary INT tier-cap bump (Elixir of Intellect), and
+  fumble immunity plus bonus HP (Potion of Heroism). The player chooses when to use one from the dungeon map's
+  Bag — a tap/click before a fight, not something that interrupts typing. Prices and magnitudes are Story
+  13/M5 placeholders like everything else ability-driven.
 </p>
 
 </main>

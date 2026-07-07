@@ -18,7 +18,7 @@
 <table>
   <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
   <tr><td>Framework</td><td>React + TypeScript, built with Vite</td><td>Fast dev loop, huge ecosystem, TS catches the "damage formula typo" class of bug before it ships</td></tr>
-  <tr><td>Styling</td><td>Tailwind CSS</td><td>A baseline utility framework beats hand-rolled CSS for this project — fast to build/rebalance layouts (HP bars, prompt boxes, skill tree grid) without inventing a naming scheme, and it's the default pairing for Vite + React</td></tr>
+  <tr><td>Styling</td><td>Tailwind CSS</td><td>A baseline utility framework beats hand-rolled CSS for this project — fast to build/rebalance layouts (HP bars, prompt boxes, dungeon graphs) without inventing a naming scheme, and it's the default pairing for Vite + React</td></tr>
   <tr><td>State</td><td>Three homes, no external state library (see callout)</td><td>Redux/Zustand would be pure overhead — but "just React component state" is the wrong model for the real-time battle, so the split matters</td></tr>
   <tr><td>Persistence</td><td>IndexedDB (see below)</td><td>No backend needed for a single-player, single-device game — and it leaves a cleaner path to a cloud DB later than <code>localStorage</code> would</td></tr>
   <tr><td>Packaging</td><td>PWA (manifest + service worker via <code>vite-plugin-pwa</code>)</td><td>Installable "app icon" on the Chromebook, works offline, no app store needed</td></tr>
@@ -39,7 +39,7 @@
 <table>
   <tr><th>Kind</th><th>Example</th><th>Home</th></tr>
   <tr><td>Simulation / battle</td><td>monster's typed string, HP bars, countdowns</td><td>A framework-agnostic engine (a factory function per <a href="#code-style">no-class</a>) that owns the state and advances via <code>tick(dt)</code>; React reads it through <code>useSyncExternalStore</code></td></tr>
-  <tr><td>Persistent / save</td><td>coins, xp, skillTree, inventory</td><td>React Context + <code>useReducer</code> — cross-component and low-frequency, the textbook Context case (arrives in M2)</td></tr>
+  <tr><td>Persistent / save</td><td>coins, the character (class/level/XP/abilities), equipped weapon + inventory</td><td>React Context + <code>useReducer</code> — cross-component and low-frequency, the textbook Context case (arrives in M2)</td></tr>
   <tr><td>Ephemeral UI</td><td>the input box text, which screen is up</td><td>Local <code>useState</code> in the component</td></tr>
 </table>
 <div class="callout why">
@@ -89,22 +89,36 @@
 <h2 id="persistence">Save data &amp; persistence</h2>
 <p>One JSON-shaped record, versioned so future shape changes can migrate it:</p>
 <pre><code>{
-  "version": 2,
+  "version": 3,
+  "character": {
+    "name": "Aria",
+    "class": "fighter",
+    "level": 3,
+    "xp": 900,
+    "abilities": { "str": 15, "dex": 12, "con": 14, "int": 10, "wis": 10, "cha": 8 },
+    "pendingAsi": 0
+  },
   "coins": 120,
-  "xp": 340,
-  "skillTree": { "endurance": 2, "wordsmith": 1, "focus": 0, "luck": 0, "utility": 1 },
+  "equippedWeapon": "longsword",
+  "inventory": {
+    "weapons": ["dagger", "longsword"],
+    "consumables": { "potion-healing": 2, "luckstone": 1, "...": 0 }
+  },
   "hearts": { "max": 2 },
   "highestUnlockedTier": 3,
-  "inventory": [{ "powerUp": "secondWind", "count": 2 }],
   "monstersDefeated": ["slime", "goblin"],
   "stats": { "battlesWon": 7, "battlesLost": 2, "bestWpm": 28 }
 }</code></pre>
 <div class="callout decision">
-  <code>hearts</code>/<code>highestUnlockedTier</code> added in M2 (see the
-  <a href="m2-scope.html#save-data">M2 scope doc</a>). Deliberately <em>not</em> in this record: the
-  in-progress dungeon graph, cleared nodes, or hearts remaining mid-run — that state is meant to be thrown
-  away on death/leave/re-visit by design, so persisting it would fight the game's own rules rather than
-  support them.
+  <code>character</code> replaced the M2 <code>skillTree</code>/<code>xp</code> fields in M3 (see the
+  <a href="m3-scope.html#reshaping">M3 scope doc</a>) — <code>null</code> is the "uncreated" marker that routes
+  a fresh or freshly-migrated save through character creation before the world map. <code>equippedWeapon</code>
+  and <code>inventory</code> are new alongside it; XP now lives on the character and crosses level thresholds
+  automatically instead of being a spendable currency. <code>hearts</code>/<code>highestUnlockedTier</code>
+  (added in M2, see the <a href="m2-scope.html#save-data">M2 scope doc</a>) carry over unchanged. Deliberately
+  <em>still not</em> in this record: the in-progress dungeon graph, cleared nodes, hearts remaining mid-run, or
+  any active consumable buff — that state is meant to be thrown away on death/leave/re-visit by design, so
+  persisting it would fight the game's own rules rather than support them.
 </div>
 <p>
   Stored in <strong>IndexedDB</strong> rather than <code>localStorage</code> — via a thin wrapper like

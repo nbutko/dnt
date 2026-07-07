@@ -24,13 +24,13 @@ project for one kid, **not** a product for the world.
 Each milestone has a **scope** (what) and an **implementation plan** (how) under `docs/`. The
 [roadmap](docs/roadmap.html) is the single source of truth for **which milestone is active** — check it rather
 than trusting a hard-coded "current" note here. When starting work in a milestone, follow its implementation
-plan's story order.
+plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
 
 - **M0** — combat-math spike: [m0-implementation](docs/m0-implementation.html)
 - **M2** — progression loop (map, dungeons, hearts, the Inn):
   [m2-scope](docs/m2-scope.html) + [m2-implementation](docs/m2-implementation.html) (its tail holds the
   post-playtest feedback logs)
-- **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop):
+- **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop) — **shipped**:
   [m3-scope](docs/m3-scope.html) + [m3-implementation](docs/m3-implementation.html) +
   [wireframes](docs/design/m3-wireframes.html)
 
@@ -53,9 +53,9 @@ plan's story order.
 
 - **The combat `engine/` never imports React.** Pure, headless, unit-tested.
 - **The persistent save never imports combat; combat never imports the save.** They meet at exactly **one** pure
-  function, `resolveModifiers()` (`engine/progression/skill-effects.ts`, moving to `engine/character/modifiers.ts`
-  in M3). It turns save data → a `PlayerModifiers` object the battle consumes. **Grow this seam; don't route
-  around it** — it's why milestones stay additive.
+  function, `resolveModifiers()` (`engine/character/modifiers.ts` as of M3; retired M2's `engine/progression/
+  skill-effects.ts`). It turns save data → a `PlayerModifiers` object the battle consumes. **Grow this seam; don't
+  route around it** — it's why milestones stay additive.
 - **State is classified by lifetime** (see the architecture doc): _persistent_ (save → IndexedDB), _ephemeral run_
   (the dungeon-run store, **never** persisted — persisting it would let a player quit-to-dodge a wipe), and
   _simulation_ (the battle store). Don't move state across homes.
@@ -65,16 +65,21 @@ plan's story order.
 
 ## Gotchas / good-to-knows
 
-- **Save migrations are brittle:** `domain/save.ts` hard-codes the version literal and `isSaveData()` requires an
-  exact match; `migrate()` wipes anything unrecognized. Bump the version _and_ write a real migration when the
-  shape changes (M3 does this in Story 0), or existing saves silently reset.
-- **Dead-but-real hooks worth reusing:** `powerUpMultiplier` (plumbed through `engine/damage.ts` since M0, unused),
-  `stats.bestWpm` / `stats.battlesLost` (in the save shape, never written), and `dungeon-tiers.ts`
-  `textTierRange` (a config field nothing consumes yet). M3 lights all of these up.
+- **Save migrations are brittle:** `domain/save.ts` hard-codes the version literal (now `3`) and `isSaveData()`
+  requires an exact match; `migrate()` wipes anything unrecognized (it knows one real migration, v2 → v3, which
+  drops the retired `skillTree` and sets `character: null` so the player is routed through creation once). Bump
+  the version _and_ write a real migration when the shape changes again, or existing saves silently reset.
+- **A known pending wiring gap, not a design decision:** DEX's `critChanceBonus`, a weapon's `critRange`, and a
+  crit-boost item's `critDamageMult` are all computed into `PlayerModifiers` (`engine/character/modifiers.ts`)
+  but `engine/damage.ts`'s `rollIsCrit`/`computeDamage` never read them — crit chance today is still the flat
+  `combat.criticalChance`, unchanged since M0. Don't assume raising DEX or swapping to a wider-crit-range weapon
+  currently does anything to crit odds.
 - **Battle is not a top-level screen** — it launches _inside_ `DungeonScreen` so the ephemeral run stays mounted,
   and returns via an `onResult` callback.
 - **Tuning knobs are deferred to M5 on purpose.** Per-point magnitudes ship as placeholders (M3 corrals them into
   `config/abilities.ts` + `config/leveling.ts`); don't treat placeholder numbers as tuned.
+- **`stats.battlesLost` is still dead** — in the save shape, never written by any reducer action (unlike
+  `stats.bestWpm`, `powerUpMultiplier`, and `dungeon-tiers.ts`'s `textTierRange`, all lit up in M3).
 - `docs/monster-manual.json` is canonical monster names/CRs reference data (not shipped code).
 
 ## Memory & context

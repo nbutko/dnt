@@ -3,9 +3,15 @@
 ## Overview
 Four screens for the "Dungeons & Typing" typing-combat game (a monster-battle typing trainer): the
 battle screen (M0/M1), the world map (M2), a dungeon's branching-path view (M2), and the Inn's skill-tree
-spending screen (M2). All four share one D&D-inspired visual language: dark parchment/dungeon palette,
-gold accents, Cinzel display type, JetBrains Mono for anything the player is actually typing/reading against
-a clock.
+spending screen (M2, since retired — see below). All four share one D&D-inspired visual language: dark
+parchment/dungeon palette, gold accents, Cinzel display type, JetBrains Mono for anything the player is
+actually typing/reading against a clock.
+
+M3 (the D&D character layer) added five more screens/components on top of that same visual language —
+character creation, the Inn's two new tabs, the Shop, the encounter-d20 modal, and the dungeon map's Bag —
+described in **"M3 screens"** below. Their source wireframes are in
+[`m3-wireframes.html`](m3-wireframes.html) (frozen, the original proposal); this doc folds in what actually
+shipped, which sometimes diverges in a small detail (noted inline).
 
 ## About the Design Files
 The bundled HTML is a **design reference built as an exploratory wireframe/mock deck**, not production code —
@@ -106,7 +112,11 @@ positioned via `left/top` + `transform:translate(-50%,-50%)`).
   currently walkable); dashed `#5a4a30` 2px (`stroke-dasharray:5,5`) when it leads to a locked node.
 - Legend row at bottom repeats the 3 node states plus the chest swatch.
 
-### 4. Inn — skill tree (option 4a)
+### 4. Inn — skill tree (option 4a) — RETIRED in M3
+**Historical:** the M2 skill tree this section describes was replaced in M3 by the Inn's Rest & Sheet + Armory
+tabs (see **M3 screens** below) — XP is no longer a spendable currency. Kept here for the record of what M2
+shipped; the palette/type/shape language it establishes still applies to the M3 screens that replaced it.
+
 **Purpose:** spend accumulated XP on the 5 skill-tree branches; each branch is a strictly sequential chain
 (must buy node *n* before node *n+1* unlocks).
 **Layout:** header bar (back-to-map link, "The Inn — Skill Tree" Cinzel title, XP + coin pill readouts on
@@ -124,6 +134,56 @@ at the bottom and the tree visually "grows" upward.
   cost). Only ever one buyable node per branch at a time (the next node after the highest purchased one).
 - Vertical connector between nodes: 2px wide, `#c9a227` solid if both nodes it joins are purchased (or the
   lower is purchased and upper is buyable), `#5a4a30` if leading into a locked node.
+
+## M3 screens (shipped, current)
+Five more screens/components joined the four above once the D&D character layer landed. All reuse the same
+palette/type/shape system (gold family = player-facing/progress, red = danger; Cinzel display, EB Garamond
+body, JetBrains Mono for anything typed/read-against-a-clock, `#e8c766`/`#c9a227` gold, 8px panel radius) —
+nothing below introduces a new hue family. Source proposal: `m3-wireframes.html` turns 1–8 (frozen); this is
+what actually shipped.
+
+### 5. Character creation
+**Purpose:** the screen a fresh (or freshly-migrated) save is gated behind before the world map — roll
+abilities, pick a class, name the hero. **Layout:** a title, a 4d6-drop-lowest ability roller (six dice, up to
+2 rerolls of the whole set, a 500ms tumble animation shared with the encounter d20's `Die` component), a class
+picker and a name field side by side below a divider, then "Begin Adventure →" (gold gradient button,
+`linear-gradient(180deg,#e8c766,#c9a227)`) into a one-screen confirm/summary card with a "↩ Reroll everything"
+escape hatch. Every field starts pre-filled with a valid random default, so mashing the confirm button twice
+produces a complete, playable hero.
+
+### 6. The Inn — Rest & Sheet / Armory tabs
+**Purpose:** replaces the M2 skill tree (§4 above, retired). Two tabs via the shared `Tabs` component:
+- **Rest & Sheet:** a Rest panel (restore hearts/HP) beside the character sheet (abilities, level, XP-to-next-
+  level bar, proficiency bonus, an "Improve" button that opens the Ability Score Improvement panel whenever
+  `pendingAsi > 0`).
+- **Armory:** equip one weapon at a time from owned inventory; shows each weapon's die/ability/crit range.
+
+Header keeps the battle screen's title treatment (Cinzel, uppercase, `.12em` tracking, `text-accent-gold-bright`)
+plus a `StatusReadout` (XP/coins/hearts) on the right, matching the World Map/Shop header pattern.
+
+### 7. The Shop
+**Purpose:** spend coins on consumables (restock every visit) and weapons (one-off buys) — the sink XP's
+leveling redirect left coins needing. **Layout:** header (back-to-map, title, coin `ResourcePill`), an optional
+CHA/Bard discount-or-markup banner (green `#a8c98d`/`rgba(58,90,42,.15)` border when discounted, red
+`#c98d8d`/`rgba(139,32,32,.15)` when marked up), then a 2-column body: a 3-wide consumables card grid on the
+left, a weapon-rack list (`ShopItem` in `row` layout, greys out with "owned" once bought) on the right.
+
+### 8. The encounter d20 modal
+**Purpose:** every fight's pre-clock d20 roll (m3-scope.html#encounter-roll) — reuses the base `EncounterModal`
+non-dismissable reveal pattern from M2 (mimic/chokepoint reveals), now with a rolled/tumbling `Die` (the same
+projected-icosahedron SVG component the character-creation ability roller uses) plus a total/breakdown line, a
+band-result panel, and a 5-cell fumble/low/mid/high/inspired ladder highlighting the landed band. Die palette by
+result: **gold** (`outline #e8c766`) for an ordinary landed roll, **green** (`outline #9cf07c`, faces `#368349`
+family) for an Inspired nat-20, **red** (`outline #ff9a9a`, faces `#872a2a` family) for a Fumble nat-1. A Bard's
+"🎵 Reroll" button appears once per dungeon when available; "Begin Battle →" is autofocused so Enter fires it
+without hunting for the mouse.
+
+### 9. The Bag
+**Purpose:** an expandable drawer over the dungeon map for using an owned consumable before a fight — a
+`🎒 Bag (N)` pill button (`border/color #e8c766`, glow `0 0 8px #e8c76644`) that opens a 300px dropdown panel
+(`border #e8c766` on `#1a0f0a`) listing owned items with a one-line mechanical effect summary and a "Use" button
+(same gold-gradient treatment as Character Creation's confirm button). Deliberately collapsed by default and
+closed again the instant a dungeon node is selected, so it can't be left open mid-fight-prep.
 
 ## Interactions &amp; Behavior
 - **Battle:** input is local component state; Enter only submits once `input.length === prompt.length`
@@ -148,10 +208,12 @@ at the bottom and the tree visually "grows" upward.
   string) lives in a plain-TS engine outside React, read via `useSyncExternalStore` — not component state,
   since it updates many times/second. Local component state is only the player's in-progress `input` string
   and which screen is showing.
-- **Save/progression** (map unlock state, dungeon-run-in-progress, hearts, skill tree purchases, XP/coins):
-  persistent, once-per-action-frequency — Context + `useReducer` backed by IndexedDB, per the architecture
-  doc. The in-progress dungeon graph and its cleared/available/locked node states are explicitly **not**
-  persisted across sessions — closing mid-dungeon should behave the same as voluntarily leaving.
+- **Save/progression** (map unlock state, the character — class/level/XP/abilities, coins, equipped weapon +
+  owned inventory, hearts.max): persistent, once-per-action-frequency — Context + `useReducer` backed by
+  IndexedDB, per the architecture doc. The in-progress dungeon graph, its cleared/available/locked node states,
+  hearts *remaining*, and — since M3 — any active consumable buff are explicitly **not** persisted across
+  sessions; they live in the ephemeral dungeon-run store instead. Closing mid-dungeon should behave the same as
+  voluntarily leaving.
 
 ## Design Tokens
 See `tokens.json` in this folder for the full machine-readable set. Summary:

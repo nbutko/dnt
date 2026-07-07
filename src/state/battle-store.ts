@@ -129,6 +129,13 @@ export const createBattleStore = async (
     // every hit this fight — see resolveFightTier above.
     noCrits,
     fumbleDamageMultiplier,
+    // Consumable buffs that reach combat by number, not by flag (Story 9,
+    // finding F): the active power-up multiplier (Bull's Strength / Elixir of
+    // Might) and the WIS/Potion-of-Speed typing-time headroom. resolveModifiers
+    // already folded the run's ActiveBuffs into these; this is the last hop that
+    // was missing, so the buffs actually change the fight.
+    powerUpMultiplier: modifiers.powerUpMult,
+    timeBudgetBonusMs: modifiers.timeBudgetBonusMs,
   })
 
   return {

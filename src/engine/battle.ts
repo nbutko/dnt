@@ -31,6 +31,8 @@ export const createBattle = (config: BattleConfig): Battle => {
     dodgeChance = 0,
     secondWind = null,
     sneakAttackDice = 0,
+    powerUpMultiplier = 1,
+    timeBudgetBonusMs = 0,
   } = config
 
   let status: BattleStatus = 'ongoing'
@@ -52,12 +54,15 @@ export const createBattle = (config: BattleConfig): Battle => {
   let totalCharsTyped = 0
   let totalTypingMs = 0
 
+  // WIS + Potion of Speed (timeBudgetBonusMs) add flat headroom on top of the
+  // config-derived limit — applied outside the floor's Math.max so the bonus
+  // can only ever help, never drop a prompt below combat.playerTimeLimitFloorMs.
   const playerTimeLimitFor = (promptText: string): number =>
     Math.max(
       combat.playerTimeLimitFloorMs,
       combat.playerReadingBufferMs +
         expectedTypingTimeMs(promptText.length, combat.playerBaselineWpm, combat),
-    )
+    ) + timeBudgetBonusMs
 
   let playerPrompt = playerPrompts()
   let playerAttempt = 0
@@ -223,6 +228,7 @@ export const createBattle = (config: BattleConfig): Battle => {
         combat,
         rng,
         tierGatePenalty,
+        powerUpMultiplier,
         weaponDie,
         weaponAbilityMod,
         damageScale,

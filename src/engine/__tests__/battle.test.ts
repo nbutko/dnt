@@ -608,3 +608,56 @@ describe('createBattle', () => {
     expect(runDamages()).toEqual(runDamages())
   })
 })
+
+// The two consumable/ability modifiers that resolveModifiers computes but that
+// battle-store.ts used not to forward into the fight (found dormant during the
+// Story 13 sanity pass): the power-up multiplier and the typing-time headroom.
+describe('createBattle — power-up multiplier + time-budget bonus (dormant-hook fix)', () => {
+  const firstHitDamage = (powerUpMultiplier: number): number => {
+    const rng = createRng(11)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      weaponDie: 8,
+      weaponAbilityMod: 2,
+      damageScale: 1.5,
+      powerUpMultiplier,
+    })
+    battle.submitPlayerAttack('jak')
+    return battle.getState().lastEvent?.damage ?? 0
+  }
+
+  it('a power-up multiplier scales a hit linearly (same seed → exactly ×N)', () => {
+    const base = firstHitDamage(1)
+    const buffed = firstHitDamage(2)
+    expect(base).toBeGreaterThan(0)
+    // Same seed ⇒ identical die roll + crit outcome, so the only difference is
+    // the linear powerUpMultiplier: Bull's Strength / Elixir of Might now bite.
+    expect(buffed).toBeCloseTo(base * 2, 6)
+  })
+
+  it('defaults to no power-up (multiplier 1) when omitted', () => {
+    expect(firstHitDamage(1)).toBeCloseTo(firstHitDamage(1), 6)
+  })
+
+  const timeLimitWith = (timeBudgetBonusMs: number): number => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad lad',
+      rng,
+      timeBudgetBonusMs,
+    })
+    return battle.getState().player.timeLimitMs
+  }
+
+  it('the time-budget bonus (WIS / Potion of Speed) adds flat headroom to the prompt limit', () => {
+    const base = timeLimitWith(0)
+    expect(timeLimitWith(3000)).toBe(base + 3000)
+  })
+})

@@ -89,6 +89,15 @@ export interface BattleConfig {
   // Rogue Sneak Attack: +sneakAttackDice d6 folded into the first landed hit
   // of the fight and into every crit (engine/damage.ts's computeDamage).
   sneakAttackDice?: number
+  // Consumable power-up multiplier (Story 9, finding F): Bull's Strength /
+  // Elixir of Might raise PlayerModifiers.powerUpMult above 1; it multiplies
+  // every player hit via computeDamage's long-dormant powerUpMultiplier hook.
+  // Defaults to 1 (no buff) so older callers/tests are unaffected.
+  powerUpMultiplier?: number
+  // WIS's primary effect + Potion of Speed (Story 3/9): extra ms added to the
+  // player's per-prompt typing time budget. Defaults to 0 so a caller that
+  // doesn't pass it keeps today's config-only limit.
+  timeBudgetBonusMs?: number
 }
 
 export interface PlayerState {

@@ -246,6 +246,22 @@ const EncounterModal = ({ headline, subtext, danger = false, onBegin, dice }: En
 
   const handleBegin = (): void => onBegin(roll ?? undefined)
 
+  // Enter commits the roll — the kid shouldn't have to hunt for the mouse
+  // (matching the reward/run-end banners). A window listener rather than the
+  // button's own focus because the Begin button is disabled during the tumble,
+  // so autoFocus can't land on it; ignored while the die is still rolling, same
+  // as the disabled button. Sole source of the Enter action (no autoFocus on
+  // the button) so a single press can't fire Begin twice.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Enter' || rolling) return
+      event.preventDefault()
+      onBegin(roll ?? undefined)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [rolling, roll, onBegin])
+
   const activeBand = ((): BandLadderProps['active'] | null => {
     if (!roll) return null
     if (roll.fumble) return 'fumble'
@@ -284,10 +300,6 @@ const EncounterModal = ({ headline, subtext, danger = false, onBegin, dice }: En
           type="button"
           onClick={handleBegin}
           disabled={rolling}
-          // The modal gates the run, so give the kid the button focused: Enter
-          // begins the battle without hunting for the mouse.
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
           className="rounded border border-border-gold px-5 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright disabled:opacity-50"
         >
           Begin Battle →

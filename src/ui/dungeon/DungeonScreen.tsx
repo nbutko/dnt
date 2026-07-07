@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { toMap, type Screen } from '../../app/navigation'
+import { toInn, toMap, type Screen } from '../../app/navigation'
 import abilitiesConfig from '../../config/abilities'
 import { getClass } from '../../config/classes'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
@@ -184,18 +184,18 @@ const RunEndBanner = ({ won, onLeave }: RunEndBannerProps) => (
     <p className="mt-3 text-text-dim">
       {won
         ? 'The boss falls, and the next tier opens on the map. Your rewards are banked.'
-        : 'Your hearts ran out. The dungeon collapses — but the XP you earned is yours to keep.'}
+        : 'Your hearts ran out. The dungeon collapses — but the XP you earned is yours to keep. Head back to the inn to recover.'}
     </p>
     <button
       type="button"
       onClick={onLeave}
-      // Autofocused so a bare Enter returns to the map, matching the reward/mimic
+      // Autofocused so a bare Enter leaves the run, matching the reward/mimic
       // modals — otherwise Enter on the run-end banner did nothing (round-2 #A).
       // eslint-disable-next-line jsx-a11y/no-autofocus
       autoFocus
       className="mt-6 rounded border border-border-gold px-4 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"
     >
-      Return to map
+      {won ? 'Return to map' : 'Return to inn'}
     </button>
   </div>
 )
@@ -470,7 +470,10 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
         <Legend shape="circle" showChest />
       </div>
     ) : (
-      <RunEndBanner won={outcome === 'complete'} onLeave={() => onNavigate(toMap())} />
+      <RunEndBanner
+        won={outcome === 'complete'}
+        onLeave={() => onNavigate(outcome === 'complete' ? toMap() : toInn())}
+      />
     )
 
   // A live fight takes over the whole screen (its own Frame) so the dungeon

@@ -22,7 +22,7 @@ describe("resolveModifiers — base character reproduces today's M2 baseline", (
     expect(resolveModifiers(fighter, dagger)).toEqual({
       maxHp: 40, // hit die (10) * HP_SCALE (4), matching combat.playerMaxHp
       maxHearts: 1,
-      intTierCap: 1,
+      intTierCap: 3,
       timeBudgetBonusMs: 0,
       encounterBonus: 2, // level-1 proficiency bonus
       hasAdvantage: false,
@@ -97,7 +97,7 @@ describe('resolveModifiers — class features', () => {
     const wizard: Character = { ...fighter, class: 'wizard' }
     const modifiers = resolveModifiers(wizard, dagger)
     expect(modifiers.arcaneCritMult).toBe(3)
-    expect(modifiers.intTierCap).toBe(2) // base 1 + Arcane Mind's +1
+    expect(modifiers.intTierCap).toBe(4) // base 3 + Arcane Mind's +1
   })
 
   it('a Rogue has advantage and carries Sneak Attack dice', () => {

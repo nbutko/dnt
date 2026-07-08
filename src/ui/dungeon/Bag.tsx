@@ -20,6 +20,7 @@ const ITEM_ICON: Record<ItemId, string> = {
   'oil-of-sharpness': '🗡️',
   'elixir-of-intellect': '🧠',
   'potion-of-heroism': '🛡️',
+  'ring-of-protection': '💍',
 }
 
 // "next fight" / "next 3 fights" / "rest of dungeon" / "instant" — reused by
@@ -54,6 +55,8 @@ const describeEffect = (item: ItemConfig): string => {
       return `+${effect.bonus} to encounter rolls (reading) · ${duration}`
     case 'heroism':
       return `+${Math.round(effect.bonusHpPct * 100)}% HP, fumble-immune · ${duration}`
+    case 'defense-boost':
+      return `+${Math.round(effect.maxHpBonusPct * 100)}% HP, −${Math.round(effect.damageReductionPct * 100)}% dmg taken · ${duration}`
     default:
       return duration
   }

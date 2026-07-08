@@ -147,6 +147,13 @@ export const createBattleStore = async (
     // Story 12: a fumble (encounter d20 natural 1) suppresses crits and caps
     // every hit this fight — see resolveFightTier above.
     noCrits,
+    // Story 3 (the CLAUDE.md gotcha): DEX's critChanceBonus + any item bonus,
+    // the equipped weapon's critRange, and Oil of Sharpness's critDamageMult
+    // — computed into PlayerModifiers all along, now actually read by
+    // engine/damage.ts.
+    critChanceBonus: modifiers.critChanceBonus,
+    critRange: modifiers.critRange,
+    critDamageMult: modifiers.critDamageMult,
     fumbleDamageMultiplier,
     // Consumable buffs that reach combat by number, not by flag (Story 9,
     // finding F): the active power-up multiplier (Bull's Strength / Elixir of
@@ -155,6 +162,9 @@ export const createBattleStore = async (
     // was missing, so the buffs actually change the fight.
     powerUpMultiplier: modifiers.powerUpMult,
     timeBudgetBonusMs: modifiers.timeBudgetBonusMs,
+    // Story 3: persistent defense/HP gear's damage-reduction axis (e.g. Ring
+    // of Protection) — a flat fraction cut off every landed monster hit.
+    damageReductionPct: modifiers.damageReductionPct,
   })
 
   return {

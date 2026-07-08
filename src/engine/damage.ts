@@ -50,20 +50,44 @@ export interface CritRuleOptions {
   // tracks whether the first hit has landed yet.
   forceCrit?: boolean
   // A fumble fight (encounter d20 natural 1, engine/dice/encounter-roll.ts)
-  // — never crits, regardless of criticalChance. Not wired to a caller yet
-  // (that's Story 12's EncounterRoll plumbing); a param today so the rule
-  // has somewhere to land.
+  // — never crits, regardless of criticalChance. Wired end-to-end since
+  // Story 12 (state/battle-store.ts's resolveFightTier -> engine/battle.ts's
+  // BattleConfig.noCrits -> here); this doc comment used to (incorrectly)
+  // call it unwired — see the CLAUDE.md gotcha, which only ever flagged
+  // critChanceBonus/critRange/critDamageMult as the dead paths, not this one.
   noCrits?: boolean
+  // DEX's dexCritChancePctPerMod + any item bonus (Oil of Sharpness'
+  // crit-boost effect), already summed into PlayerModifiers.critChanceBonus
+  // by engine/character/modifiers.ts's resolveModifiers — added on top of
+  // combat.criticalChance. Defaults to 0 so a bare call (an older test, or
+  // sim code that doesn't care about DEX/items) behaves exactly as it did
+  // before Story 3 wired this in.
+  critChanceBonus?: number
 }
 
-// Whether one swing crits. combat.criticalChance stays the per-hit trigger
-// (Story 7 only retires the flat criticalDamageMultiplier for the player,
-// rolling extra dice instead — see computeDamage below).
+// A weapon's critRange narrows the crit window below the flat
+// combat.criticalChance baseline: critRange 19 means a natural-19-or-20
+// "hit" instead of just 20, i.e. two chances in twenty instead of one. Each
+// point below 20 is worth one of those twenty equally-likely chances — 1/20
+// = 5% — folded in on top of combat.criticalChance and any DEX/item
+// critChanceBonus. The CLAUDE.md gotcha's "coherent, tunable model" for a
+// number (PlayerModifiers.critRange / weapon.critRange) that used to sit on
+// the modifiers bag completely unread.
+const CRIT_RANGE_SIDES = 20
+export const critRangeChanceBonus = (critRange: number): number =>
+  Math.max(0, (CRIT_RANGE_SIDES - critRange) / CRIT_RANGE_SIDES)
+
+// Whether one swing crits. combat.criticalChance stays the per-hit baseline
+// trigger (Story 7 only retires the flat criticalDamageMultiplier for the
+// player, rolling extra dice instead — see computeDamage below); Story 3 adds
+// critChanceBonus on top, folded by the caller from DEX + the weapon's
+// critRange + any item bonus.
 export const rollIsCrit = (combat: CombatConfig, rng: Rng, options: CritRuleOptions = {}): boolean => {
-  const { forceCrit = false, noCrits = false } = options
+  const { forceCrit = false, noCrits = false, critChanceBonus = 0 } = options
   if (noCrits) return false
   if (forceCrit) return true
-  return rng.next() < combat.criticalChance
+  const chance = Math.min(1, Math.max(0, combat.criticalChance + critChanceBonus))
+  return rng.next() < chance
 }
 
 // Punishes being served a lower tier than the encounter d20's band rolled
@@ -92,6 +116,7 @@ const DEFAULT_WEAPON_DIE = 6
 const DEFAULT_WEAPON_ABILITY_MOD = 0
 const DEFAULT_DAMAGE_SCALE = 1.5
 const DEFAULT_CRIT_COUNT = 2
+const DEFAULT_CRIT_RANGE = 20
 
 export interface ComputeDamageParams {
   charCount: number
@@ -115,6 +140,21 @@ export interface ComputeDamageParams {
   // rollIsCrit above.
   forceCrit?: boolean
   noCrits?: boolean
+  // Story 3: DEX's dexCritChancePctPerMod + any item bonus (Oil of
+  // Sharpness), already summed into PlayerModifiers.critChanceBonus.
+  // Defaults to 0 (no bonus) — the CLAUDE.md gotcha's first dead field.
+  critChanceBonus?: number
+  // Story 3: the equipped weapon's crit range (PlayerModifiers.critRange) —
+  // 20 by default (only a natural-20-equivalent crits); folded into the
+  // effective crit chance via critRangeChanceBonus above. The gotcha's
+  // second dead field.
+  critRange?: number
+  // Story 3: Oil of Sharpness's critDamageMultBonus, folded into
+  // PlayerModifiers.critDamageMult by resolveModifiers (1 with no buff
+  // active) — multiplies ONLY a crit's baseHit, stacking with (not
+  // replacing) the extra dice critCount already rolls. The gotcha's third
+  // dead field.
+  critDamageMult?: number
   // A fumble also caps damage at this flat multiplier (m3-scope.html#open:
   // "the fumble/inspiration magnitudes") — 1 (no cap) outside a fumble.
   fumbleDamageMultiplier?: number
@@ -130,11 +170,14 @@ export interface ComputeDamageParams {
 }
 
 // Base hit = (sum of `critCount` weapon-die rolls on a crit, else 1 roll,
-// + weaponAbilityMod) x damageScale — replacing the old flat baseDamage x
-// criticalDamageMultiplier (m3-implementation.html Story 7, game-design.html
-// #damage). Rolling extra dice on a crit is the D&D-correct reading of "a
-// crit rolls the die twice" (thrice for arcane): roll `critCount` dice and
-// sum them, rather than rolling once and doubling the result.
+// + weaponAbilityMod) x damageScale x (critDamageMult, on a crit only) —
+// replacing the old flat baseDamage x criticalDamageMultiplier
+// (m3-implementation.html Story 7, game-design.html#damage). Rolling extra
+// dice on a crit is the D&D-correct reading of "a crit rolls the die twice"
+// (thrice for arcane): roll `critCount` dice and sum them, rather than
+// rolling once and doubling the result. critDamageMult (Story 3, Oil of
+// Sharpness) is a SEPARATE, stacking multiplier on top of that — the item
+// reads as "your crits hit harder," not "you crit more dice."
 export const computeDamage = (params: ComputeDamageParams): DamageResult => {
   const {
     charCount,
@@ -150,13 +193,17 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
     tierGatePenalty: gatePenalty = 1,
     forceCrit = false,
     noCrits = false,
+    critChanceBonus = 0,
+    critRange = DEFAULT_CRIT_RANGE,
+    critDamageMult = 1,
     fumbleDamageMultiplier = 1,
     sneakAttackDice = 0,
     forceSneakAttack = false,
   } = params
   const lf = lengthFactor(charCount, combat)
   const sb = speedBonus(timeUsedMs, timeLimitMs)
-  const isCrit = rollIsCrit(combat, rng, { forceCrit, noCrits })
+  const totalCritChanceBonus = critChanceBonus + critRangeChanceBonus(critRange)
+  const isCrit = rollIsCrit(combat, rng, { forceCrit, noCrits, critChanceBonus: totalCritChanceBonus })
   const rollCount = isCrit ? critCount : 1
   const weaponDiceRolled = Array.from({ length: rollCount }, () => rollDie(rng, weaponDie))
   // Sneak Attack (m3-scope.html#ability-mechanics): "the first landed hit
@@ -169,7 +216,7 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
     : []
   const diceRolled = [...weaponDiceRolled, ...sneakDiceRolled]
   const diceTotal = diceRolled.reduce((sum, roll) => sum + roll, 0)
-  const baseHit = (diceTotal + weaponAbilityMod) * damageScale
+  const baseHit = (diceTotal + weaponAbilityMod) * damageScale * (isCrit ? critDamageMult : 1)
 
   return {
     damage: baseHit * lf * sb * powerUpMultiplier * gatePenalty * fumbleDamageMultiplier,

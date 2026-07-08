@@ -31,6 +31,7 @@ import type { Ability, AbilityScores, Character, CharacterClass } from '../../do
 import type { PlayerModifiers } from '../../domain/progression'
 import type { Monster } from '../../domain/types'
 import { DEFAULT_MODIFIERS_CONFIG, resolveModifiers } from '../character/modifiers'
+import { critRangeChanceBonus } from '../damage'
 import {
   bossOf,
   cheapestRegularOf,
@@ -148,7 +149,13 @@ export const sweepHitsToKillBand = (battles = 120, seed = 900): InvariantViolati
 // they don't change whether one build is strictly worse than another.
 export const expectedAverageHitDamage = (modifiers: PlayerModifiers, damageScale: number): number => {
   const dieAvg = (modifiers.weaponDie + 1) / 2
-  const critChance = Math.min(Math.max(combat.criticalChance + modifiers.critChanceBonus, 0), 1)
+  // Story 3: the weapon's critRange also raises crit chance now (engine/
+  // damage.ts's critRangeChanceBonus) — folded in here alongside DEX/item
+  // critChanceBonus so this closed-form check matches the real engine.
+  const critChance = Math.min(
+    Math.max(combat.criticalChance + modifiers.critChanceBonus + critRangeChanceBonus(modifiers.critRange), 0),
+    1,
+  )
   // Sneak Attack always rides a crit in steady state (engine/damage.ts:
   // isSneakAttack = forceSneakAttack || isCrit — forceSneakAttack only ever
   // fires once, on the fight's first hit, negligible over a multi-hit fight).
@@ -237,6 +244,7 @@ export const sweepWeaponDieMonotonicity = (): InvariantViolation[] => {
     sneakAttackDice: 0,
     secondWind: null,
     arcaneCritMult: 2,
+    damageReductionPct: 0,
   }
   const dieSizes = [...new Set(WEAPONS.map((weapon) => weapon.die))].sort((a, b) => a - b)
 

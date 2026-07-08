@@ -321,3 +321,87 @@ describe('hitMagnitudes — the weak/average/strong reference-hit range (Story 1
     expect(highTier.strong).toBeGreaterThan(lowTier.strong)
   })
 })
+
+// Story 3 (content-plan-v2-tuning-implementation.html#story-3): the weapon
+// ladder extended the length of the game — every class climbs a "+N" line
+// at the same level breakpoints instead of plateauing on its tier-2/3 launch
+// weapon forever (Story 1's report flagged D9-D11 htk running under target
+// because weaponForTierLevel had nowhere higher to go).
+describe('weaponForTierLevel — the extended ladder (Story 3)', () => {
+  it.each(CLASSES)('%s climbs to a strictly bigger weapon at each level breakpoint', (cls) => {
+    const levels = [1, 5, 9, 12]
+    let prevDie = -Infinity
+    let prevBonus = -Infinity
+    for (const level of levels) {
+      const weapon = weaponForTierLevel(cls, level)
+      // Bard has no dagger-tier starter (m3-scope.html#classes), so its
+      // level-1 weapon is already the level-5 rapier — die/bonus can tie,
+      // never regress.
+      expect(weapon.die).toBeGreaterThanOrEqual(prevDie)
+      expect(weapon.bonusDamage).toBeGreaterThanOrEqual(prevBonus)
+      prevDie = weapon.die
+      prevBonus = weapon.bonusDamage
+    }
+    // ...and it strictly climbs somewhere across the ladder (not flat the
+    // whole way, which would mean a class never actually upgrades).
+    const first = weaponForTierLevel(cls, 1)
+    const last = weaponForTierLevel(cls, 12)
+    expect(last.die > first.die || last.bonusDamage > first.bonusDamage).toBe(true)
+  })
+
+  it('every class has a real upgrade path reaching level 12 (no plateau at tier-3)', () => {
+    for (const cls of CLASSES) {
+      const weapon = weaponForTierLevel(cls, 12)
+      expect(weapon.tier).toBeGreaterThan(3)
+    }
+  })
+})
+
+// Story 3's Finding-3 fix: the Wizard's wand-line gives the Arcane Mind's
+// 3-dice crit something to scale on, closing most (not all — Story 5 signs
+// off the final surface) of the on-track win-rate gap to the other classes
+// at a higher tier, where Story 1 left it worst (D9's Dracolich, T12).
+describe("the Wizard wand-line closes most of the on-track gap (Story 3's Finding 3)", () => {
+  it('a Wizard using the wand-line wins measurably more than a Wizard stuck on the launch wand', () => {
+    const tier = 9
+    const level = 12 // D9's on-track level (content-pipeline/retune-sweep.ts)
+    const wpm = wpmForTier(tier)
+    const textTierRange = textTierRangeForTier(tier)
+    const boss = bossOf(tier)
+
+    const runWith = (weaponId: 'wand' | 'wand-plus3') => {
+      const weapon = weaponId === 'wand' ? weaponForTierLevel('wizard', 1) : weaponForTierLevel('wizard', level)
+      const abilities = representativeAbilities('wizard', level, weapon.ability)
+      const character: SimulatedCharacter = { class: 'wizard', level, abilities, weapon, wpm, accuracy: 0.92 }
+      return simulateCharacterBattles({ monster: boss, combat, character, textTierRange, battles: 80, seed: 11 })
+    }
+
+    const stuckOnLaunchWand = runWith('wand')
+    const onTheLadder = runWith('wand-plus3')
+
+    expect(onTheLadder.winRate).toBeGreaterThan(stuckOnLaunchWand.winRate)
+  })
+
+  it("the on-track Wizard/Rogue win-rate gap at D9 is no longer the launch-era blowout", () => {
+    const tier = 9
+    const level = 12
+    const wpm = wpmForTier(tier)
+    const textTierRange = textTierRangeForTier(tier)
+    const boss = bossOf(tier)
+
+    const runFor = (cls: (typeof CLASSES)[number]) => {
+      const weapon = weaponForTierLevel(cls, level)
+      const abilities = representativeAbilities(cls, level, weapon.ability)
+      const character: SimulatedCharacter = { class: cls, level, abilities, weapon, wpm, accuracy: 0.92 }
+      return simulateCharacterBattles({ monster: boss, combat, character, textTierRange, battles: 80, seed: 12 })
+    }
+
+    const wizard = runFor('wizard')
+    const rogue = runFor('rogue')
+    // Pre-Story-3, this gap was Finding 3's headline (Wizard 25-90% vs.
+    // Rogue/Fighter/Bard 88-100%) — a ~90-point spread at the worst tier.
+    // Not asserting parity (Rogue's crit/Sneak-Attack synergy is a real,
+    // by-design edge), just that the wand-line has closed most of it.
+    expect(rogue.winRate - wizard.winRate).toBeLessThan(0.5)
+  })
+})

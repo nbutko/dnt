@@ -27,12 +27,16 @@ export const createBattle = (config: BattleConfig): Battle => {
     critCount,
     guaranteedFirstCrit = false,
     noCrits = false,
+    critChanceBonus,
+    critRange,
+    critDamageMult,
     fumbleDamageMultiplier,
     dodgeChance = 0,
     secondWind = null,
     sneakAttackDice = 0,
     powerUpMultiplier = 1,
     timeBudgetBonusMs = 0,
+    damageReductionPct = 0,
   } = config
 
   let status: BattleStatus = 'ongoing'
@@ -172,7 +176,9 @@ export const createBattle = (config: BattleConfig): Battle => {
         // DEX dodge (m3-scope.html#ability-mechanics): negate the hit
         // outright, no HP loss — a flash-only reaction, never a prompt.
         const dodged = dodgeChance > 0 && rng.next() < dodgeChance
-        const damage = dodged ? 0 : rawDamage
+        // Story 3's persistent defense gear: a flat fraction cut off every
+        // hit that lands (i.e. after dodge, not instead of it).
+        const damage = dodged ? 0 : rawDamage * Math.max(0, 1 - damageReductionPct)
         playerHp = Math.max(0, playerHp - damage)
         // Fighter Second Wind: the FIRST time HP crosses <= hpThresholdPct,
         // once per battle. Never revives a killing blow (playerHp > 0) — it
@@ -235,6 +241,9 @@ export const createBattle = (config: BattleConfig): Battle => {
         critCount,
         forceCrit: guaranteedFirstCrit && !playerHasLandedHit,
         noCrits,
+        critChanceBonus,
+        critRange,
+        critDamageMult,
         fumbleDamageMultiplier,
         sneakAttackDice,
         // Sneak Attack always lands on the fight's first hit, crit or not

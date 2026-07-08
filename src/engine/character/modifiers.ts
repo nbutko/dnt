@@ -67,6 +67,9 @@ interface BuffAccumulator {
   powerUpMultBonus: number
   intEncounterBonus: number
   fumbleImmune: boolean
+  // Story 3: persistent defense/HP gear's damage-reduction axis (a
+  // 'defense-boost' consumable, e.g. Ring of Protection).
+  damageReductionPct: number
 }
 
 const applyBuff = (acc: BuffAccumulator, buff: ActiveBuff): BuffAccumulator => {
@@ -92,6 +95,12 @@ const applyBuff = (acc: BuffAccumulator, buff: ActiveBuff): BuffAccumulator => {
       return { ...acc, intEncounterBonus: acc.intEncounterBonus + effect.bonus }
     case 'heroism':
       return { ...acc, maxHpBonusPct: acc.maxHpBonusPct + effect.bonusHpPct, fumbleImmune: true }
+    case 'defense-boost':
+      return {
+        ...acc,
+        maxHpBonusPct: acc.maxHpBonusPct + effect.maxHpBonusPct,
+        damageReductionPct: acc.damageReductionPct + effect.damageReductionPct,
+      }
     default:
       return acc
   }
@@ -107,6 +116,7 @@ const EMPTY_BUFF_ACCUMULATOR: BuffAccumulator = {
   powerUpMultBonus: 0,
   intEncounterBonus: 0,
   fumbleImmune: false,
+  damageReductionPct: 0,
 }
 
 // The seam. `activeBuffs` defaults to empty so callers that only need
@@ -162,6 +172,7 @@ export const resolveModifiers = (
     cfg.abilities.dexCritChancePctPerMod * abilityMod(abilities.dex) + buffs.critChanceBonus
   const critDamageMult = 1 + buffs.critDamageMultBonus
   const powerUpMult = 1 + buffs.powerUpMultBonus
+  const { damageReductionPct } = buffs
   const dodgeChance = cfg.abilities.dexDodgeChancePctPerMod * abilityMod(abilities.dex)
   const intimidateWpmCut = cfg.abilities.chaIntimidateWpmCutPctPerMod * abilityMod(abilities.cha)
   const charmAccuracyCut = cfg.abilities.chaCharmAccuracyCutPctPerMod * abilityMod(abilities.cha)
@@ -188,7 +199,11 @@ export const resolveModifiers = (
     intimidateWpmCut,
     charmAccuracyCut,
     weaponDie: weapon.die,
-    weaponAbilityMod: abilityMod(abilities[weapon.ability]),
+    // Story 3: a "+N magic weapon" (weapon.bonusDamage) adds flat damage in
+    // the same additive slot as the ability mod — added once per hit, not
+    // doubled by a crit's extra dice (matches how the ability mod itself
+    // already behaved before this weapon ladder existed).
+    weaponAbilityMod: abilityMod(abilities[weapon.ability]) + weapon.bonusDamage,
     critRange: weapon.critRange,
     // No Story 1-3 input sets a guaranteed crit yet — the encounter d20's
     // nat-20 "INSPIRED" result (Story 6) folds it into the modifiers the
@@ -198,5 +213,6 @@ export const resolveModifiers = (
     sneakAttackDice,
     secondWind,
     arcaneCritMult,
+    damageReductionPct,
   }
 }

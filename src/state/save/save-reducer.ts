@@ -173,7 +173,10 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
           ...state.inventory,
           consumables: {
             ...state.inventory.consumables,
-            [action.item]: state.inventory.consumables[action.item] + 1,
+            // ?? 0 so a save persisted before this item id existed (its key
+            // absent) buys from 0 rather than NaN — isSaveData only shallow-
+            // checks inventory, so older v3 saves can legitimately lack a key.
+            [action.item]: (state.inventory.consumables[action.item] ?? 0) + 1,
           },
         },
       }
@@ -185,7 +188,7 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
           ...state.inventory,
           consumables: {
             ...state.inventory.consumables,
-            [action.item]: Math.max(0, state.inventory.consumables[action.item] - 1),
+            [action.item]: Math.max(0, (state.inventory.consumables[action.item] ?? 0) - 1),
           },
         },
       }

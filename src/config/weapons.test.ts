@@ -17,9 +17,16 @@ describe('WEAPONS', () => {
     }
   })
 
-  it('sets a crit range of 19 or 20', () => {
+  it('sets a crit range between 17 and 20 (Story 3\'s "+N" weapons tighten it as low as 17)', () => {
     for (const weapon of WEAPONS) {
-      expect([19, 20]).toContain(weapon.critRange)
+      expect(weapon.critRange).toBeGreaterThanOrEqual(17)
+      expect(weapon.critRange).toBeLessThanOrEqual(20)
+    }
+  })
+
+  it('never sets a negative bonusDamage', () => {
+    for (const weapon of WEAPONS) {
+      expect(weapon.bonusDamage).toBeGreaterThanOrEqual(0)
     }
   })
 

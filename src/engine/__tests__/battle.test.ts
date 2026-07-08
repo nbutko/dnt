@@ -481,6 +481,60 @@ describe('createBattle', () => {
     expect(observedRate).toBeLessThan(0.7)
   })
 
+  // Story 3: persistent defense/HP gear (Ring of Protection) — a flat
+  // fraction cut off every LANDED monster hit, on top of (not instead of)
+  // DEX dodge negating a hit outright.
+  it('damageReductionPct cuts a landed monster hit by the given fraction', () => {
+    const firstMonsterHitDamage = (damageReductionPct: number): number => {
+      const rng = createRng(1)
+      const battle = createBattle({
+        combat,
+        monster: steadyMonster,
+        playerPrompts: () => 'jak',
+        monsterPrompts: () => 'sad',
+        rng,
+        damageReductionPct,
+      })
+      let ticks = 0
+      while (battle.getState().status === 'ongoing' && ticks < 200) {
+        battle.tick(50)
+        ticks += 1
+        const event = battle.getState().lastEvent
+        if (event?.side === 'monster' && event.kind === 'hit') {
+          return event.damage ?? 0
+        }
+      }
+      throw new Error('monster never landed a hit')
+    }
+
+    const unreduced = firstMonsterHitDamage(0)
+    const halved = firstMonsterHitDamage(0.5)
+    expect(halved).toBeCloseTo(unreduced * 0.5)
+  })
+
+  it('damageReductionPct never pushes damage negative even past 100%', () => {
+    const rng = createRng(1)
+    const battle = createBattle({
+      combat,
+      monster: steadyMonster,
+      playerPrompts: () => 'jak',
+      monsterPrompts: () => 'sad',
+      rng,
+      damageReductionPct: 5, // an absurd over-100% reduction
+    })
+    let ticks = 0
+    while (battle.getState().status === 'ongoing' && ticks < 200) {
+      battle.tick(50)
+      ticks += 1
+      const event = battle.getState().lastEvent
+      if (event?.side === 'monster' && event.kind === 'hit') {
+        expect(event.damage).toBe(0)
+        return
+      }
+    }
+    throw new Error('monster never landed a hit')
+  })
+
   it('Second Wind fires exactly once, the first time HP crosses the threshold', () => {
     const rng = createRng(1)
     const battle = createBattle({

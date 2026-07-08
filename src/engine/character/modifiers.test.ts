@@ -39,6 +39,7 @@ describe("resolveModifiers — base character reproduces today's M2 baseline", (
       sneakAttackDice: 0,
       secondWind: { hpThresholdPct: 0.3, healPct: 0.25 },
       arcaneCritMult: 2,
+      damageReductionPct: 0,
     })
   })
 })
@@ -68,6 +69,21 @@ describe('resolveModifiers — the equipped weapon', () => {
     const character: Character = { ...fighter, abilities: { ...baseAbilities, str: 18 } } // mod +4
     expect(resolveModifiers(character, getWeapon('greataxe')).weaponAbilityMod).toBe(4)
   })
+
+  // Story 3: the weapon ladder's "+N" magic weapons add flat bonusDamage in
+  // the same additive slot as the ability mod.
+  it("a '+N' weapon's bonusDamage adds to weaponAbilityMod on top of the ability mod", () => {
+    // fighter has all-10 abilities (STR mod 0) — greatsword-plus2 is +2.
+    expect(resolveModifiers(fighter, getWeapon('greatsword-plus2')).weaponAbilityMod).toBe(2)
+  })
+
+  it("the Wizard's wand-line raises weaponDie/weaponAbilityMod and tightens critRange up the ladder", () => {
+    const wand = resolveModifiers(fighter, getWeapon('wand'))
+    const wandPlus3 = resolveModifiers(fighter, getWeapon('wand-plus3'))
+    expect(wandPlus3.weaponDie).toBeGreaterThan(wand.weaponDie)
+    expect(wandPlus3.weaponAbilityMod).toBeGreaterThan(wand.weaponAbilityMod)
+    expect(wandPlus3.critRange).toBeLessThan(wand.critRange)
+  })
 })
 
 describe('resolveModifiers — active consumable buffs layer on top', () => {
@@ -89,6 +105,17 @@ describe('resolveModifiers — active consumable buffs layer on top', () => {
   it('a Potion of Heroism grants fumble immunity', () => {
     const buffs: ActiveBuff[] = [{ itemId: 'potion-of-heroism', duration: 'next-fight' }]
     expect(resolveModifiers(fighter, dagger, buffs).fumbleImmune).toBe(true)
+  })
+
+  // Story 3: persistent defense/HP gear (Ring of Protection) — survivability
+  // as a purchasable axis, folded through the same buff-accumulator seam as
+  // every other consumable.
+  it('a Ring of Protection raises maxHp and grants damageReductionPct', () => {
+    const buffs: ActiveBuff[] = [{ itemId: 'ring-of-protection', duration: 'rest-of-dungeon' }]
+    const withRing = resolveModifiers(fighter, dagger, buffs)
+    const without = resolveModifiers(fighter, dagger)
+    expect(withRing.damageReductionPct).toBeCloseTo(0.1)
+    expect(withRing.maxHp).toBeGreaterThan(without.maxHp)
   })
 
   it('restore-hearts buffs (instant effects) never reach the modifiers bag', () => {

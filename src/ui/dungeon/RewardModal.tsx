@@ -17,6 +17,13 @@ const WEAPON_ICON: Record<WeaponId, string> = {
   warhammer: '🔨',
   longbow: '🏹',
   greataxe: '🪓',
+  'greatsword-plus1': '⚔️',
+  'greatsword-plus2': '🔥',
+  'fine-rapier-plus1': '⚔️',
+  'fine-rapier-plus2': '🗡️',
+  'wand-plus1': '🪄',
+  'wand-plus2': '✨',
+  'wand-plus3': '🔮',
 }
 
 const ITEM_ICON: Record<ItemId, string> = {
@@ -30,6 +37,7 @@ const ITEM_ICON: Record<ItemId, string> = {
   'oil-of-sharpness': '🗡️',
   'elixir-of-intellect': '🧠',
   'potion-of-heroism': '🛡️',
+  'ring-of-protection': '💍',
 }
 
 // The real chest's (or a boss's guaranteed) gear/consumable drop

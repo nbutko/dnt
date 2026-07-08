@@ -42,6 +42,7 @@ const baseModifiers: PlayerModifiers = {
   sneakAttackDice: 0,
   secondWind: null,
   arcaneCritMult: 2,
+  damageReductionPct: 0,
 }
 
 const rollWith = (overrides: Partial<EncounterRoll>): EncounterRoll => ({

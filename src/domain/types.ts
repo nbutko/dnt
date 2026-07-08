@@ -84,13 +84,21 @@ export interface BattleConfig {
   damageScale?: number
   critCount?: number
   // The encounter d20's nat-20 "INSPIRED" result (Story 6): this fight's
-  // first landed player hit always crits. Not wired to a live caller yet —
-  // that's Story 12's EncounterRoll plumbing — so it defaults to false.
+  // first landed player hit always crits. Wired end-to-end since Story 12 —
+  // state/battle-store.ts's resolveFightTier computes it from the frozen
+  // encounter roll and hands it in here.
   guaranteedFirstCrit?: boolean
   // The encounter d20's natural-1 "FUMBLE" result: no crits this fight, plus
-  // fumbleDamageMultiplier caps every hit. Same Story 12 TODO as above.
+  // fumbleDamageMultiplier caps every hit. Same Story 12 wiring as above.
   noCrits?: boolean
   fumbleDamageMultiplier?: number
+  // Story 3 (the CLAUDE.md gotcha): DEX's critChanceBonus + any item bonus
+  // (Oil of Sharpness), the equipped weapon's critRange, and Oil of
+  // Sharpness's critDamageMult — computed into PlayerModifiers all along,
+  // now actually read by engine/damage.ts's rollIsCrit/computeDamage.
+  critChanceBonus?: number
+  critRange?: number
+  critDamageMult?: number
   // Story 11's automatic class features (engine/character/modifiers.ts's
   // PlayerModifiers, threaded in by state/battle-store.ts). All optional,
   // defaulting to "no effect", so older tests/sim callers keep compiling.
@@ -112,6 +120,12 @@ export interface BattleConfig {
   // player's per-prompt typing time budget. Defaults to 0 so a caller that
   // doesn't pass it keeps today's config-only limit.
   timeBudgetBonusMs?: number
+  // Story 3: persistent defense/HP gear's damage-reduction axis
+  // (PlayerModifiers.damageReductionPct, folded in by resolveModifiers from
+  // a 'defense-boost' consumable) — a flat fraction cut off every incoming
+  // monster hit, applied after DEX dodge (which negates a hit outright).
+  // Defaults to 0 so a caller that doesn't pass it is unaffected.
+  damageReductionPct?: number
 }
 
 export interface PlayerState {

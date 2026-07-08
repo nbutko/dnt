@@ -32,6 +32,7 @@ const ITEM_ICON: Record<ItemId, string> = {
   'oil-of-sharpness': '🗡️',
   'elixir-of-intellect': '🧠',
   'potion-of-heroism': '🛡️',
+  'ring-of-protection': '💍',
 }
 
 // A flavor-free mechanical one-liner per effect key — no per-item flavor text
@@ -58,6 +59,8 @@ const blurbFor = (item: ItemConfig): string => {
       return `+${effect.bonus} to encounter rolls (reading)${suffix}`
     case 'heroism':
       return `+${Math.round(effect.bonusHpPct * 100)}% HP, fumble-immune${suffix}`
+    case 'defense-boost':
+      return `+${Math.round(effect.maxHpBonusPct * 100)}% HP, −${Math.round(effect.damageReductionPct * 100)}% dmg taken${suffix}`
     default:
       return suffix
   }
@@ -75,15 +78,23 @@ const WEAPON_ICON: Record<WeaponId, string> = {
   warhammer: '🔨',
   longbow: '🏹',
   greataxe: '🪓',
+  'greatsword-plus1': '⚔️',
+  'greatsword-plus2': '🔥',
+  'fine-rapier-plus1': '⚔️',
+  'fine-rapier-plus2': '🗡️',
+  'wand-plus1': '🪄',
+  'wand-plus2': '✨',
+  'wand-plus3': '🔮',
 }
 
 // weapon.critRange 20 reads as a plain "crit 20"; anything lower (the
-// dagger/rapier's 19) reads as the 5e-standard range "19–20" (mirrors
-// Armory.tsx/CharacterSheet.tsx's helper of the same name/logic).
+// dagger/rapier's 19, or Story 3's "+N" weapons down to 17) reads as the
+// 5e-standard range "19–20" (mirrors Armory.tsx/CharacterSheet.tsx's helper
+// of the same name/logic).
 const critRangeLabel = (critRange: number): string => (critRange >= 20 ? '20' : `${critRange}–20`)
 
 const weaponBlurb = (weapon: WeaponConfig): string =>
-  `d${weapon.die} · ${weapon.ability.toUpperCase()} · crit ${critRangeLabel(weapon.critRange)}`
+  `d${weapon.die}${weapon.bonusDamage > 0 ? `+${weapon.bonusDamage}` : ''} · ${weapon.ability.toUpperCase()} · crit ${critRangeLabel(weapon.critRange)}`
 
 // The Shop (wireframe t3, m3-scope.html#shop): consumables restock every
 // visit, weapons are one-off buys. CHA (signed) plus a Bard's Silver Tongue

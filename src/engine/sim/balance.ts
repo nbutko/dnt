@@ -9,7 +9,7 @@ import type { BattleEvent, CombatConfig, Monster, TextTier } from '../../domain/
 import { createBattle } from '../battle'
 import { ASI_POINTS_PER_LEVEL, DEFAULT_LEVELING_CONFIG, type LevelingConfig } from '../character/leveling'
 import { DEFAULT_MODIFIERS_CONFIG, resolveModifiers, type ModifiersConfig } from '../character/modifiers'
-import { lengthFactor, tierGatePenalty } from '../damage'
+import { critRangeChanceBonus, lengthFactor, tierGatePenalty } from '../damage'
 import { bandToServedTier } from '../dice/band'
 import {
   DEFAULT_ENCOUNTER_ROLL_CONFIG,
@@ -226,10 +226,14 @@ export const representativeAbilities = (
 // makes ("speed bonus... ignored here — the sim [is what] models [it]") —
 // this helper is a theory-only aid for picking a first-pass HP number; the
 // real convergence check is re-running content-pipeline/retune-sweep.ts.
-// Also deliberately mirrors the CURRENT engine, not Story 3's future crit
-// wiring: crit chance is the flat combat.criticalChance (rollIsCrit doesn't
-// read critChanceBonus yet — the CLAUDE.md gotcha), so this stays consistent
-// with what the sweep actually measures today.
+// Story 3 wires the real crit model in here too (DEX/item critChanceBonus +
+// the weapon's critRange, and critDamageMult on the crit tail) — this now
+// matches what the sweep actually measures, closing the CLAUDE.md gotcha.
+// `buffs` defaults to none (the representative-build baseline this helper
+// authors HP against never assumes an active item), so critDamageMult is 1
+// and this reproduces the pre-Story-3 numbers for every weapon whose
+// critRange is still 20 — only the new tighter-critRange "+N" weapons (and
+// any future DEX build) actually move.
 export interface HitMagnitudes {
   weak: number
   average: number
@@ -257,17 +261,25 @@ export const hitMagnitudes = (
   // forceSneakAttack || isCrit — forceSneakAttack only ever fires once, on
   // the fight's first hit), so both the average crit contribution and the
   // strong (crit) tail fold it in; the weak (no-crit) tail never does.
-  const critChance = combat.criticalChance
+  const critChance = Math.min(
+    1,
+    combat.criticalChance + modifiers.critChanceBonus + critRangeChanceBonus(modifiers.critRange),
+  )
   const avgCritDiceTotal = modifiers.arcaneCritMult * dieAvg + sneakAvg
-  const avgDiceTotal = (1 - critChance) * dieAvg + critChance * avgCritDiceTotal
   const strongDiceTotal = modifiers.arcaneCritMult * modifiers.weaponDie + sneakMax
 
-  const scale = (diceTotal: number): number => (diceTotal + modifiers.weaponAbilityMod) * damageScale * lf
+  // isCrit applies critDamageMult on top of everything else (engine/damage.ts's
+  // computeDamage: baseHit = (diceTotal + weaponAbilityMod) * damageScale *
+  // (isCrit ? critDamageMult : 1)) — mirrored per-branch here, rather than
+  // folded into diceTotal, so the ability mod isn't accidentally multiplied
+  // too.
+  const scale = (diceTotal: number, isCrit = false): number =>
+    (diceTotal + modifiers.weaponAbilityMod) * damageScale * lf * (isCrit ? modifiers.critDamageMult : 1)
 
   return {
     weak: scale(1),
-    average: scale(avgDiceTotal),
-    strong: scale(strongDiceTotal),
+    average: (1 - critChance) * scale(dieAvg) + critChance * scale(avgCritDiceTotal, true),
+    strong: scale(strongDiceTotal, true),
   }
 }
 
@@ -390,10 +402,19 @@ export const simulateCharacterBattles = (config: CharacterBalanceSimConfig): Cha
       critCount: modifiers.arcaneCritMult,
       guaranteedFirstCrit,
       noCrits,
+      // Story 3: the equipped weapon's critRange + DEX/item critChanceBonus
+      // and Oil of Sharpness's critDamageMult — the sim runs the exact same
+      // crit model the real game does.
+      critChanceBonus: modifiers.critChanceBonus,
+      critRange: modifiers.critRange,
+      critDamageMult: modifiers.critDamageMult,
       fumbleDamageMultiplier,
       dodgeChance: modifiers.dodgeChance,
       secondWind: modifiers.secondWind,
       sneakAttackDice: modifiers.sneakAttackDice,
+      powerUpMultiplier: modifiers.powerUpMult,
+      timeBudgetBonusMs: modifiers.timeBudgetBonusMs,
+      damageReductionPct: modifiers.damageReductionPct,
     })
 
     const typingTimeMs = expectedTypingTimeMs(playerPrompt.length, character.wpm, combat)
@@ -476,18 +497,44 @@ export const textTierRangeForTier = (tier: number): readonly [TextTier, TextTier
 }
 
 // A sensible gear-up path per class: start on the class's own starting
-// weapon (config/classes.ts), move to the best same-governing-ability weapon
-// once a few levels in. Wizard has no upgrade path — the wand is the only
-// INT weapon in the launch catalog (m3-scope.html#weapons: "the framework
-// holds any number; the launch set is deliberately small"); Bard keeps its
-// starting rapier for the same reason (no CHA weapon exists at all — see
-// representativeAbilities's doc comment on why DEX, not CHA, governs its
-// damage).
+// weapon (config/classes.ts), then climb config/weapons.ts's Story 3 "+N"
+// ladder at the same three level breakpoints for every class (5/9/12,
+// chosen to land roughly on the on-track corner levels content-plan-v2-
+// tuning.html's targets use for D3/D6/D9) — every class has an upgrade path
+// at every dungeon tier now, closing Finding 3's "the wand is a d6 with no
+// successor, the ladder stops at tier-3" gap (content-plan-v2-tuning-
+// implementation.html#story-3). Bard shares the Rogue's DEX line (both
+// classes' damage reads DEX — see representativeAbilities's doc comment on
+// why CHA, its OTHER favored ability, doesn't govern any weapon) but starts
+// on its own launch rapier instead of the Rogue's dagger, matching
+// config/classes.ts's startingWeapon.
+const LADDER_LEVEL_TIER_3 = 12
+const LADDER_LEVEL_TIER_2 = 9
+const LADDER_LEVEL_TIER_1 = 5
+
 export const weaponForTierLevel = (characterClass: CharacterClass, level: number): WeaponConfig => {
-  if (characterClass === 'fighter') return getWeapon(level >= 5 ? 'warhammer' : 'longsword')
-  if (characterClass === 'wizard') return getWeapon('wand')
-  if (characterClass === 'rogue') return getWeapon(level >= 5 ? 'rapier' : 'dagger')
-  return getWeapon('rapier') // bard
+  if (characterClass === 'fighter') {
+    if (level >= LADDER_LEVEL_TIER_3) return getWeapon('greatsword-plus2')
+    if (level >= LADDER_LEVEL_TIER_2) return getWeapon('greatsword-plus1')
+    if (level >= LADDER_LEVEL_TIER_1) return getWeapon('warhammer')
+    return getWeapon('longsword')
+  }
+  if (characterClass === 'wizard') {
+    if (level >= LADDER_LEVEL_TIER_3) return getWeapon('wand-plus3')
+    if (level >= LADDER_LEVEL_TIER_2) return getWeapon('wand-plus2')
+    if (level >= LADDER_LEVEL_TIER_1) return getWeapon('wand-plus1')
+    return getWeapon('wand')
+  }
+  if (characterClass === 'rogue') {
+    if (level >= LADDER_LEVEL_TIER_3) return getWeapon('fine-rapier-plus2')
+    if (level >= LADDER_LEVEL_TIER_2) return getWeapon('fine-rapier-plus1')
+    if (level >= LADDER_LEVEL_TIER_1) return getWeapon('rapier')
+    return getWeapon('dagger')
+  }
+  // bard
+  if (level >= LADDER_LEVEL_TIER_3) return getWeapon('fine-rapier-plus2')
+  if (level >= LADDER_LEVEL_TIER_2) return getWeapon('fine-rapier-plus1')
+  return getWeapon('rapier')
 }
 
 export const cheapestRegularOf = (tier: number): Monster => {

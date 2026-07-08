@@ -47,6 +47,7 @@ export const defaultSave = (): SaveData => ({
       'oil-of-sharpness': 0,
       'elixir-of-intellect': 0,
       'potion-of-heroism': 0,
+      'ring-of-protection': 0,
     },
   },
   hearts: { max: 1 },

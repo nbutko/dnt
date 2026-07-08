@@ -17,6 +17,13 @@ export type ItemEffect =
   | { key: 'crit-boost'; critChanceBonus: number; critDamageMultBonus: number }
   | { key: 'int-roll-bonus'; bonus: number }
   | { key: 'heroism'; bonusHpPct: number; fumbleImmune: true }
+  // Story 3 (content-plan-v2-tuning-implementation.html#story-3): persistent
+  // defense/HP gear — survivability as a purchasable axis, not only a
+  // CON/leveling one. Reuses the existing consumable/buff machinery (Shop,
+  // Bag, resolveModifiers) rather than a new equip slot — see config/
+  // items.ts's Story 3 doc comment below on what a full armor slot would
+  // have cost.
+  | { key: 'defense-boost'; maxHpBonusPct: number; damageReductionPct: number }
 
 export interface ItemConfig extends Consumable {
   effect: ItemEffect
@@ -115,6 +122,21 @@ export const ITEMS: readonly ItemConfig[] = [
     tier: 2,
     price: 40,
     effect: { key: 'heroism', bonusHpPct: 0.2, fumbleImmune: true },
+  },
+  // Story 3: the one new item this story adds — a "rest of dungeon" armor
+  // stand-in (m3-scope.html's item table has no armor slot; a full
+  // persistent equip slot + Armory-style UI would be a whole new
+  // subsystem, out of scope for this story per CLAUDE.md's "favor simple" —
+  // see the implementation report for what's deferred). Smaller than a
+  // single-fight Potion of Heroism (0.2 HP%) since this stacks across an
+  // entire dungeon's worth of fights, not just one.
+  {
+    id: 'ring-of-protection',
+    name: 'Ring of Protection',
+    duration: 'rest-of-dungeon',
+    tier: 3,
+    price: 85,
+    effect: { key: 'defense-boost', maxHpBonusPct: 0.1, damageReductionPct: 0.1 },
   },
 ]
 

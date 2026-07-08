@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CombatConfig, TextTier } from '../../domain/types'
-import { computeDamage, lengthFactor, rollIsCrit, speedBonus, tierGatePenalty } from '../damage'
+import { computeDamage, critRangeChanceBonus, lengthFactor, rollIsCrit, speedBonus, tierGatePenalty } from '../damage'
 import { createRng } from '../rng'
 
 const baseCombat: CombatConfig = {
@@ -134,6 +134,46 @@ describe('rollIsCrit', () => {
     const combat = { ...baseCombat, criticalChance: 1 }
     expect(rollIsCrit(combat, rng, { forceCrit: true, noCrits: true })).toBe(false)
   })
+
+  // Story 3 (the CLAUDE.md gotcha): critChanceBonus (DEX + item) actually
+  // moves the roll now, instead of sitting dead on PlayerModifiers.
+  it('critChanceBonus raises the measured crit rate on top of a zero baseline', () => {
+    const combat = { ...baseCombat, criticalChance: 0 }
+    const N = 20000
+    const rateAt = (critChanceBonus: number): number => {
+      const rng = createRng(7)
+      let crits = 0
+      for (let i = 0; i < N; i += 1) {
+        if (rollIsCrit(combat, rng, { critChanceBonus })) crits += 1
+      }
+      return crits / N
+    }
+    expect(rateAt(0)).toBeCloseTo(0, 1)
+    expect(rateAt(0.2)).toBeCloseTo(0.2, 1)
+    expect(rateAt(0.4)).toBeCloseTo(0.4, 1)
+  })
+
+  it('clamps the effective chance to [0, 1] even with an absurd bonus', () => {
+    const rng = createRng(8)
+    const combat = { ...baseCombat, criticalChance: 0.9 }
+    expect(rollIsCrit(combat, rng, { critChanceBonus: 5 })).toBe(true)
+  })
+})
+
+describe('critRangeChanceBonus', () => {
+  it('a critRange of 20 (no widening) adds nothing', () => {
+    expect(critRangeChanceBonus(20)).toBe(0)
+  })
+
+  it('each point below 20 is worth 1/20 (5%)', () => {
+    expect(critRangeChanceBonus(19)).toBeCloseTo(0.05)
+    expect(critRangeChanceBonus(18)).toBeCloseTo(0.1)
+    expect(critRangeChanceBonus(17)).toBeCloseTo(0.15)
+  })
+
+  it('never goes negative for a critRange above 20', () => {
+    expect(critRangeChanceBonus(21)).toBe(0)
+  })
 })
 
 describe('computeDamage', () => {
@@ -230,6 +270,92 @@ describe('computeDamage', () => {
     })
     expect(result.isCrit).toBe(true)
     expect(result.diceRolled).toHaveLength(3)
+  })
+
+  it('a wider critRange (19 vs 20) crits measurably more often, holding everything else fixed', () => {
+    const N = 4000
+    const critRateAt = (critRange: number): number => {
+      const rng = createRng(9)
+      let crits = 0
+      for (let i = 0; i < N; i += 1) {
+        const result = computeDamage({
+          charCount: 10,
+          timeUsedMs: 1000,
+          timeLimitMs: 1000,
+          combat: baseCombat, // criticalChance: 0
+          rng,
+          weaponDie: 6,
+          weaponAbilityMod: 0,
+          damageScale: 1,
+          critRange,
+        })
+        if (result.isCrit) crits += 1
+      }
+      return crits / N
+    }
+    const at20 = critRateAt(20)
+    const at19 = critRateAt(19)
+    const at17 = critRateAt(17)
+    expect(at20).toBeCloseTo(0, 1)
+    expect(at19).toBeGreaterThan(at20)
+    expect(at19).toBeCloseTo(0.05, 1)
+    expect(at17).toBeGreaterThan(at19)
+    expect(at17).toBeCloseTo(0.15, 1)
+  })
+
+  it("Oil of Sharpness's critDamageMult raises damage on a crit but not on a normal hit", () => {
+    const combatAlwaysCrit = { ...baseCombat, criticalChance: 1 }
+    const boosted = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: combatAlwaysCrit,
+      rng: createRng(1),
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      critDamageMult: 1.5,
+    })
+    const unboosted = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: combatAlwaysCrit,
+      rng: createRng(1),
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      critDamageMult: 1,
+    })
+    expect(boosted.isCrit).toBe(true)
+    expect(boosted.damage).toBeCloseTo(unboosted.damage * 1.5)
+
+    // A normal (non-crit) hit is untouched by critDamageMult.
+    const combatNeverCrit = { ...baseCombat, criticalChance: 0 }
+    const normalBoosted = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: combatNeverCrit,
+      rng: createRng(2),
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      critDamageMult: 1.5,
+    })
+    const normalUnboosted = computeDamage({
+      charCount: 10,
+      timeUsedMs: 1000,
+      timeLimitMs: 1000,
+      combat: combatNeverCrit,
+      rng: createRng(2),
+      weaponDie: 6,
+      weaponAbilityMod: 0,
+      damageScale: 1,
+      critDamageMult: 1,
+    })
+    expect(normalBoosted.isCrit).toBe(false)
+    expect(normalBoosted.damage).toBeCloseTo(normalUnboosted.damage)
   })
 
   it('guaranteedFirstCrit (forceCrit) makes the swing crit even at criticalChance 0', () => {

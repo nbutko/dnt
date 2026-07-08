@@ -44,4 +44,9 @@ export interface PlayerModifiers {
   sneakAttackDice: number
   secondWind: { hpThresholdPct: number; healPct: number } | null
   arcaneCritMult: number
+  // -- Story 3: persistent defense/HP gear (a 'defense-boost' consumable,
+  // e.g. Ring of Protection) — a flat fraction cut off every monster hit
+  // that lands, on top of maxHp's own bonus and DEX dodge. Survivability as
+  // a purchasable axis, not only a CON/leveling one. --
+  damageReductionPct: number
 }

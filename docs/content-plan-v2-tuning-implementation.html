@@ -247,7 +247,25 @@
   <p><strong>Done when:</strong> the sweep's per-class spread at on-track sits inside a reasonable band (Wizard no
   longer an outlier), DEX/critRange/Oil of Sharpness demonstrably change crit behavior, and the weapon ladder
   offers an upgrade at every dungeon.</p>
-  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  <p><strong>Landed:</strong> 7 new weapons on three ability lines (STR greatsword+1/+2, DEX fine-rapier+1/+2, INT
+  wand+1/+2/+3 — the Wizard wand-line) at level 5/9/12 breakpoints; <code>weaponForTierLevel</code> now climbs the
+  ladder so every class passes tier-3 by ~level 12. Crit subsystem wired in <code>damage.ts</code>: effective
+  chance = <code>combat.criticalChance + critChanceBonus (DEX + items) + (20−critRange)/20</code>, and Oil of
+  Sharpness's <code>critDamageMult</code> now multiplies crit <code>baseHit</code> (was a no-op) — both threaded
+  through <code>battle.ts</code>/<code>battle-store.ts</code>/<code>balance.ts</code>, which had silently dropped
+  the already-computed <code>PlayerModifiers</code> fields. Defense gear shipped as <code>ring-of-protection</code>
+  (rest-of-dungeon +10% HP / −10% damage-taken via the existing buff pipeline → new
+  <code>PlayerModifiers.damageReductionPct</code>); a full persistent armor equip-slot + UI deliberately deferred
+  (favor simple). Fumble/inspired paths were found already fully wired — only stale "not wired" comments were
+  corrected. Boss HP: only Kraken (1257→1650) and Tarrasque (1450→1680) nudged up now that weapons scale (the
+  D9–D11 gap Story&nbsp;1 parked); D1–D9 already above the ~2.0 htk floor, left as-is. Save-safety: a
+  <code>?? 0</code> guard added to the <code>buyItem</code>/<code>consumeItem</code> reducers so an older v3 save
+  lacking the new item key buys from 0 rather than <code>NaN</code>. Sweep: Wizard on-track win% climbed sharply
+  (e.g. D9 38→68), no one-shots reappeared (floor ~1.9–2.0), tradeoff still un-inverted. <strong>Flagged for user
+  verification:</strong> Wizard remains the weakest class (structural — lower HP die + Arcane Mind pulling harder
+  prompts) and Fighter trails Rogue/Bard more than Finding 3 framed — residual class balance is feel-tuning, not
+  reachable by the ladder/crit work alone.</p>
+  <div class="status"><span class="done">☑ Code merged</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
 </div>
 
 <div class="milestone" id="story-4">

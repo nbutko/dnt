@@ -18,6 +18,13 @@ const WEAPON_ICON: Record<WeaponId, string> = {
   warhammer: '🔨',
   longbow: '🏹',
   greataxe: '🪓',
+  'greatsword-plus1': '⚔️',
+  'greatsword-plus2': '🔥',
+  'fine-rapier-plus1': '⚔️',
+  'fine-rapier-plus2': '🗡️',
+  'wand-plus1': '🪄',
+  'wand-plus2': '✨',
+  'wand-plus3': '🔮',
 }
 
 // weapon.critRange 20 reads as a plain "crit 20"; anything lower (the
@@ -81,6 +88,8 @@ const describeSwap = (equipped: WeaponConfig, selected: WeaponConfig): string =>
   if (selected.ability !== equipped.ability) bits.push(`a shift to ${selected.ability.toUpperCase()}`)
   if (selected.critRange < equipped.critRange) bits.push('a wider crit range')
   else if (selected.critRange > equipped.critRange) bits.push('a tighter crit range')
+  if (selected.bonusDamage > equipped.bonusDamage) bits.push('a stronger magic bonus')
+  else if (selected.bonusDamage < equipped.bonusDamage) bits.push('a weaker magic bonus')
   if (selected.timeBudgetPenaltyMs > equipped.timeBudgetPenaltyMs) bits.push('a tighter typing clock')
   else if (selected.timeBudgetPenaltyMs < equipped.timeBudgetPenaltyMs) bits.push('more time to type')
   if (bits.length === 0) return `${selected.name} plays almost identically to your ${equipped.name}.`
@@ -150,7 +159,9 @@ const Armory = () => {
                     {weapon.name}
                   </div>
                   <div className="font-mono text-[10px]" style={{ color: isEquipped ? '#c9b892' : '#8a7a5a' }}>
-                    d{weapon.die} &middot; {weapon.ability.toUpperCase()} &middot; crit {critRangeLabel(weapon.critRange)}
+                    d{weapon.die}
+                    {weapon.bonusDamage > 0 && `+${weapon.bonusDamage}`} &middot; {weapon.ability.toUpperCase()}{' '}
+                    &middot; crit {critRangeLabel(weapon.critRange)}
                   </div>
                 </div>
                 {isEquipped && (
@@ -223,6 +234,13 @@ const Armory = () => {
               equippedText={critRangeLabel(equipped.critRange)}
               selectedText={critRangeLabel(selected.critRange)}
               direction={directionFor(equipped.critRange, selected.critRange, false)}
+            />
+            <div className="h-px" style={{ background: '#3a2a10' }} />
+            <DeltaRow
+              label="MAGIC"
+              equippedText={`+${equipped.bonusDamage}`}
+              selectedText={`+${selected.bonusDamage}`}
+              direction={directionFor(equipped.bonusDamage, selected.bonusDamage, true)}
             />
             <div className="h-px" style={{ background: '#3a2a10' }} />
             <DeltaRow

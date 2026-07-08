@@ -19,13 +19,12 @@ const baseMonster: Monster = {
   flavor: 'a goblin',
 }
 
-// A minimal PlayerModifiers — only the fields resolveFightTier reads
-// (intTierCap, guaranteedFirstCrit) are exercised; the rest are inert
-// placeholders so the object type-checks.
+// A minimal PlayerModifiers — only the field resolveFightTier reads
+// (guaranteedFirstCrit) is exercised; the rest are inert placeholders so the
+// object type-checks.
 const baseModifiers: PlayerModifiers = {
   maxHp: 40,
   maxHearts: 1,
-  intTierCap: 10 as TextTier,
   timeBudgetBonusMs: 0,
   encounterBonus: 0,
   hasAdvantage: false,
@@ -59,12 +58,12 @@ const encounterWith = (
 ): FightEncounter => ({ roll: rollWith(overrides), textTierRange })
 
 describe('resolveFightTier', () => {
-  it('with no encounter, falls back to the monster.textTier placeholder gated by INT', () => {
-    const capped = resolveFightTier(baseMonster, { ...baseModifiers, intTierCap: 1 as TextTier })
-    expect(capped.servedTier).toBe(1)
-    expect(capped.targetTier).toBe(1)
-    expect(capped.noCrits).toBe(false)
-    expect(capped.fumbleDamageMultiplier).toBe(1)
+  it('with no encounter, falls back to the monster.textTier placeholder', () => {
+    const result = resolveFightTier(baseMonster, baseModifiers)
+    expect(result.servedTier).toBe(1)
+    expect(result.targetTier).toBe(1)
+    expect(result.noCrits).toBe(false)
+    expect(result.fumbleDamageMultiplier).toBe(1)
   })
 
   it('a low band picks the bottom of the dungeon range as both target and served tier', () => {
@@ -73,18 +72,10 @@ describe('resolveFightTier', () => {
     expect(result.servedTier).toBe(1)
   })
 
-  it('a high band picks the top of the range, capped by INT when it falls short', () => {
-    const uncapped = resolveFightTier(baseMonster, baseModifiers, encounterWith({ band: 'high' }))
-    expect(uncapped.targetTier).toBe(3)
-    expect(uncapped.servedTier).toBe(3)
-
-    const capped = resolveFightTier(
-      baseMonster,
-      { ...baseModifiers, intTierCap: 2 as TextTier },
-      encounterWith({ band: 'high' }),
-    )
-    expect(capped.targetTier).toBe(3)
-    expect(capped.servedTier).toBe(2)
+  it('a high band serves the top of the range — INT no longer caps it', () => {
+    const result = resolveFightTier(baseMonster, baseModifiers, encounterWith({ band: 'high' }))
+    expect(result.targetTier).toBe(3)
+    expect(result.servedTier).toBe(3)
   })
 
   it('a fumble disables crits and caps damage at 0.75, regardless of band', () => {

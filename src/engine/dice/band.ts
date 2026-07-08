@@ -6,11 +6,12 @@ import type { TextTier } from '../../domain/types'
 import type { EncounterBand } from './encounter-roll'
 
 export interface ServedTierResult {
-  // What the band rolled into, before any INT cap — the gate-target tier
-  // engine/damage.ts's tierGatePenalty compares the served tier against
-  // (finding D).
+  // The tier the band rolled into — bottom/mid/top of the dungeon's window.
   targetTier: TextTier
-  // What the player is actually served: targetTier capped by intTierCap.
+  // What the player is actually served. INT no longer caps it (the tier cap
+  // retired — content-plan-v2-tuning.html), so this now always equals
+  // targetTier; kept as a distinct field so the gate-penalty slot (and the
+  // planned tier-reward) still have a servedTier/targetTier pair to read.
   servedTier: TextTier
 }
 
@@ -20,12 +21,10 @@ export interface ServedTierResult {
 export const bandToServedTier = (
   band: EncounterBand,
   textTierRange: readonly [TextTier, TextTier],
-  intTierCap: TextTier,
 ): ServedTierResult => {
   const [low, high] = textTierRange
   let targetTier: TextTier = Math.round((low + high) / 2) as TextTier
   if (band === 'low') targetTier = low
   if (band === 'high') targetTier = high
-  const servedTier = Math.min(targetTier, intTierCap) as TextTier
-  return { targetTier, servedTier }
+  return { targetTier, servedTier: targetTier }
 }

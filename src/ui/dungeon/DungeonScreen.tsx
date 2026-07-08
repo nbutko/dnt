@@ -308,7 +308,6 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       cfg: DEFAULT_ENCOUNTER_ROLL_CONFIG,
       mods,
       textTierRange: textTierRangeForNode(run.graph.nodes[revealId]),
-      intTierCap: modifiers.intTierCap,
       rng,
       canReroll,
       onReroll: () => setRerollsUsedThisRun((n) => n + 1),

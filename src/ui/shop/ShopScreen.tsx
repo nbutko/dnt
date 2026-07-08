@@ -54,8 +54,8 @@ const blurbFor = (item: ItemConfig): string => {
       return `+${effect.bonus} to encounter rolls${suffix}`
     case 'crit-boost':
       return `+crit chance & damage${suffix}`
-    case 'int-tier-cap-bonus':
-      return `+${effect.tiers} INT tier cap${suffix}`
+    case 'int-roll-bonus':
+      return `+${effect.bonus} to encounter rolls (reading)${suffix}`
     case 'heroism':
       return `+${Math.round(effect.bonusHpPct * 100)}% HP, fumble-immune${suffix}`
     default:

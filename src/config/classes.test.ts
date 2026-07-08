@@ -26,7 +26,7 @@ describe('CLASSES', () => {
           break
         case 'arcane-mind':
           expect(classDef.feature.critDiceCount).toBeGreaterThan(2)
-          expect(classDef.feature.intTierCapBonus).toBeGreaterThan(0)
+          expect(classDef.feature.intEncounterBonus).toBeGreaterThan(0)
           break
         case 'cunning':
           expect(classDef.feature.sneakAttackDice).toBeGreaterThan(0)

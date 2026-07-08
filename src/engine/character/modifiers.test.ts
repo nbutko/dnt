@@ -22,9 +22,8 @@ describe("resolveModifiers — base character reproduces today's M2 baseline", (
     expect(resolveModifiers(fighter, dagger)).toEqual({
       maxHp: 40, // hit die (10) * HP_SCALE (4), matching combat.playerMaxHp
       maxHearts: 1,
-      intTierCap: 3,
       timeBudgetBonusMs: 0,
-      encounterBonus: 2, // level-1 proficiency bonus
+      encounterBonus: 2, // level-1 proficiency bonus + INT mod 0
       hasAdvantage: false,
       critChanceBonus: 0,
       critDamageMult: 1,
@@ -81,6 +80,11 @@ describe('resolveModifiers — active consumable buffs layer on top', () => {
     expect(resolveModifiers(fighter, dagger, buffs).encounterBonus).toBe(4) // 2 proficiency + 2 luckstone
   })
 
+  it('an Elixir of Intellect raises encounterBonus — INT reading is a roll nudge now', () => {
+    const buffs: ActiveBuff[] = [{ itemId: 'elixir-of-intellect', duration: 'next-fight' }]
+    expect(resolveModifiers(fighter, dagger, buffs).encounterBonus).toBe(4) // 2 proficiency + 2 elixir
+  })
+
   it('a Potion of Heroism grants fumble immunity', () => {
     const buffs: ActiveBuff[] = [{ itemId: 'potion-of-heroism', duration: 'next-fight' }]
     expect(resolveModifiers(fighter, dagger, buffs).fumbleImmune).toBe(true)
@@ -93,11 +97,11 @@ describe('resolveModifiers — active consumable buffs layer on top', () => {
 })
 
 describe('resolveModifiers — class features', () => {
-  it('a Wizard sets arcaneCritMult to 3 and gets a +1 INT tier-cap bonus', () => {
+  it('a Wizard sets arcaneCritMult to 3 and folds its Arcane Mind bonus into the encounter roll', () => {
     const wizard: Character = { ...fighter, class: 'wizard' }
     const modifiers = resolveModifiers(wizard, dagger)
     expect(modifiers.arcaneCritMult).toBe(3)
-    expect(modifiers.intTierCap).toBe(4) // base 3 + Arcane Mind's +1
+    expect(modifiers.encounterBonus).toBe(4) // 2 proficiency + INT mod 0 + Arcane Mind's +2
   })
 
   it('a Rogue has advantage and carries Sneak Attack dice', () => {

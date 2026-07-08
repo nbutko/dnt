@@ -59,8 +59,8 @@ const FUMBLE_DAMAGE_MULTIPLIER = 0.75
 // bank) so the encounter-wiring is unit-testable without the async lookup.
 // `encounter` is optional: omitting it (an older/direct caller, or a test that
 // doesn't care about the d20) falls back to the pre-Story-12 placeholder —
-// the monster's own textTier gated by INT, no fumble/inspired crit rule —
-// exactly what createBattleStore used to hard-code inline.
+// the monster's own textTier, no fumble/inspired crit rule — exactly what
+// createBattleStore used to hard-code inline.
 export const resolveFightTier = (
   monster: Monster,
   modifiers: PlayerModifiers,
@@ -68,7 +68,7 @@ export const resolveFightTier = (
 ): ResolvedFightTier => {
   if (!encounter) {
     return {
-      servedTier: Math.min(monster.textTier, modifiers.intTierCap) as TextTier,
+      servedTier: monster.textTier,
       targetTier: monster.textTier,
       noCrits: false,
       fumbleDamageMultiplier: 1,
@@ -76,7 +76,7 @@ export const resolveFightTier = (
     }
   }
   const { roll, textTierRange } = encounter
-  const { servedTier, targetTier } = bandToServedTier(roll.band, textTierRange, modifiers.intTierCap)
+  const { servedTier, targetTier } = bandToServedTier(roll.band, textTierRange)
   return {
     servedTier,
     targetTier,
@@ -108,7 +108,7 @@ export const createBattleStore = async (
   // `tier` field IS its dungeon (1..11), so both prompt pools read from that
   // dungeon at their respective text tiers — the player at the band's served
   // tier, the monster at its own. The loader falls back off-theme only if a
-  // dungeon lacks the requested tier (an INT-capped served tier below its floor).
+  // dungeon lacks the requested tier.
   const dungeon = monster.tier
   const playerPrompts = await textBank.makePromptSource(dungeon, servedTier, rng)
   const monsterPrompts = await textBank.makePromptSource(dungeon, monster.textTier, rng)

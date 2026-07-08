@@ -1,5 +1,3 @@
-import type { TextTier } from './types'
-
 // The M2 skill tree's SkillBranchId/SkillTreeState (m2-implementation.html
 // Story 4) are retired here in M3 Story 3 — the seam's *input* is now a
 // Character + Weapon + ActiveBuff[] (engine/character/modifiers.ts), not a
@@ -17,12 +15,10 @@ export interface PlayerModifiers {
   // -- Endurance/HP (CON + level) --
   maxHp: number
   maxHearts: number
-  // -- Wordsmith/INT (renamed from wordsmithMaxTier: INT drives it now, not a
-  // purchased branch) --
-  intTierCap: TextTier
   // -- Focus/WIS: typing time budget --
   timeBudgetBonusMs: number
-  // -- The encounter d20 (engine/dice/, Story 6): proficiency bonus + any
+  // -- The encounter d20 (engine/dice/, Story 6): proficiency bonus + the INT
+  // nudge (INT no longer caps the tier — content-plan-v2-tuning.html) + any
   // item/class flat bonus (e.g. Luckstone), and whether it rolls twice --
   encounterBonus: number
   hasAdvantage: boolean

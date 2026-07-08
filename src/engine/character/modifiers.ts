@@ -12,7 +12,6 @@ import type { WeaponConfig } from '../../config/weapons'
 import { abilityMod, type Character } from '../../domain/character'
 import type { ActiveBuff } from '../../domain/items'
 import type { PlayerModifiers } from '../../domain/progression'
-import type { TextTier } from '../../domain/types'
 import { DEFAULT_LEVELING_CONFIG, grantsForLevel, type LevelingConfig } from './leveling'
 
 // The knobs resolveModifiers reads, bundled the same way Story 2's
@@ -42,12 +41,6 @@ const HEART_MILESTONE_INTERVAL = 5
 const heartsForLevel = (level: number): number =>
   BASE_MAX_HEARTS + Math.floor(level / HEART_MILESTONE_INTERVAL)
 
-// The 14-tier content ladder's ceiling (content-plan-v2.html §2) — a high-INT
-// reader can be gated up to the top tier now, not the old 10-tier max.
-const MAX_TEXT_TIER = 14
-const clampTextTier = (tier: number): TextTier =>
-  Math.min(Math.max(Math.round(tier), 1), MAX_TEXT_TIER) as TextTier
-
 // Cumulative HP across every level from 1 up to `character.level`, each
 // level's grant computed by Story 2's grantsForLevel so HP is derived at read
 // time and can never drift from the abilities/level that produce it (the
@@ -72,7 +65,7 @@ interface BuffAccumulator {
   critChanceBonus: number
   critDamageMultBonus: number
   powerUpMultBonus: number
-  intTierCapBonus: number
+  intEncounterBonus: number
   fumbleImmune: boolean
 }
 
@@ -95,8 +88,8 @@ const applyBuff = (acc: BuffAccumulator, buff: ActiveBuff): BuffAccumulator => {
         critChanceBonus: acc.critChanceBonus + effect.critChanceBonus,
         critDamageMultBonus: acc.critDamageMultBonus + effect.critDamageMultBonus,
       }
-    case 'int-tier-cap-bonus':
-      return { ...acc, intTierCapBonus: acc.intTierCapBonus + effect.tiers }
+    case 'int-roll-bonus':
+      return { ...acc, intEncounterBonus: acc.intEncounterBonus + effect.bonus }
     case 'heroism':
       return { ...acc, maxHpBonusPct: acc.maxHpBonusPct + effect.bonusHpPct, fumbleImmune: true }
     default:
@@ -112,7 +105,7 @@ const EMPTY_BUFF_ACCUMULATOR: BuffAccumulator = {
   critChanceBonus: 0,
   critDamageMultBonus: 0,
   powerUpMultBonus: 0,
-  intTierCapBonus: 0,
+  intEncounterBonus: 0,
   fumbleImmune: false,
 }
 
@@ -139,13 +132,7 @@ export const resolveModifiers = (
   const maxHearts = heartsForLevel(character.level)
 
   const { feature } = classDef
-  const intTierCapBonus = feature.kind === 'arcane-mind' ? feature.intTierCapBonus : 0
-  const intTierCap = clampTextTier(
-    cfg.abilities.baseIntTierCap +
-      cfg.abilities.intTierCapStepPerMod * abilityMod(abilities.int) +
-      intTierCapBonus +
-      buffs.intTierCapBonus,
-  )
+  const arcaneEncounterBonus = feature.kind === 'arcane-mind' ? feature.intEncounterBonus : 0
 
   const timeBudgetBonusMs =
     cfg.abilities.wisTimeBudgetMsPerMod * abilityMod(abilities.wis) -
@@ -158,7 +145,16 @@ export const resolveModifiers = (
     abilities.con,
     cfg.leveling,
   )
-  const encounterBonus = proficiencyBonus + buffs.encounterBonus
+  // INT nudges the encounter d20 toward the high band instead of capping the
+  // served tier (content-plan-v2-tuning.html) — folded in here alongside
+  // proficiency, the Wizard's Arcane Mind bonus, and any Elixir of Intellect /
+  // Luckstone flat bonus.
+  const encounterBonus =
+    proficiencyBonus +
+    Math.round(cfg.abilities.intEncounterBonusPerMod * abilityMod(abilities.int)) +
+    arcaneEncounterBonus +
+    buffs.intEncounterBonus +
+    buffs.encounterBonus
   const hasAdvantage =
     (feature.kind === 'cunning' && feature.encounterAdvantage) || buffs.hasAdvantage
 
@@ -181,7 +177,6 @@ export const resolveModifiers = (
   return {
     maxHp,
     maxHearts,
-    intTierCap,
     timeBudgetBonusMs,
     encounterBonus,
     hasAdvantage,

@@ -23,10 +23,11 @@ export type ClassFeature =
   | {
       kind: 'arcane-mind'
       // Wizard: crits roll the damage dice this many times (2 is the
-      // baseline every other class uses — engine/damage.ts, Story 7), and
-      // the INT tier-cap sits this many tiers above normal.
+      // baseline every other class uses — engine/damage.ts, Story 7), and a
+      // flat bonus to the encounter d20 on top of INT (reads harder prompts
+      // more often — the tier cap retired, content-plan-v2-tuning.html).
       critDiceCount: number
-      intTierCapBonus: number
+      intEncounterBonus: number
     }
   | {
       kind: 'cunning'
@@ -73,9 +74,10 @@ export const CLASSES: readonly ClassDef[] = [
     hitDie: 6,
     favoredAbilities: ['int', 'wis'],
     startingWeapon: 'wand',
-    // "crits roll the damage dice three times instead of two" + "INT
-    // tier-cap sits one tier above normal" — both exact per the scope.
-    feature: { kind: 'arcane-mind', critDiceCount: 3, intTierCapBonus: 1 },
+    // "crits roll the damage dice three times instead of two"; the old "+1 INT
+    // tier-cap" became a flat encounter-roll nudge when the cap retired
+    // (content-plan-v2-tuning.html). Magnitude is a sim-tuned placeholder.
+    feature: { kind: 'arcane-mind', critDiceCount: 3, intEncounterBonus: 2 },
   },
   {
     id: 'rogue',

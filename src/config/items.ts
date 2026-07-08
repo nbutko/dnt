@@ -15,7 +15,7 @@ export type ItemEffect =
   | { key: 'encounter-advantage' }
   | { key: 'encounter-bonus'; bonus: number }
   | { key: 'crit-boost'; critChanceBonus: number; critDamageMultBonus: number }
-  | { key: 'int-tier-cap-bonus'; tiers: number }
+  | { key: 'int-roll-bonus'; bonus: number }
   | { key: 'heroism'; bonusHpPct: number; fumbleImmune: true }
 
 export interface ItemConfig extends Consumable {
@@ -104,7 +104,9 @@ export const ITEMS: readonly ItemConfig[] = [
     duration: 'next-fight',
     tier: 2,
     price: 40,
-    effect: { key: 'int-tier-cap-bonus', tiers: 1 },
+    // Was "+1 tier cap"; now a flat encounter-roll nudge (the cap retired —
+    // content-plan-v2-tuning.html). Magnitude is a sim-tuned placeholder.
+    effect: { key: 'int-roll-bonus', bonus: 2 },
   },
   {
     id: 'potion-of-heroism',

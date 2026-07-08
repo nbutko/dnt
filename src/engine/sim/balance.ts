@@ -299,7 +299,7 @@ export const simulateCharacterBattles = (config: CharacterBalanceSimConfig): Cha
 
     const encounter = rollEncounter(encounterRollConfig, modifiers, encounterRng)
     bandCounts[encounter.band] += 1
-    const { servedTier, targetTier } = bandToServedTier(encounter.band, textTierRange, modifiers.intTierCap)
+    const { servedTier, targetTier } = bandToServedTier(encounter.band, textTierRange)
     const gatePenalty = tierGatePenalty(servedTier, targetTier)
     const noCrits = encounter.fumble
     const fumbleDamageMultiplier = encounter.fumble ? FUMBLE_DAMAGE_MULTIPLIER : 1

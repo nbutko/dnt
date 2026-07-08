@@ -220,7 +220,6 @@ export const sweepWeaponDieMonotonicity = (): InvariantViolation[] => {
   const baseline: PlayerModifiers = {
     maxHp: 40,
     maxHearts: 1,
-    intTierCap: 3,
     timeBudgetBonusMs: 0,
     encounterBonus: 2,
     hasAdvantage: false,
@@ -274,7 +273,7 @@ const abilityChecks = (): AbilityCheck[] => [
   { ability: 'dex', weapon: getWeapon('dagger'), level: 1, read: (m) => m.critChanceBonus, label: 'DEX -> critChanceBonus' },
   { ability: 'dex', weapon: getWeapon('dagger'), level: 1, read: (m) => m.dodgeChance, label: 'DEX -> dodgeChance' },
   { ability: 'int', weapon: getWeapon('wand'), level: 1, read: (m) => m.weaponAbilityMod, label: 'INT -> weaponAbilityMod' },
-  { ability: 'int', weapon: getWeapon('wand'), level: 1, read: (m) => m.intTierCap, label: 'INT -> intTierCap' },
+  { ability: 'int', weapon: getWeapon('wand'), level: 1, read: (m) => m.encounterBonus, label: 'INT -> encounterBonus' },
   { ability: 'wis', weapon: getWeapon('wand'), level: 1, read: (m) => m.timeBudgetBonusMs, label: 'WIS -> timeBudgetBonusMs' },
   { ability: 'cha', weapon: getWeapon('rapier'), level: 1, read: (m) => m.intimidateWpmCut, label: 'CHA -> intimidateWpmCut' },
   // CON only grants HP from level 2 on (level 1's HP is hit-die-only, per

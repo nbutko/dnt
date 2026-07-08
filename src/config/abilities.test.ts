@@ -18,7 +18,7 @@ describe('abilitiesConfig', () => {
     }
   })
 
-  it('sets a sane base INT tier cap', () => {
-    expect(abilitiesConfig.baseIntTierCap).toBeGreaterThanOrEqual(1)
+  it('sets a positive INT encounter-roll bonus per mod', () => {
+    expect(abilitiesConfig.intEncounterBonusPerMod).toBeGreaterThan(0)
   })
 })

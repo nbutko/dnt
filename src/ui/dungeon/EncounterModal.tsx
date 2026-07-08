@@ -25,11 +25,9 @@ const ROLL_ANIMATION_MS = 500
 export interface EncounterDiceProps {
   cfg: EncounterRollConfig
   mods: EncounterRollModifiers
-  // The dungeon's textTierRange (config/dungeon-tiers.ts) + the player's
-  // intTierCap — together they turn the rolled band into a served tier via
-  // engine/dice/band.ts's bandToServedTier.
+  // The dungeon's textTierRange (config/dungeon-tiers.ts) — turns the rolled
+  // band into the served tier via engine/dice/band.ts's bandToServedTier.
   textTierRange: readonly [TextTier, TextTier]
-  intTierCap: TextTier
   // A seeded Rng (engine/rng.ts) — the caller owns it since the roll is
   // ephemeral simulation state (never persisted), same home as the battle's
   // own rng.
@@ -89,7 +87,7 @@ const bandPanelStyle = (roll: EncounterRoll): BandPanelStyle => {
   }
   return {
     title: `${roll.band} band`,
-    body: 'The rolled difficulty for this fight — capped by how far you can read.',
+    body: 'The rolled difficulty for this fight.',
     border: 'border-accent-gold-bright bg-accent-gold-bright/10',
     text: 'text-accent-gold-bright',
   }
@@ -190,10 +188,7 @@ const EncounterDiceView = ({ roll, rolling, dice, activeBand, gate }: EncounterD
 
       {gate && (
         <p className="mb-4 text-center font-mono text-[9.5px] text-node-locked-text-dim">
-          band capped by INT (tier {dice.intTierCap}) —{' '}
-          {gate.servedTier >= gate.targetTier
-            ? 'you can read this tier'
-            : `served tier ${gate.servedTier} instead of ${gate.targetTier}`}
+          reading tier {gate.servedTier}
         </p>
       )}
     </div>
@@ -233,7 +228,7 @@ const EncounterModal = ({ headline, subtext, danger = false, onBegin, dice }: En
 
   const gate = useMemo(() => {
     if (!dice || !roll) return null
-    return bandToServedTier(roll.band, dice.textTierRange, dice.intTierCap)
+    return bandToServedTier(roll.band, dice.textTierRange)
   }, [dice, roll])
 
   const handleReroll = (): void => {

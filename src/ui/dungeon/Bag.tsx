@@ -50,8 +50,8 @@ const describeEffect = (item: ItemConfig): string => {
       return `+${effect.bonus} to encounter rolls · ${duration}`
     case 'crit-boost':
       return `+crit chance & damage · ${duration}`
-    case 'int-tier-cap-bonus':
-      return `+${effect.tiers} INT tier cap · ${duration}`
+    case 'int-roll-bonus':
+      return `+${effect.bonus} to encounter rolls (reading) · ${duration}`
     case 'heroism':
       return `+${Math.round(effect.bonusHpPct * 100)}% HP, fumble-immune · ${duration}`
     default:

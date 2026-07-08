@@ -2,10 +2,38 @@ import type { CombatConfig, DamageResult, Rng, TextTier } from '../domain/types'
 import { rollDie } from './rng'
 
 // Longer prompts hit harder — the direct payoff for the skill tree unlocking
-// longer text. Clamped to a floor so a short prompt can't drive damage to ~0.
+// longer text. Below reference length, clamped to a floor so a short prompt
+// can't drive damage to ~0. Above reference length, soft-capped with
+// diminishing returns (content-plan-v2-tuning.html §8.1): the M4 content
+// wiring stretched prompts from ~220 chars to ~2000, and the old
+// `1 + (charCount-referenceLength)/referenceLength` was uncapped above 1, so
+// a 2000-char boss prompt yielded a ~166x multiplier that one-shot bosses
+// regardless of their HP (§7 Finding 1). The knee below is a soft asymptote,
+// not a hard clip — every additional char still adds *something*, but the
+// total can never exceed `lengthFactorCap`, which lets content/monsters.json
+// author boss HP against a bounded hit distribution (see engine/sim/
+// balance.ts's hitMagnitudes).
+//
+// Shaped as a rational (Michaelis-Menten-style) knee rather than an
+// exponential one: `softened = capExcess * excess / (excess + capExcess)`.
+// Both shapes start at slope 1 right at reference length (so short/moderate
+// prompts are barely affected, same as the old linear formula) and both
+// asymptote to `lengthFactorCap`, but the exponential form saturates FAR too
+// fast for this game's dynamic range — content spans a ~150x spread in
+// prompt length (16 chars at tier 1 to ~2000 at tier 14), and an exponential
+// knee was already >99% saturated by tier 12, making tiers 12-14 all measure
+// the same lengthFactor despite a 700 -> 2000 char difference (a de facto
+// hard clip, exactly what this shape is supposed to avoid). The rational
+// form's much longer tail (half the ceiling's remaining room is only used up
+// once excess = capExcess, and it keeps inching up well past that) keeps
+// every tier distinguishable while still bounding the runaway.
 export const lengthFactor = (charCount: number, combat: CombatConfig): number => {
   const raw = 1 + (charCount - combat.referenceLength) / combat.referenceLength
-  return Math.max(combat.lengthFactorFloor, raw)
+  if (raw <= 1) return Math.max(combat.lengthFactorFloor, raw)
+  const excess = raw - 1
+  const capExcess = combat.lengthFactorCap - 1
+  const softenedExcess = (capExcess * excess) / (excess + capExcess)
+  return 1 + softenedExcess
 }
 
 // 2x for a same-instant finish, down to 1x at exactly the time limit. Since an

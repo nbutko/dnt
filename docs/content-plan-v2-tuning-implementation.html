@@ -159,7 +159,15 @@
   <p><strong>Done when:</strong> the sweep shows on-track boss fights landing at ~target hits-to-kill (not 1.0)
   across D1–D11, no corner one-shotting, and the level↔wpm tradeoff reading the right way round (behind safer than
   ahead, not the inversion §7 measured) — verified by re-running <code>retune-sweep.ts</code>.</p>
-  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  <p><strong>Landed:</strong> <code>lengthFactor</code> soft-capped by a rational (Michaelis–Menten)
+  knee asymptoting to <code>combat.lengthFactorCap = 20</code> (chosen over an exponential knee, which saturated
+  tiers&nbsp;12–14 to the same value across this game's ~150× length range); all 11 boss HP + the 47-monster
+  regular roster re-authored via <code>balance.ts</code>'s new <code>hitMagnitudes</code> helper. Sweep: htk floor
+  ~2.0 (no more 1.0 one-shots), tradeoff un-inverted (behind ≥ ahead everywhere; D9 was behind 40 / ahead 95 → now
+  behind 98 / ahead 88). Known residuals handed to later stories: D1 low-end still unwinnable (Story&nbsp;4),
+  Wizard spread + D9–D11 htk running under target because <code>weaponForTierLevel</code> plateaus at tier-3
+  (Story&nbsp;3).</p>
+  <div class="status"><span class="done">☑ Code merged</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
 </div>
 
 <div class="milestone" id="story-2">

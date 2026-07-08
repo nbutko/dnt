@@ -9,7 +9,7 @@ import type { BattleEvent, CombatConfig, Monster, TextTier } from '../../domain/
 import { createBattle } from '../battle'
 import { ASI_POINTS_PER_LEVEL, DEFAULT_LEVELING_CONFIG, type LevelingConfig } from '../character/leveling'
 import { DEFAULT_MODIFIERS_CONFIG, resolveModifiers, type ModifiersConfig } from '../character/modifiers'
-import { tierGatePenalty } from '../damage'
+import { lengthFactor, tierGatePenalty } from '../damage'
 import { bandToServedTier } from '../dice/band'
 import {
   DEFAULT_ENCOUNTER_ROLL_CONFIG,
@@ -209,6 +209,66 @@ export const representativeAbilities = (
   const asiTarget = weaponAbility ?? primary
   scores[asiTarget] += asisReached * ASI_POINTS_PER_LEVEL
   return scores
+}
+
+// --- Story 1 (M4/M5 retune): the hit distribution HP is authored against ---
+//
+// content-plan-v2-tuning.html §8.1: a "reference hit" isn't one number, it's
+// a range from a weak roll (min dice, no crit) to a strong roll (max dice +
+// crit) that widens with level, and monster HP has to be authored so BOTH
+// tails behave (weak doesn't slog, strong never one-shots). This is the
+// closed-form companion to simulateCharacterBattles's Monte-Carlo sample —
+// same spirit as combat-invariants.ts's expectedAverageHitDamage (an exact
+// expectation, not a sampled one), extended to fold in lengthFactor, since
+// sizing HP against the served tier's (capped) prompt length is exactly what
+// this story tunes. speedBonus is deliberately left out, the same
+// simplification docs/content-plan-v2-tuning.html §3's own battle-shape model
+// makes ("speed bonus... ignored here — the sim [is what] models [it]") —
+// this helper is a theory-only aid for picking a first-pass HP number; the
+// real convergence check is re-running content-pipeline/retune-sweep.ts.
+// Also deliberately mirrors the CURRENT engine, not Story 3's future crit
+// wiring: crit chance is the flat combat.criticalChance (rollIsCrit doesn't
+// read critChanceBonus yet — the CLAUDE.md gotcha), so this stays consistent
+// with what the sweep actually measures today.
+export interface HitMagnitudes {
+  weak: number
+  average: number
+  strong: number
+}
+
+export const hitMagnitudes = (
+  characterClass: CharacterClass,
+  level: number,
+  weapon: WeaponConfig,
+  tier: TextTier,
+  combat: CombatConfig,
+  cfg: ModifiersConfig = DEFAULT_MODIFIERS_CONFIG,
+): HitMagnitudes => {
+  const abilities = representativeAbilities(characterClass, level, weapon.ability, cfg.leveling)
+  const character: Character = { name: 'sim', class: characterClass, level, xp: 0, abilities, pendingAsi: 0 }
+  const modifiers = resolveModifiers(character, weapon, [], cfg)
+  const { damageScale } = cfg.abilities
+  const lf = lengthFactor(promptForTier(tier).length, combat)
+
+  const dieAvg = (modifiers.weaponDie + 1) / 2
+  const sneakAvg = modifiers.sneakAttackDice * 3.5
+  const sneakMax = modifiers.sneakAttackDice * 6
+  // Sneak Attack always rides a crit in steady state (isSneakAttack =
+  // forceSneakAttack || isCrit — forceSneakAttack only ever fires once, on
+  // the fight's first hit), so both the average crit contribution and the
+  // strong (crit) tail fold it in; the weak (no-crit) tail never does.
+  const critChance = combat.criticalChance
+  const avgCritDiceTotal = modifiers.arcaneCritMult * dieAvg + sneakAvg
+  const avgDiceTotal = (1 - critChance) * dieAvg + critChance * avgCritDiceTotal
+  const strongDiceTotal = modifiers.arcaneCritMult * modifiers.weaponDie + sneakMax
+
+  const scale = (diceTotal: number): number => (diceTotal + modifiers.weaponAbilityMod) * damageScale * lf
+
+  return {
+    weak: scale(1),
+    average: scale(avgDiceTotal),
+    strong: scale(strongDiceTotal),
+  }
 }
 
 export interface SimulatedCharacter {

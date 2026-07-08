@@ -10,6 +10,12 @@ const combatConfig: CombatConfig = {
   baseDamage: 10,
   referenceLength: 12,
   lengthFactorFloor: 0.25,
+  // Soft ceiling lengthFactor asymptotically approaches — see engine/
+  // damage.ts's lengthFactor and domain/types.ts's CombatConfig doc comment.
+  // Landed via content-pipeline/retune-sweep.ts against content/monsters.json's
+  // re-authored boss HP (content-plan-v2-tuning-implementation.html Story 1):
+  // tuned together, not derived on paper.
+  lengthFactorCap: 20,
   // Loosened from 15 after real playtesting felt rushed: the countdown
   // starts the instant a prompt appears, so the budget also has to cover
   // reading the line, not just typing it. See playerReadingBufferMs below.

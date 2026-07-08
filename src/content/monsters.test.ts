@@ -17,7 +17,7 @@ describe('monsters', () => {
 
   it('looks up a monster by id', () => {
     const slime = getMonster('slime')
-    expect(slime.hp).toBe(40)
+    expect(slime.hp).toBe(35)
     expect(slime.textTier).toBe(1)
     expect(slime.role).toBe('regular')
   })

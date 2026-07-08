@@ -7,6 +7,7 @@ const combat: CombatConfig = {
   baseDamage: 10,
   referenceLength: 10,
   lengthFactorFloor: 0.25,
+  lengthFactorCap: 20,
   playerBaselineWpm: 15,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 3000,

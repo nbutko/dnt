@@ -11,6 +11,7 @@ import { CLASSES, TIER_LEVEL_SAMPLES } from './combat-invariants'
 import {
   bossOf,
   cheapestRegularOf,
+  hitMagnitudes,
   representativeAbilities,
   simulateBattles,
   simulateCharacterBattles,
@@ -269,5 +270,54 @@ describe('Story 13 — the whole-pipeline metrics table', () => {
       }
     }
     console.info(`\n${rows.join('\n')}\n`)
+  })
+})
+
+// Story 1 (M4/M5 retune, content-plan-v2-tuning-implementation.html#story-1):
+// hitMagnitudes is the closed-form "reference hit" range HP is authored
+// against — weak (min dice, no crit) to strong (max dice + crit), against the
+// now-capped lengthFactor. Pinned for a real, shipped boss (D1's Goblin Boss)
+// so a future edit to config/combat.ts's lengthFactorCap or content/
+// monsters.json's HP can't silently reopen the one-shot problem this story
+// closes.
+describe('hitMagnitudes — the weak/average/strong reference-hit range (Story 1)', () => {
+  const D1_BOSS_ON_TRACK_LEVEL = 2
+
+  it.each(CLASSES)('%s: weak <= average <= strong, and the strong tail never one-shots the D1 boss', (cls) => {
+    const boss = bossOf(1)
+    const weapon = weaponForTierLevel(cls, D1_BOSS_ON_TRACK_LEVEL)
+    const magnitudes = hitMagnitudes(cls, D1_BOSS_ON_TRACK_LEVEL, weapon, boss.textTier, combat)
+
+    expect(magnitudes.weak).toBeLessThanOrEqual(magnitudes.average)
+    expect(magnitudes.average).toBeLessThanOrEqual(magnitudes.strong)
+    // The crisp low-K bounding rule (content-plan-v2-tuning.html §8.1): the
+    // strongest realistic single hit (max dice + crit) stays STRICTLY below
+    // the boss's whole HP bar — no build, at this boss's on-track level,
+    // one-shots it.
+    expect(magnitudes.strong).toBeLessThan(boss.hp)
+    // And with real headroom, not just barely — strong should sit well under
+    // half the bar, since the real engine ALSO applies a speedBonus (up to
+    // 2x, deliberately excluded from this theory-only helper — see its doc
+    // comment) on top of dice/crit variance.
+    expect(magnitudes.strong).toBeLessThan(boss.hp * 0.75)
+  })
+
+  it("two weak hits lose to the D1 boss's HP but ~K average hits win it (the low-K bounding rule)", () => {
+    const boss = bossOf(1)
+    const targetPrompts = 4 // docs/content-plan-v2-tuning.html §3's D1 target
+    const weapon = weaponForTierLevel('fighter', D1_BOSS_ON_TRACK_LEVEL)
+    const magnitudes = hitMagnitudes('fighter', D1_BOSS_ON_TRACK_LEVEL, weapon, boss.textTier, combat)
+
+    expect(magnitudes.average * targetPrompts).toBeGreaterThan(boss.hp * 0.6)
+    expect(magnitudes.average * targetPrompts).toBeLessThan(boss.hp * 1.6)
+  })
+
+  it('scales up with charCount (a higher-tier boss reads a longer prompt, hits harder) but stays capped', () => {
+    const weapon = weaponForTierLevel('fighter', 15)
+    const lowTier = hitMagnitudes('fighter', 15, weapon, 4, combat)
+    const highTier = hitMagnitudes('fighter', 15, weapon, 14, combat)
+
+    expect(highTier.average).toBeGreaterThan(lowTier.average)
+    expect(highTier.strong).toBeGreaterThan(lowTier.strong)
   })
 })

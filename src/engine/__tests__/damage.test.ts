@@ -7,6 +7,7 @@ const baseCombat: CombatConfig = {
   baseDamage: 10,
   referenceLength: 10,
   lengthFactorFloor: 0.25,
+  lengthFactorCap: 6,
   playerBaselineWpm: 15,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 3000,
@@ -22,14 +23,60 @@ describe('lengthFactor', () => {
   it.each([
     { charCount: 10, expected: 1 },
     { charCount: 5, expected: 0.5 },
-    { charCount: 20, expected: 2 },
-  ])('charCount $charCount -> $expected', ({ charCount, expected }) => {
+  ])('charCount $charCount -> $expected (at/below reference, untouched by the cap)', ({ charCount, expected }) => {
     expect(lengthFactor(charCount, baseCombat)).toBeCloseTo(expected)
   })
 
   it('clamps a very short prompt to the floor instead of going to zero/negative', () => {
     expect(lengthFactor(1, baseCombat)).toBe(baseCombat.lengthFactorFloor)
     expect(lengthFactor(0, baseCombat)).toBe(baseCombat.lengthFactorFloor)
+  })
+
+  // The M4 retune's soft knee (content-plan-v2-tuning.html §8.1): unlike the
+  // old uncapped `1 + (charCount-referenceLength)/referenceLength`, growth
+  // above reference length now bends over toward lengthFactorCap instead of
+  // climbing forever.
+  it('stays close to the old linear formula just above reference length (the knee has barely started)', () => {
+    // charCount 11, referenceLength 10 -> raw 1.1, excess only 0.1 against a
+    // capExcess of 5 -- softening is still tiny here.
+    expect(lengthFactor(11, baseCombat)).toBeCloseTo(1.1, 1)
+  })
+
+  it('bends below the old linear projection once the prompt runs well past reference length', () => {
+    const oldUncappedFormula = 1 + (200 - baseCombat.referenceLength) / baseCombat.referenceLength // 20
+    expect(lengthFactor(200, baseCombat)).toBeLessThan(oldUncappedFormula)
+  })
+
+  it('never exceeds lengthFactorCap no matter how long the prompt gets', () => {
+    for (const charCount of [200, 700, 2000, 50000]) {
+      expect(lengthFactor(charCount, baseCombat)).toBeLessThanOrEqual(baseCombat.lengthFactorCap)
+    }
+  })
+
+  it('approaches the cap gradually (a soft knee, not a hard clip at some fixed length)', () => {
+    // Three widely-spaced, very-long prompts should each sit strictly
+    // between the previous one and the cap — still climbing, never flat —
+    // which is exactly the property an exponential-shaped knee violates at
+    // this dynamic range (it saturates to the same value for every one of
+    // these once excess is a few multiples of capExcess; see the lengthFactor
+    // doc comment on why a rational/hyperbolic knee replaces it).
+    const moderatelyLong = lengthFactor(160, baseCombat)
+    const long = lengthFactor(700, baseCombat)
+    const veryLong = lengthFactor(2000, baseCombat)
+    expect(moderatelyLong).toBeGreaterThan(baseCombat.lengthFactorFloor)
+    expect(long).toBeGreaterThan(moderatelyLong)
+    expect(veryLong).toBeGreaterThan(long)
+    expect(veryLong).toBeLessThan(baseCombat.lengthFactorCap)
+  })
+
+  it('is monotonically increasing in charCount (no reward ever goes backwards)', () => {
+    const lengths = [0, 5, 10, 11, 20, 50, 100, 300, 700, 2000, 50000]
+    let prev = -Infinity
+    for (const charCount of lengths) {
+      const lf = lengthFactor(charCount, baseCombat)
+      expect(lf).toBeGreaterThanOrEqual(prev)
+      prev = lf
+    }
   })
 })
 
@@ -103,13 +150,15 @@ describe('computeDamage', () => {
       damageScale: 1,
       powerUpMultiplier: 2,
     })
-    // lengthFactor(20) = 2, speedBonus(0/1000) = 2, crit off (chance 0) -> one
-    // d6 roll + mod 2, powerUp = 2.
+    // lengthFactor(20) is now soft-capped (no longer a clean 2x — see the
+    // lengthFactor describe block above), speedBonus(0/1000) = 2, crit off
+    // (chance 0) -> one d6 roll + mod 2, powerUp = 2.
     expect(result.diceRolled).toHaveLength(1)
     const [roll] = result.diceRolled
     expect(roll).toBeGreaterThanOrEqual(1)
     expect(roll).toBeLessThanOrEqual(6)
-    expect(result.damage).toBeCloseTo((roll + 2) * 1 * 2 * 2 * 2)
+    const expectedLf = lengthFactor(20, baseCombat)
+    expect(result.damage).toBeCloseTo((roll + 2) * 1 * expectedLf * 2 * 2)
     expect(result.isCrit).toBe(false)
   })
 

@@ -273,6 +273,137 @@
   item in the step-B.2 change plan (knob values, HP authoring, new gear, crit wiring).
 </p>
 
+<h2 id="findings">7. Where we actually are — step A findings</h2>
+<p>
+  Measured with <code>content-pipeline/retune-sweep.ts</code> (40 battles per cell, every dungeon boss × corner ×
+  class, gear = <code>weaponForTierLevel</code>, a fixed 0.92-accuracy typist), run against the real engine after
+  the INT→roll fix landed. The surface misses the targets badly — and in a way that names exactly what to fix.
+</p>
+<table>
+  <tr><th>Boss</th><th>target htk</th><th>measured htk</th><th>on-track win% (F/W/R/B)</th><th>behind vs ahead win%</th></tr>
+  <tr><td>D1 · T4</td><td>4</td><td>~2.2</td><td>3 / 3 / 0 / 0</td><td>all ≤3% — unwinnable</td></tr>
+  <tr><td>D6 · T9</td><td>6</td><td>~1.4</td><td>95 / 90 / 98 / 98</td><td>behind 75–100 · ahead 48–100</td></tr>
+  <tr><td>D8 · T11</td><td>6</td><td>~1.2</td><td>83 / <strong>25</strong> / 95 / 88</td><td>behind 75–98 · ahead 50–95</td></tr>
+  <tr><td>D9 · T12</td><td>5</td><td><strong>1.0</strong></td><td>88 / 88 / 95 / 90</td><td><strong>behind 40 · ahead 95</strong></td></tr>
+  <tr><td>D10 · T13</td><td>4</td><td><strong>1.0</strong></td><td>10 / 10 / 93 / 93</td><td><strong>behind 3–15 · ahead 95–98</strong></td></tr>
+  <tr><td>D11 · T14</td><td>3</td><td><strong>1.0</strong></td><td>100 / 100 / 100 / 100</td><td>behind 100 · ahead 100</td></tr>
+</table>
+
+<h3>Finding 1 — hits-to-kill has collapsed toward 1</h3>
+<p>
+  Target 3–6; measured ~1–2.6, landing at a literal <strong>1.0 from D9 on</strong>. <code>htk = 1.0</code> means
+  the boss dies to a <em>single landed hit</em> — the uncapped <code>lengthFactor</code> on a 700–2000-char
+  prompt makes one hit exceed the boss's whole HP bar. The <strong>T14 final boss is a 100%-win, one-prompt,
+  ~4-minute anticlimax</strong> for every class at every corner. Even the low-tier bosses land at htk ~1.5–2.6
+  against a 4–6 target: monster HP is universally far too low relative to per-hit damage.
+</p>
+
+<h3>Finding 2 — the level↔wpm tradeoff <em>inverts</em> at high tiers</h3>
+<p>
+  Because you can't kill in fewer than one hit, level and gear stop mattering above ~D8 — the fight is decided
+  purely by whether you type the one wall before the monster whittles your HP down, i.e. <strong>wpm
+  only</strong>. So the <em>behind</em> corner (over-leveled, slow) becomes the <em>worst</em>, not the safest:
+  D9 behind <strong>40%</strong> vs ahead <strong>95%</strong>; D10 behind <strong>3–15%</strong> vs ahead
+  <strong>95–98%</strong>. The entire tradeoff surface this doc is built on is broken past the mid-game.
+</p>
+<div class="callout why">
+  <strong>Why it inverts — two axes, and one of them is too coarse.</strong> Combat moves along two axes: a
+  <strong>discrete hit-count axis</strong> (HP, damage, dice, crits — level / gear / STR / DEX change the fight
+  in whole-hit steps) and a <strong>linear tempo axis</strong> (WIS buys time on <em>your</em> clock; CHA
+  "charms" the monster — it mistypes, loses focus — slowing <em>its</em> clock). When htk ≈ 1 the discrete axis
+  is far too coarse to tune anything: a whole extra level may not change the integer hit count at all, so it
+  buys nothing, while a linear sliver of time always helps. That is precisely why the fast corner wins and the
+  over-leveled corner doesn't. It also names the most reliable <em>behind</em> / attrition build at high level:
+  <strong>CHA + WIS</strong> — the only two levers that buy time <em>linearly</em> against a fast monster
+  instead of in lumpy whole-hit steps (this sharpens the "tank" build in §3 from CON+WIS toward CHA+WIS as the
+  true tempo build).
+</div>
+
+<h3>Finding 3 — large class spread; Wizard loses, Rogue wins</h3>
+<p>
+  On-track Wizard runs <strong>25–90%</strong> where Fighter / Rogue / Bard run 88–100% (D8 on-track Wizard =
+  <strong>25%</strong>). The wand is a d6 with no upgrade path; Rogue's sneak-attack burst wins the one-shot
+  races. Much of this spread is <em>inflated</em> by the htk≈1 collapse — when the fight is one coin-flip hit,
+  second-order effects (sneak attack, intimidate, a wider die) swing it wildly — so fixing Finding 1 will
+  compress the spread on its own. But the wand/gear gap is real and survives the fix.
+</p>
+
+<h3>Finding 4 — the low end is broken too, opposite direction</h3>
+<p>
+  D1 on-track (L2 @ 10 wpm) wins <strong>~3%</strong> for every class — a beginner literally cannot beat the
+  first boss, which the anchors say should be easy. At L2 there is too little HP to survive to the ~2nd hit
+  against the boss's cadence. So <em>both</em> ends fail: slow / low-level can't survive; fast / high-tier
+  one-shots. The retune has to widen the survivable band at the bottom while capping the runaway at the top.
+</p>
+
+<h2 id="remediation">8. Remediation plan (B.2)</h2>
+<p>
+  Priority order, highest-leverage first. Each item is re-measured by re-running the step-A sweep, so we watch
+  the surface converge on §2/§3 rather than guess.
+</p>
+
+<h3>8.1 — Keystone: cap <code>lengthFactor</code> + author HP against the hit <em>distribution</em></h3>
+<p>
+  One change fixes Findings 1 and 2 and shrinks Finding 3. Soft-cap <code>lengthFactor</code> so a single hit
+  can't run away, and author each boss's HP so the fight lands on its target #prompts.
+</p>
+<div class="callout decision">
+  <strong>HP is tuned against the hit <em>distribution</em>, not a point estimate.</strong> A "reference hit"
+  isn't one number — it's a range from a <em>weak</em> roll (min dice, no crit) to a <em>strong</em> roll (max
+  dice + crit), and that spread <em>widens with level</em> (bigger dice, crits roll more dice, ability mod grows
+  — the non-linearity, and it bites hardest at high level). Author boss HP so both tails behave:
+  <ul style="margin:0.4rem 0 0;">
+    <li><strong>the strong tail never one-shots</strong> — the biggest realistic hit (max dice + crit) stays strictly below full HP; and</li>
+    <li><strong>the weak tail doesn't slog</strong> — an average / weak hit is a meaningful fraction of HP, so the fight resolves near its target #prompts rather than dragging.</li>
+  </ul>
+  The crisp bounding rule (low-K case): <strong>two weak hits win, one strong hit doesn't</strong> — a weak hit
+  reliably just over half of HP, a strong hit reliably under all of it. Generalized to a K-prompt boss: ~K
+  average hits win, and the strongest single hit stays well short of a one-shot. <strong>The
+  <code>lengthFactor</code> / crit cap exists precisely to <em>compress</em> the weak→strong spread</strong>
+  enough that both bounds can hold at once — without it, raising HP to kill one-shots (strong tail) stretches
+  the weak-hit count far past K, and lowering HP to hit K re-opens the one-shot.
+</div>
+
+<h3>8.2 — Make the two <em>linear</em> levers strong: WIS (your time) and CHA (charm)</h3>
+<p>
+  Finding 2's two-axis insight: at high tiers, where the discrete hit axis is too coarse, WIS and CHA are the
+  only smooth controls — and the only viable path for a slow-typing, over-leveled player. They must be
+  <em>meaningful, genuinely linear</em> magnitudes, not token amounts.
+</p>
+<div class="callout open">
+  Consider implementing <strong>CHA as a monster <em>mistype / accuracy</em> cut</strong> ("charm — the monster
+  loses focus, fumbles its own line"), not only the current flat wpm cut. It fits the fantasy and gives a
+  <em>second</em> linear time-buyer distinct from WIS: WIS lengthens your clock, CHA shortens the monster's
+  effective output. Together they're what makes the attrition / "behind" corner winnable once htk is restored —
+  so their magnitudes should be tuned <em>after</em> 8.1, against the corrected fight length.
+</div>
+
+<h3>8.3 — Gear ladder + Wizard + crit wiring</h3>
+<p>
+  Attacks Finding 3 and gives the discrete axis somewhere to grow. Extend weapons the length of the game (per
+  governing ability, so every class upgrades); give the Wizard a wand-line upgrade path so it isn't stuck on a
+  d6; wire the dead crit subsystem (DEX crit chance, weapon <code>critRange</code>, the crit-boost item) — which
+  also turns 8.1's "strong tail" into a real, tunable quantity instead of a flat 10% / ×2. Add persistent
+  defense / HP gear so survivability is a purchasable axis, and price items so a flaw can be counter-balanced at
+  each tier.
+</p>
+
+<h3>8.4 — Low-end survivability</h3>
+<p>
+  Finding 4: an ~10-wpm, level-2 typist must actually clear the D1 boss (the on-track anchor). Widen the bottom
+  of the band — more low-level HP, and/or a gentler early-boss attack cadence — without touching the top, so the
+  first boss is a fair first fight rather than a wall. Re-check with the sweep at the low corners specifically.
+</p>
+
+<h3>8.5 — Re-enable the parked invariants &amp; re-sweep</h3>
+<p>
+  Two invariants are parked on 8.1: <code>sweepHitsToKillBand</code> and <code>sweepTierMonotonicity</code>
+  (<code>combat-invariants.test.ts</code>). Re-shape both against the §3 targets and un-skip them, then re-run
+  <code>retune-sweep.ts</code> to confirm the whole surface converged: on-track a comfortable win at ~target htk,
+  ahead marginal, behind safe (via CHA+WIS), the impossible corners actually losing, and the class spread inside
+  a reasonable band.
+</p>
+
 </main>
 <footer class="page-foot">
   Dungeons &amp; Typing — combat tuning targets (M4/M5). Targets only; validated by simulation before any knob moves.

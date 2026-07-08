@@ -33,6 +33,7 @@ const baseModifiers: PlayerModifiers = {
   powerUpMult: 1,
   dodgeChance: 0,
   intimidateWpmCut: 0,
+  charmAccuracyCut: 0,
   weaponDie: 8,
   weaponAbilityMod: 2,
   critRange: 20,
@@ -108,23 +109,49 @@ describe('resolveFightTier', () => {
 
 describe('intimidatedMonster', () => {
   it('cuts the monster wpm by the given fraction', () => {
-    const debuffed = intimidatedMonster(baseMonster, 0.2)
+    const debuffed = intimidatedMonster(baseMonster, 0.2, 0)
     expect(debuffed.wpm).toBeCloseTo(16) // 20 * 0.8
   })
 
   it('no cut (0) leaves wpm unchanged', () => {
-    const debuffed = intimidatedMonster(baseMonster, 0)
+    const debuffed = intimidatedMonster(baseMonster, 0, 0)
     expect(debuffed.wpm).toBe(baseMonster.wpm)
   })
 
-  it('floors the multiplier at 10% of original wpm for an extreme cut', () => {
-    const debuffed = intimidatedMonster(baseMonster, 5) // an absurd 500% cut
+  it('floors the wpm multiplier at 10% of original wpm for an extreme cut', () => {
+    const debuffed = intimidatedMonster(baseMonster, 5, 0) // an absurd 500% cut
     expect(debuffed.wpm).toBeCloseTo(baseMonster.wpm * 0.1)
   })
 
-  it('a negative cut (very low CHA) can raise wpm back up, but only ever wpm — no other field changes', () => {
-    const debuffed = intimidatedMonster(baseMonster, -0.1)
+  it('a negative wpm cut (very low CHA) can raise wpm back up, but only ever wpm/accuracy — no other field changes', () => {
+    const debuffed = intimidatedMonster(baseMonster, -0.1, 0)
     expect(debuffed.wpm).toBeCloseTo(22) // 20 * 1.1
     expect({ ...debuffed, wpm: baseMonster.wpm }).toEqual(baseMonster)
+  })
+
+  it('charm cuts the monster accuracy by the given fraction', () => {
+    const debuffed = intimidatedMonster(baseMonster, 0, 0.2)
+    expect(debuffed.accuracy).toBeCloseTo(0.72) // 0.9 * 0.8
+  })
+
+  it('no charm cut (0) leaves accuracy unchanged', () => {
+    const debuffed = intimidatedMonster(baseMonster, 0, 0)
+    expect(debuffed.accuracy).toBe(baseMonster.accuracy)
+  })
+
+  it('floors the charm multiplier at 10% of original accuracy for an extreme cut', () => {
+    const debuffed = intimidatedMonster(baseMonster, 0, 5) // an absurd 500% cut
+    expect(debuffed.accuracy).toBeCloseTo(baseMonster.accuracy * 0.1)
+  })
+
+  it('a negative charm cut can raise accuracy back up, but never past 1', () => {
+    const debuffed = intimidatedMonster(baseMonster, 0, -5) // an absurd inflate
+    expect(debuffed.accuracy).toBe(1)
+  })
+
+  it('wpm and charm cuts apply independently, in the same call', () => {
+    const debuffed = intimidatedMonster(baseMonster, 0.2, 0.3)
+    expect(debuffed.wpm).toBeCloseTo(16) // 20 * 0.8
+    expect(debuffed.accuracy).toBeCloseTo(0.63) // 0.9 * 0.7
   })
 })

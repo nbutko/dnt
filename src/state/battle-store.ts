@@ -21,12 +21,25 @@ export interface BattleStore {
 // object handed to createBattle, so every prompt this fight reads the
 // already-debuffed wpm without re-applying it per prompt. Floored at 10% of
 // the original wpm so an extreme cut (or a very negative CHA inflating it
-// the other way) can never zero out or invert the monster's speed. A pure,
-// synchronous export (unlike createBattleStore below) so it's headlessly
-// testable without the async text-bank lookup.
-export const intimidatedMonster = (monster: Monster, intimidateWpmCut: number): Monster => ({
+// the other way) can never zero out or invert the monster's speed.
+//
+// Story 2 (content-plan-v2-tuning-implementation.html): CHA "charm" is the
+// analogous second cut, on the monster's effective *accuracy*
+// (engine/monster-typing.ts's monster.accuracy) instead of its wpm — the
+// monster mistypes its own line more, self-corrects longer, and lands hits
+// slower, a lever distinct from simply slowing it down. Same 10%-of-original
+// floor, and clamped at 1 on the other end (a very negative CHA can inflate
+// accuracy, but never past certain). A pure, synchronous export (unlike
+// createBattleStore below) so it's headlessly testable without the async
+// text-bank lookup.
+export const intimidatedMonster = (
+  monster: Monster,
+  intimidateWpmCut: number,
+  charmAccuracyCut: number,
+): Monster => ({
   ...monster,
   wpm: monster.wpm * Math.max(0.1, 1 - intimidateWpmCut),
+  accuracy: Math.min(1, monster.accuracy * Math.max(0.1, 1 - charmAccuracyCut)),
 })
 
 // The dungeon's frozen encounter roll (Story 6's EncounterModal, committed to
@@ -115,7 +128,7 @@ export const createBattleStore = async (
 
   const battle = createBattle({
     combat: { ...combat, playerMaxHp: modifiers.maxHp },
-    monster: intimidatedMonster(monster, modifiers.intimidateWpmCut),
+    monster: intimidatedMonster(monster, modifiers.intimidateWpmCut, modifiers.charmAccuracyCut),
     playerPrompts,
     monsterPrompts,
     rng,

@@ -228,6 +228,7 @@ export const sweepWeaponDieMonotonicity = (): InvariantViolation[] => {
     powerUpMult: 1,
     dodgeChance: 0,
     intimidateWpmCut: 0,
+    charmAccuracyCut: 0,
     weaponDie: 4,
     weaponAbilityMod: 2,
     critRange: 20,
@@ -276,6 +277,7 @@ const abilityChecks = (): AbilityCheck[] => [
   { ability: 'int', weapon: getWeapon('wand'), level: 1, read: (m) => m.encounterBonus, label: 'INT -> encounterBonus' },
   { ability: 'wis', weapon: getWeapon('wand'), level: 1, read: (m) => m.timeBudgetBonusMs, label: 'WIS -> timeBudgetBonusMs' },
   { ability: 'cha', weapon: getWeapon('rapier'), level: 1, read: (m) => m.intimidateWpmCut, label: 'CHA -> intimidateWpmCut' },
+  { ability: 'cha', weapon: getWeapon('rapier'), level: 1, read: (m) => m.charmAccuracyCut, label: 'CHA -> charmAccuracyCut' },
   // CON only grants HP from level 2 on (level 1's HP is hit-die-only, per
   // engine/character/leveling.ts's grantsForLevel) — level 5 so it's visible.
   { ability: 'con', weapon: getWeapon('longsword'), level: 5, read: (m) => m.maxHp, label: 'CON -> maxHp' },

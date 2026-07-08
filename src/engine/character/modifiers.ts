@@ -164,6 +164,7 @@ export const resolveModifiers = (
   const powerUpMult = 1 + buffs.powerUpMultBonus
   const dodgeChance = cfg.abilities.dexDodgeChancePctPerMod * abilityMod(abilities.dex)
   const intimidateWpmCut = cfg.abilities.chaIntimidateWpmCutPctPerMod * abilityMod(abilities.cha)
+  const charmAccuracyCut = cfg.abilities.chaCharmAccuracyCutPctPerMod * abilityMod(abilities.cha)
 
   const sneakAttackDice = feature.kind === 'cunning' ? feature.sneakAttackDice : 0
   const secondWind =
@@ -185,6 +186,7 @@ export const resolveModifiers = (
     powerUpMult,
     dodgeChance,
     intimidateWpmCut,
+    charmAccuracyCut,
     weaponDie: weapon.die,
     weaponAbilityMod: abilityMod(abilities[weapon.ability]),
     critRange: weapon.critRange,

@@ -200,7 +200,19 @@
   <p><strong>Done when:</strong> a CHA+WIS "behind" build at the §2 behind-corner level/wpm wins safely on the
   sweep where §7 had it losing, and the two levers read as smooth/linear (each point of WIS or CHA moves survival
   by a steady amount, not in lumpy steps).</p>
-  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  <p><strong>Landed:</strong> WIS <code>wisTimeBudgetMsPerMod</code> 300 → 1200 (+3.6s of budget at +3 WIS, enough
+  to dent <code>speedBonus</code>/expire outcomes instead of rounding away). CHA gains <strong>charm</strong>: new
+  <code>chaCharmAccuracyCutPctPerMod</code> (0.05 → −25% monster accuracy at +5 CHA) → a new
+  <code>PlayerModifiers.charmAccuracyCut</code>, computed in <code>modifiers.ts</code> and applied in
+  <code>battle-store.ts</code>'s <code>intimidatedMonster()</code> (mirrored in <code>balance.ts</code>'s sim,
+  since <code>engine/</code> can't import <code>state/</code>) — it cuts the monster's effective accuracy the same
+  way <code>intimidateWpmCut</code> cuts its wpm, read at <code>monster-typing.ts</code>'s per-char typo roll.
+  Flows through <code>resolveModifiers()</code>. Targeted behind-corner check (throwaway, not committed): a
+  +5 WIS/+5 CHA build vs a mod-0 build at identical level/wpm/weapon — D1 0 → 98%, D5 73 → 100%, D6 54 → 100%,
+  D9 75 → 100% (D11 already saturated). Main sweep un-regressed (htk floor still ~2.0, tradeoff still un-inverted);
+  class-favored CHA/WIS builds (Rogue/Bard) picked up marginal corners while Fighter/Wizard were near-unchanged —
+  a class-appropriate spread, not a blanket buff. Exact behind-corner feel left for user verification.</p>
+  <div class="status"><span class="done">☑ Code merged</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
 </div>
 
 <div class="milestone" id="story-3">

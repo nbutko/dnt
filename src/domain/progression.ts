@@ -29,6 +29,11 @@ export interface PlayerModifiers {
   dodgeChance: number
   // -- CHA: enemy intimidation --
   intimidateWpmCut: number
+  // -- CHA, Story 2: "charm" — cut to the monster's effective accuracy
+  // (engine/monster-typing.ts's monster.accuracy), a second linear
+  // time-buyer distinct from intimidateWpmCut (content-plan-v2-tuning.html
+  // §7 Finding 2/§8.2) --
+  charmAccuracyCut: number
   // -- The equipped weapon (Story 7 reads these in engine/damage.ts) --
   weaponDie: number
   weaponAbilityMod: number

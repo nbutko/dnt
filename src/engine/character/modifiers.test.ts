@@ -30,6 +30,7 @@ describe("resolveModifiers — base character reproduces today's M2 baseline", (
       powerUpMult: 1,
       dodgeChance: 0,
       intimidateWpmCut: 0,
+      charmAccuracyCut: 0,
       weaponDie: 4,
       weaponAbilityMod: 0,
       critRange: 19,
@@ -114,5 +115,42 @@ describe('resolveModifiers — class features', () => {
   it('a non-Fighter carries no Second Wind', () => {
     const wizard: Character = { ...fighter, class: 'wizard' }
     expect(resolveModifiers(wizard, dagger).secondWind).toBeNull()
+  })
+})
+
+// Story 2 (content-plan-v2-tuning-implementation.html): the two linear tempo
+// levers — WIS lengthens the player's own clock, CHA-charm shortens the
+// monster's effective output by cutting its accuracy. Both must move
+// smoothly/monotonically with the ability score, not in lumpy steps.
+describe('resolveModifiers — Story 2: WIS time budget and CHA charm are linear', () => {
+  it('a higher WIS raises timeBudgetBonusMs monotonically, by a meaningful (not token) amount', () => {
+    const scores = [8, 10, 14, 18, 20]
+    let prev = -Infinity
+    for (const wis of scores) {
+      const character: Character = { ...fighter, abilities: { ...baseAbilities, wis } }
+      const { timeBudgetBonusMs } = resolveModifiers(character, dagger)
+      expect(timeBudgetBonusMs).toBeGreaterThan(prev)
+      prev = timeBudgetBonusMs
+    }
+    // WIS 20 is a +5 mod — a maxed WIS build should buy several seconds, not
+    // a few hundred ms (the pre-Story-2 magnitude).
+    const maxed = resolveModifiers({ ...fighter, abilities: { ...baseAbilities, wis: 20 } }, dagger)
+    expect(maxed.timeBudgetBonusMs).toBeGreaterThanOrEqual(3000)
+  })
+
+  it('a higher CHA raises charmAccuracyCut monotonically, and it is distinct from intimidateWpmCut', () => {
+    const scores = [8, 10, 14, 18, 20]
+    let prev = -Infinity
+    for (const cha of scores) {
+      const character: Character = { ...fighter, abilities: { ...baseAbilities, cha } }
+      const { charmAccuracyCut } = resolveModifiers(character, dagger)
+      expect(charmAccuracyCut).toBeGreaterThan(prev)
+      prev = charmAccuracyCut
+    }
+    const maxed = resolveModifiers({ ...fighter, abilities: { ...baseAbilities, cha: 20 } }, dagger)
+    // Two independently-tunable magnitudes, not the same knob wearing two hats.
+    expect(maxed.charmAccuracyCut).not.toBe(maxed.intimidateWpmCut)
+    expect(maxed.charmAccuracyCut).toBeGreaterThan(0)
+    expect(maxed.intimidateWpmCut).toBeGreaterThan(0)
   })
 })

@@ -16,7 +16,12 @@ export interface AbilitiesConfig {
   // DEX flavor: chance to negate an incoming monster hit ("Dodged!"), per
   // point of DEX modifier.
   dexDodgeChancePctPerMod: number
-  // WIS primary: + typing time budget (ms), per point of WIS modifier.
+  // WIS primary: + typing time budget (ms), per point of WIS modifier. The
+  // one *linear* tempo lever on the player's own clock (content-plan-v2-
+  // tuning.html §7 Finding 2/§8.2) — re-landed at Story 2 against the fight
+  // length Story 1 restored, big enough that a WIS-heavy "behind" build buys
+  // a genuinely more leisurely cadence (multiple seconds at a high mod), not
+  // the pre-Story-2 token few hundred ms.
   wisTimeBudgetMsPerMod: number
   // INT primary: how much each point of INT modifier adds to the encounter
   // d20 (engine/dice/encounter-roll.ts), on top of proficiency. INT no longer
@@ -32,6 +37,14 @@ export interface AbilitiesConfig {
   // CHA flavor: cut to the monster's effective wpm, per point of CHA
   // modifier (m3-scope.html#ability-mechanics).
   chaIntimidateWpmCutPctPerMod: number
+  // CHA flavor, Story 2: "charm" — cut to the monster's effective *accuracy*
+  // per point of CHA modifier, distinct from the wpm cut above. Charm makes
+  // the monster fumble its own line more (engine/monster-typing.ts's
+  // monster.accuracy), lengthening its self-correction cycles and shrinking
+  // its effective output — a second *linear* time-buyer alongside WIS
+  // (content-plan-v2-tuning.html §7 Finding 2/§8.2), the pair that makes the
+  // slow-typing, over-leveled "behind" corner winnable once htk is restored.
+  chaCharmAccuracyCutPctPerMod: number
   // Mimic-sense deception DC, indexed by dungeon tier (index 0 = tier 1) —
   // climbs so deeper mimics hide better (m3-scope.html#mimic-sense).
   mimicDeceptionDcByTier: readonly number[]
@@ -49,10 +62,20 @@ const abilitiesConfig: AbilitiesConfig = {
   strDamagePctPerMod: 0.05,
   dexCritChancePctPerMod: 0.02,
   dexDodgeChancePctPerMod: 0.03,
-  wisTimeBudgetMsPerMod: 300,
+  // Story 2 (content-plan-v2-tuning-implementation.html): 300 -> 1200 —
+  // measured against the sweep as a token few hundred ms at the old value
+  // (barely denting a fixed reading buffer of 2000ms), 1200/mod makes a
+  // +5-mod WIS build (a maxed "behind" tank) buy +6000ms, comparable to the
+  // reading buffer itself and enough to swing speedBonus/expire outcomes on
+  // the slow-typing, over-leveled corner.
+  wisTimeBudgetMsPerMod: 1200,
   intEncounterBonusPerMod: 1,
   chaShopDiscountPctPerMod: 0.03,
   chaIntimidateWpmCutPctPerMod: 0.04,
+  // Story 2: landed at the same order of magnitude as the wpm cut so the two
+  // CHA flavors read as siblings — a +5-mod CHA build cuts monster accuracy
+  // by 25% (floored, same 10%-of-original rule as the wpm cut below).
+  chaCharmAccuracyCutPctPerMod: 0.05,
   mimicDeceptionDcByTier: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   damageScale: 1.6,
 }

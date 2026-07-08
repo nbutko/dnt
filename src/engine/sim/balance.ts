@@ -367,12 +367,14 @@ export const simulateCharacterBattles = (config: CharacterBalanceSimConfig): Cha
 
     const playerPrompt = promptForTier(servedTier)
     const monsterPrompt = promptForTier(monster.textTier)
-    // CHA intimidate (m3-scope.html#ability-mechanics) — same rule as state/
-    // battle-store.ts's intimidatedMonster, inlined so this file never
+    // CHA intimidate + Story 2's charm (m3-scope.html#ability-mechanics,
+    // content-plan-v2-tuning-implementation.html#story-2) — same rule as
+    // state/battle-store.ts's intimidatedMonster, inlined so this file never
     // imports state/.
     const intimidatedMonster: Monster = {
       ...monster,
       wpm: monster.wpm * Math.max(0.1, 1 - modifiers.intimidateWpmCut),
+      accuracy: Math.min(1, monster.accuracy * Math.max(0.1, 1 - modifiers.charmAccuracyCut)),
     }
 
     const battle = createBattle({

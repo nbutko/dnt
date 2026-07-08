@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combat Tuning Implementation Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · <a href="content-plan-v2-tuning.html">Tuning Targets</a> · <a href="game-design.html">Game Design</a> · <a href="roadmap.html">Roadmap</a></nav>
+<header class="page-head">
+  <h1>Combat Tuning Implementation Plan</h1>
+  <p class="tagline">Turning <a href="content-plan-v2-tuning.html#remediation">§8 of the tuning doc</a> into a
+  story-by-story build — the keystone first, each knob re-measured by the sim before the next one moves.</p>
+</header>
+<main>
+
+<p>
+  The <a href="content-plan-v2-tuning.html">tuning-targets doc</a> did steps <strong>B.1</strong> (write the
+  target surface) and <strong>A</strong> (measure the real surface with
+  <code>content-pipeline/retune-sweep.ts</code>) and found the gap: <a href="content-plan-v2-tuning.html#findings">§7's
+  four findings</a> — hits-to-kill collapsed toward <strong>1</strong> at high tiers (an uncapped
+  <code>lengthFactor</code> one-shots bosses), the level↔wpm tradeoff <em>inverts</em>, a wide class spread, and a
+  low end that's <em>also</em> broken (D1 unwinnable for a beginner). This doc is <strong>step B.2</strong>: the
+  ordered build that closes that gap, one committable story at a time. It assumes the <a href="content-plan-v2-tuning.html#remediation">§8
+  remediation plan</a> as its spec and does not re-argue it — read §7/§8 first; this doc answers <em>how and in what
+  order</em>, not <em>why</em>.
+</p>
+
+<div class="callout why">
+  <strong>The INT→roll fix already landed</strong> (commit <code>9dfb9f8</code>) — INT is now a nudge on the
+  encounter d20 instead of a hard <code>intTierCap</code>, so every dungeon serves its whole
+  <code>textTierRange</code> and level-appropriate content is always reachable. That fix is what <em>unmasked</em>
+  the uncapped-<code>lengthFactor</code> problem this plan fixes (removing the cap stopped it from accidentally
+  penalizing fixed heroes at high tiers — see the parked <code>sweepTierMonotonicity</code> comment in
+  <code>combat-invariants.test.ts</code>). Everything below builds on that commit.
+</div>
+
+<h2 id="discipline">The one working rule for this whole pass: measure every move</h2>
+<p>
+  This is a <em>tuning</em> pass, not a feature build — the risk isn't "does it compile," it's "did the number make
+  the fight feel right." So the loop is fixed for every story:
+</p>
+<ol>
+  <li>Make the change (engine shape and/or a knob in <code>config/</code> or <code>content/monsters.json</code>).</li>
+  <li>Re-run <code>npx tsx content-pipeline/retune-sweep.ts</code> and read the measured surface against
+  <a href="content-plan-v2-tuning.html#targets">§2/§3's targets</a> — on-track a comfortable win at ~target
+  hits-to-kill, ahead marginal, behind safe, the impossible corners actually losing.</li>
+  <li>Only commit once the sweep shows that story's slice of the surface converging. Numbers are landed
+  <em>by measurement</em>, never by derivation-on-paper (same discipline as M0's <code>baseDamage</code> and M3's
+  <code>damageScale</code>).</li>
+</ol>
+<div class="callout decision">
+  <strong><code>config/combat.ts</code> is deliberately unfrozen for this pass — and only this pass.</strong> The
+  standing invariant is that its committed values move only in "a deliberate, reviewed change, not a drive-by."
+  This retune <em>is</em> that reviewed change: it was scoped in B.1, measured in A, and planned here. The knobs
+  that move (a new <code>lengthFactorCap</code>, monster HP, the ability magnitudes in
+  <code>config/abilities.ts</code>) are all authored against the sim in the stories below. When the pass closes
+  (<a href="#story-5">Story 5</a>), the file re-freezes at its new committed values.
+</div>
+
+<h2 id="where">Where the knobs live</h2>
+<p>
+  The retune touches four homes, and keeping each change in its home is what keeps the pass reviewable. Nothing
+  here reaches into the combat <code>engine/</code> to hard-code a number — the engine grows <em>shapes</em> (a
+  cap function, a crit read), the tuned <em>values</em> stay in config/content.
+</p>
+<table>
+  <tr><th>Home</th><th>What moves here</th></tr>
+  <tr>
+    <td><code>engine/damage.ts</code></td>
+    <td><em>Shape only.</em> Soft-cap <code>lengthFactor</code> (Story 1); actually read the crit subsystem the
+    <a href="../CLAUDE.md">CLAUDE.md gotcha</a> flags as dead — <code>rollIsCrit</code>/<code>computeDamage</code>
+    honouring <code>critChanceBonus</code>, a weapon's <code>critRange</code>, and the crit-boost item's
+    <code>critDamageMult</code> (Story 3).</td>
+  </tr>
+  <tr>
+    <td><code>config/combat.ts</code></td>
+    <td>The new <code>lengthFactorCap</code> knob (Story 1); any early-boss cadence tweak that isn't per-monster
+    (Story 4).</td>
+  </tr>
+  <tr>
+    <td><code>config/abilities.ts</code></td>
+    <td>The per-point magnitudes — <code>wisTimeBudgetMsPerMod</code>, <code>chaIntimidateWpmCutPctPerMod</code>
+    (and a new CHA-charm magnitude), <code>dexCritChancePctPerMod</code>, <code>strDamagePctPerMod</code>,
+    <code>damageScale</code> — re-landed against the corrected fight length (Stories 2–3). These are still the
+    "M5 is a values edit" corral; this pass sets their <em>floor</em>.</td>
+  </tr>
+  <tr>
+    <td><code>content/monsters.json</code> + <code>config/weapons.ts</code> / <code>config/items.ts</code></td>
+    <td>Boss &amp; regular HP authored against the hit distribution (Story 1); the weapon ladder extended the
+    length of the game and a Wizard wand-line (Story 3); defensive/HP gear and the crit-boost item's real payload
+    (Story 3).</td>
+  </tr>
+</table>
+
+<h2 id="seam">The seam holds — CHA-charm is the one genuinely new mechanic</h2>
+<p>
+  Almost every story here is a <em>values</em> change or a shape the engine already has a socket for. Two exceptions
+  are real code:
+</p>
+<ul>
+  <li><strong>The crit subsystem (Story 3)</strong> is <em>computed but ignored</em> today — <code>modifiers.ts</code>
+  already produces <code>critChanceBonus</code>, and weapons already carry <code>critRange</code>;
+  <code>damage.ts</code> just never reads them (flat <code>combat.criticalChance</code> / <code>×2</code>). Wiring
+  it is deleting a hard-coded constant in favour of a field that already flows through
+  <code>resolveModifiers()</code> — the seam is unchanged.</li>
+  <li><strong>CHA-as-charm (Story 2)</strong> is the one new lever. Today CHA only cuts the monster's effective
+  <em>wpm</em> (<code>intimidateWpmCut</code>). The tuning doc wants a <em>second</em> linear time-buyer: charm the
+  monster into <em>mistyping its own line</em> (cutting its effective accuracy/attention), distinct from slowing
+  it. That's a new field on <code>PlayerModifiers</code> and a new read in the monster-typing path — but it flows
+  the same route (<code>resolveModifiers()</code> → battle store → the monster's simulated typist), so it
+  <em>grows the seam, doesn't route around it</em>.</li>
+</ul>
+
+<h2 id="stories">Stories &amp; tasks</h2>
+<p>
+  Strict order — <a href="#story-1">Story 1</a> is the keystone and everything else is tuned <em>on top of the
+  fight length it restores</em>, so it cannot move later. Stories 2–4 are independent of each other once 1 lands
+  (they can reorder), and <a href="#story-5">Story 5</a> closes the pass. Each is one commit with a check-in
+  between, same as always — never batched.
+</p>
+
+<div class="milestone" id="story-1">
+  <h3>Story 1 — Keystone: cap <code>lengthFactor</code> + author HP against the hit distribution <span class="tag core">fixes Findings 1 &amp; 2, shrinks 3</span></h3>
+  <p>The single highest-leverage change in the pass. One capped multiplier + re-authored boss HP turns the
+  htk≈1 one-shot collapse back into a multi-prompt fight, which un-inverts the whole tradeoff surface. Everything
+  after this tunes against the fight length it sets — so land it, and the sim, before anything else.</p>
+  <ul>
+    <li><strong>Soft-cap <code>lengthFactor</code></strong> (<code>engine/damage.ts</code>): today it's
+    <code>1 + (charCount − referenceLength)/referenceLength</code>, floored at 0.25 and <em>uncapped above</em> — a
+    2000-char boss prompt yields a ~166× hit. Give it a ceiling with diminishing returns above reference (a soft
+    knee, not a hard clip, so longer prompts still reward but can't run away). Add the ceiling as
+    <code>combat.lengthFactorCap</code> — a knob in <code>config/combat.ts</code>, not a literal in the engine.
+    <code>computeMonsterDamage</code> shares <code>lengthFactor</code>, so the monster is capped by the same
+    change (correct — the collapse is symmetric).</li>
+    <li><strong>Author HP against the distribution, not a point estimate</strong>
+    (<code>content/monsters.json</code>). A "reference hit" is a <em>range</em> — weak roll (min dice, no crit) to
+    strong roll (max dice + crit) — and the spread widens with level. Add a helper to
+    <code>engine/sim/balance.ts</code> that reports, for a given (class, level, weapon, tier), the
+    <strong>weak / average / strong</strong> hit against the capped <code>lengthFactor</code>, then set each boss's
+    HP so both tails behave:
+      <ul>
+        <li><strong>strong tail never one-shots</strong> — max dice + crit stays strictly below full HP;</li>
+        <li><strong>weak tail doesn't slog</strong> — an average hit is a meaningful fraction of HP, so the fight
+        lands near its <a href="content-plan-v2-tuning.html#shape">target #prompts</a> (K).</li>
+      </ul>
+      The crisp low-K rule: <em>two weak hits win, one strong hit doesn't</em>; generalized, <em>~K average hits
+      win and the strongest single hit stays well short of a one-shot</em>. The cap exists precisely to compress
+      the weak→strong spread <em>enough that both bounds hold at once</em> — so tune the cap and the HP
+      <strong>together</strong>, iterating on the sweep, not in sequence.</li>
+    <li><strong>Regulars too, lightly.</strong> The finding table shows even low-tier bosses land at htk ~1.5–2.6
+    against a 4–6 target — HP is universally low relative to per-hit damage, so the re-authoring pass covers the
+    regular roster on the same rule (a regular is a shorter version of the same fight), not just bosses.</li>
+    <li><strong>Tests:</strong> a unit test pinning the cap's knee (a very long prompt's <code>lengthFactor</code>
+    is bounded by <code>lengthFactorCap</code>, a reference-length prompt is still ~1, a short one still floors at
+    0.25); the balance helper's weak/strong bounds are asserted for a sample boss.</li>
+  </ul>
+  <p><strong>Done when:</strong> the sweep shows on-track boss fights landing at ~target hits-to-kill (not 1.0)
+  across D1–D11, no corner one-shotting, and the level↔wpm tradeoff reading the right way round (behind safer than
+  ahead, not the inversion §7 measured) — verified by re-running <code>retune-sweep.ts</code>.</p>
+  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+</div>
+
+<div class="milestone" id="story-2">
+  <h3>Story 2 — Make the two linear levers strong: WIS (your clock) + CHA (charm) <span class="tag">fixes Finding 2's behind corner</span></h3>
+  <p>Finding 2's two-axis insight: at the fight length Story 1 restores, the discrete hit-count axis is still
+  coarse near the target K, so WIS and CHA — the only <em>linear</em> tempo levers — are what make the
+  slow-typing, over-leveled <strong>behind / attrition</strong> corner winnable. They must be meaningful
+  magnitudes, and CHA needs a second dimension.</p>
+  <ul>
+    <li><strong>WIS — lengthen your clock.</strong> <code>wisTimeBudgetMsPerMod</code> already exists
+    (<code>config/abilities.ts</code>, +ms per WIS mod, read in <code>modifiers.ts</code>). Re-land its magnitude
+    against the corrected fight length so a WIS-heavy build buys a genuinely more leisurely cadence at the current
+    tier (the "less frenetic" leveling feel from §3), not a token few hundred ms.</li>
+    <li><strong>CHA — charm, a second linear time-buyer.</strong> Today CHA only cuts the monster's effective wpm
+    (<code>chaIntimidateWpmCutPctPerMod</code> → <code>intimidateWpmCut</code>, applied in
+    <code>engine/sim/balance.ts</code> as <code>monster.wpm × (1 − cut)</code>). Add <em>charm</em>: cut the
+    monster's effective <strong>accuracy/attention</strong> so it fumbles its own line more often — a lever
+    distinct from slowing it (WIS lengthens <em>your</em> clock; charm shortens the monster's <em>effective
+    output</em>). Concretely: a new magnitude in <code>config/abilities.ts</code>, a new
+    <code>PlayerModifiers</code> field in <code>engine/character/modifiers.ts</code>, and a read in the
+    monster-typing path (the monster's simulated typist / <code>computeMonsterDamage</code> cadence) — routed
+    through <code>resolveModifiers()</code>, per <a href="#seam">the seam note</a>.</li>
+    <li><strong>Tune after Story 1.</strong> These magnitudes only make sense against a fight that lasts more than
+    one hit, so land the numbers <em>after</em> the keystone, measuring the behind corner (over-leveled, slow)
+    climbing from §7's 3–40% back to "safe" on the sweep.</li>
+    <li><strong>Tests:</strong> a higher CHA lowers the monster's effective accuracy (charm) monotonically; a
+    higher WIS raises the player time budget monotonically; both flow through <code>resolveModifiers</code> into a
+    simulated fight and measurably lengthen survival.</li>
+  </ul>
+  <p><strong>Done when:</strong> a CHA+WIS "behind" build at the §2 behind-corner level/wpm wins safely on the
+  sweep where §7 had it losing, and the two levers read as smooth/linear (each point of WIS or CHA moves survival
+  by a steady amount, not in lumpy steps).</p>
+  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+</div>
+
+<div class="milestone" id="story-3">
+  <h3>Story 3 — Gear ladder + Wizard wand-line + crit wiring <span class="tag">fixes Finding 3</span></h3>
+  <p>Finding 3's class spread (on-track Wizard 25–90% vs Fighter/Rogue/Bard 88–100%) has two causes: the wand is a
+  d6 with no upgrade path, and the discrete hit-count axis has nowhere to grow at high level because the weapon
+  ladder stops at tier-3. This story gives that axis somewhere to go and turns the dead crit subsystem into a real,
+  tunable quantity — which also makes Story 1's "strong tail" a thing you can tune instead of a flat 10%/×2.</p>
+  <ul>
+    <li><strong>Extend the weapon ladder the length of the game</strong> (<code>config/weapons.ts</code>): today
+    eight weapons top out at tier-3 (<code>weaponForTierLevel</code>'s ladder stops there — the sweep header flags
+    it). Add higher-tier weapons <em>per governing ability</em> (STR, DEX, INT) so every class has an upgrade path
+    at every tier, priced into the <a href="content-plan-v2.html">coin economy</a>.</li>
+    <li><strong>Give the Wizard a wand-line.</strong> A d6 wand with no successor is why Wizard loses; add
+    higher-die INT weapons so the Arcane Mind's 3-dice crit has something to scale on.</li>
+    <li><strong>Wire the dead crit subsystem</strong> (<code>engine/damage.ts</code>, the
+    <a href="../CLAUDE.md">CLAUDE.md gotcha</a>): <code>rollIsCrit</code> must read
+    <code>combat.criticalChance + critChanceBonus</code> (DEX's <code>dexCritChancePctPerMod</code>, already
+    computed into <code>PlayerModifiers</code>) and a weapon's <code>critRange</code>; the crit-boost item
+    (Oil of Sharpness) must actually apply its <code>critDamageMult</code>. This restores the Rogue identity and
+    makes Oil of Sharpness stop being a no-op — and gives Story 1's strong-tail bound a real knob.</li>
+    <li><strong>Add persistent defense / HP gear</strong> so survivability is a <em>purchasable</em> axis (not only
+    a CON/leveling one), and price items so a build's flaw can be counter-balanced at each tier — the "latitude to
+    add items" the design discussion asked for.</li>
+    <li><strong>Re-park nothing:</strong> wiring crit means the <code>fumbleDamageMultiplier</code> /
+    <code>noCrits</code> paths in <code>damage.ts</code> finally have live callers — check the encounter
+    fumble/inspired flags actually reach them (the M3 plumbing gap noted in <code>rollIsCrit</code>'s comment).</li>
+    <li><strong>Tests:</strong> DEX raises measured crit rate; a wider <code>critRange</code> weapon crits more
+    often; Oil of Sharpness raises crit damage; a Wizard with the wand-line closes most of the on-track gap to the
+    other classes on the sweep.</li>
+  </ul>
+  <p><strong>Done when:</strong> the sweep's per-class spread at on-track sits inside a reasonable band (Wizard no
+  longer an outlier), DEX/critRange/Oil of Sharpness demonstrably change crit behavior, and the weapon ladder
+  offers an upgrade at every dungeon.</p>
+  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+</div>
+
+<div class="milestone" id="story-4">
+  <h3>Story 4 — Low-end survivability: make the first boss a fair first fight <span class="tag">fixes Finding 4</span></h3>
+  <p>The opposite failure from the top end: D1 on-track (L2 @ 10 wpm) wins ~3% for every class — a beginner
+  literally cannot clear the first boss the anchors say should be <em>easy</em>. At L2 there's too little HP to
+  survive to the second hit against the boss's cadence. Widen the bottom of the band without touching the top.</p>
+  <ul>
+    <li><strong>More low-level HP</strong> and/or a <strong>gentler early-boss cadence</strong>: raise the
+    level-1–3 HP grant (<code>config/leveling.ts</code> / <code>modifiers.ts</code>'s
+    <code>totalHpForLevel</code>) and/or soften D1–D2 boss wpm/accuracy in <code>content/monsters.json</code> so
+    the first fights are survivable at the anchor speed. Keep the change local to the low end — Story 1 already
+    set the top, and this must not re-open a one-shot there.</li>
+    <li><strong>Check leveling reads as "less frenetic," not "fewer prompts"</strong> (the design correction): a
+    gained level should mainly buy HP margin and timer headroom at the current tier, making the next tier
+    approachable — verify the low-end HP curve delivers that feel on the sweep, not just a higher win %.</li>
+    <li><strong>Tests / measurement:</strong> re-run the sweep focused on the <em>low corners</em> (D1–D3,
+    on-track and behind) and confirm the on-track beginner clears D1 comfortably while the ahead corner stays
+    marginal-not-trivial.</li>
+  </ul>
+  <p><strong>Done when:</strong> a ~10-wpm, level-2 typist clears the D1 boss on the sweep (a fair first fight,
+  not a wall), with no regression to the capped top end.</p>
+  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+</div>
+
+<div class="milestone" id="story-5">
+  <h3>Story 5 — Re-enable the parked invariants &amp; final re-sweep <span class="tag">closes the pass</span></h3>
+  <p>Two combat invariants were parked (<code>it.skip</code>) precisely on this retune. With the surface converged,
+  re-shape them against the §3 targets, un-skip, and confirm the whole surface holds — then re-freeze the config.</p>
+  <ul>
+    <li><strong><code>sweepHitsToKillBand</code></strong> (<code>combat-invariants.test.ts</code>): the flat
+    <code>[1.2, 26]</code> band assumed uniformly short prompts; re-express it against the new
+    <em>few-big-prompts</em> design (per-tier target #prompts from <a href="content-plan-v2-tuning.html#shape">§3</a>),
+    then un-skip.</li>
+    <li><strong><code>sweepTierMonotonicity</code></strong> (same file): parked because the uncapped
+    <code>lengthFactor</code> made the tier-6 and tier-11 bosses land at <em>fewer</em> hits-to-kill than the
+    milestone below them (the boss-length spike outrunning HP growth). Story 1's cap + HP authoring is exactly its
+    fix — confirm a higher tier is never easier for a fixed hero, then un-skip.</li>
+    <li><strong>Full re-sweep &amp; sign-off:</strong> run <code>retune-sweep.ts</code> one last time and check the
+    whole surface against <a href="content-plan-v2-tuning.html#targets">§2/§3</a> — on-track a comfortable win at
+    ~target htk, ahead marginal, behind safe (via CHA+WIS), the impossible corners actually losing, and the class
+    spread inside a reasonable band. Record the final numbers back into the tuning doc's §7 as the "after" column.</li>
+    <li><strong>Re-freeze:</strong> restore the "<code>config/combat.ts</code> stays at committed values" invariant
+    now that the reviewed change is complete (update the file's comment / CLAUDE.md gotcha if the frozen set
+    changed).</li>
+  </ul>
+  <p><strong>Done when:</strong> both parked invariants are un-skipped and green, the full sweep matches the target
+  surface, and the tuning doc records the converged "after" numbers.</p>
+  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+</div>
+
+<h2 id="adjacent">Adjacent, deliberately not in this pass</h2>
+<ul>
+  <li><strong>The boss-window <code>[N+1, N+3]</code> rework</strong> — §3/§5 want a boss to roll one band
+  <em>higher</em> than its regulars (so the final prompt spikes). The sweep currently pins each boss to a single
+  tier (<code>textTierRange: [boss, boss]</code>) and this plan tunes HP against that. The multi-tier boss window
+  is a <em>separate</em>, additive change on top of a converged surface — sequence it after Story 5 so it retunes a
+  known-good baseline, not a moving one. Flagged here so it isn't forgotten, not folded in.</li>
+  <li><strong>The brute / sandbag disadvantage trinket</strong> — an item that <em>lowers</em> your encounter roll
+  on purpose (easier prompts, lean into STR damage) is a §5 idea that rides naturally on Story 3's item work, but
+  it's a build-enabler, not a fix for a broken corner — defer unless Story 3's economy pass has room.</li>
+  <li><strong>Final feel/pacing tuning</strong> — this pass lands the <em>numerical floor</em> (the surface stops
+  being broken); the playtest-driven feel pass stays <a href="roadmap.html#m5">M5</a>, a values edit on top of this
+  floor, by design (same split as M3's Story 13 → M5).</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="content-plan-v2-tuning.html">← Back to the tuning targets</a></footer>
+</body>
+</html>

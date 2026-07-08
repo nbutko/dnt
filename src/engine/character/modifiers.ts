@@ -42,8 +42,11 @@ const HEART_MILESTONE_INTERVAL = 5
 const heartsForLevel = (level: number): number =>
   BASE_MAX_HEARTS + Math.floor(level / HEART_MILESTONE_INTERVAL)
 
+// The 14-tier content ladder's ceiling (content-plan-v2.html §2) — a high-INT
+// reader can be gated up to the top tier now, not the old 10-tier max.
+const MAX_TEXT_TIER = 14
 const clampTextTier = (tier: number): TextTier =>
-  Math.min(Math.max(Math.round(tier), 1), 10) as TextTier
+  Math.min(Math.max(Math.round(tier), 1), MAX_TEXT_TIER) as TextTier
 
 // Cumulative HP across every level from 1 up to `character.level`, each
 // level's grant computed by Story 2's grantsForLevel so HP is derived at read

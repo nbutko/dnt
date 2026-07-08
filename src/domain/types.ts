@@ -3,13 +3,18 @@ export interface Rng {
   sample(mean: number, variance: number): number
 }
 
-export type TextTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+export type TextTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14
 
 export type PromptSource = () => string
 
+// Content is keyed by (dungeon, tier): dungeon N carries its own themed prose
+// at tiers N..N+3 (content/text/library.json, built by content-pipeline/ship.ts).
+// `dungeon` is the ladder index 1..11 (a Monster's own `tier` field) — the loader
+// prefers that dungeon's tier, then falls back to the same tier from any dungeon,
+// then the nearest easier tier, so a request always resolves to real content.
 export interface TextBank {
-  loadTier(tier: TextTier): Promise<readonly string[]>
-  makePromptSource(tier: TextTier, rng: Rng): Promise<PromptSource>
+  loadPool(dungeon: number, tier: TextTier): Promise<readonly string[]>
+  makePromptSource(dungeon: number, tier: TextTier, rng: Rng): Promise<PromptSource>
 }
 
 export type MonsterRole = 'regular' | 'boss' | 'mimic'

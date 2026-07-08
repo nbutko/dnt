@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { DUNGEON_TIERS } from '../config/dungeon-tiers'
 import { byRole, byTier, getMonster, listMonsters } from './monsters'
 import textBank from './text-banks'
-import type { TextTier } from '../domain/types'
 
 // The generator (Story 8) draws regulars *with repetition* to fill ~30 nodes,
 // so this is a variety floor, not a headcount it must reach — every tier
@@ -40,21 +39,30 @@ describe('seed rosters (Story 7)', () => {
     }
   })
 
-  it('keeps every monster textTier inside its tier band', () => {
-    for (const { tier, textTierRange } of DUNGEON_TIERS) {
+  it('keeps every monster textTier inside its dungeon band', () => {
+    // Regulars/mimics read the dungeon's regular text tiers [N, N+2]; the boss
+    // reads its single hardest tier N+3 (config/dungeon-tiers.ts's bossTextTier).
+    for (const { tier, textTierRange, bossTextTier } of DUNGEON_TIERS) {
       const [low, high] = textTierRange
       for (const monster of byTier(tier)) {
-        expect(monster.textTier, `${monster.id} textTier`).toBeGreaterThanOrEqual(low)
-        expect(monster.textTier, `${monster.id} textTier`).toBeLessThanOrEqual(high)
+        if (monster.role === 'boss') {
+          expect(monster.textTier, `${monster.id} textTier`).toBe(bossTextTier)
+        } else {
+          expect(monster.textTier, `${monster.id} textTier`).toBeGreaterThanOrEqual(low)
+          expect(monster.textTier, `${monster.id} textTier`).toBeLessThanOrEqual(high)
+        }
       }
     }
   })
 
-  it('has a loadable, non-empty text bank behind every monster textTier', async () => {
-    const usedTiers = [...new Set<TextTier>(listMonsters().map((monster) => monster.textTier))]
-    const banks = await Promise.all(usedTiers.map((tier) => textBank.loadTier(tier)))
+  it('has a loadable, non-empty text bank behind every monster', async () => {
+    // Each monster reads its own dungeon's pool at its text tier — every such
+    // (dungeon, tier) cell must resolve to real content.
+    const banks = await Promise.all(
+      listMonsters().map((monster) => textBank.loadPool(monster.tier, monster.textTier)),
+    )
     banks.forEach((lines, i) => {
-      expect(lines.length, `text tier ${usedTiers[i]}`).toBeGreaterThan(0)
+      expect(lines.length, `${listMonsters()[i].id}`).toBeGreaterThan(0)
     })
   })
 })

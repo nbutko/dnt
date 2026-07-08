@@ -8,7 +8,7 @@ import { getWeapon } from '../../config/weapons'
 import { getMonster } from '../../content/monsters'
 import { abilityMod } from '../../domain/character'
 import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
-import type { MonsterRole } from '../../domain/types'
+import type { MonsterRole, TextTier } from '../../domain/types'
 import { grantsForLevel } from '../../engine/character/leveling'
 import { resolveModifiers } from '../../engine/character/modifiers'
 import {
@@ -219,6 +219,14 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
 
   const activeNode = run.activeNodeId ? run.graph.nodes[run.activeNodeId] : null
 
+  // The text-tier band a given fight serves: the boss reads its single hardest,
+  // longest set-piece tier (N+3, content §5), so its band collapses to that one
+  // tier; every other fight reads the dungeon's regular [N, N+2] the encounter
+  // d20 samples low/mid/high (config/dungeon-tiers.ts).
+  const dungeonTier = DUNGEON_TIERS[tier - 1]
+  const textTierRangeForNode = (node: DungeonNode): readonly [TextTier, TextTier] =>
+    node.kind === 'boss' ? [dungeonTier.bossTextTier, dungeonTier.bossTextTier] : dungeonTier.textTierRange
+
   // The Bag drawer (wireframe turn 6a): collapsed by default, opened from its
   // HUD button, closed again the moment a node is picked (scope's drawer
   // call) — it can't be left open mid-fight-prep.
@@ -299,7 +307,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     return {
       cfg: DEFAULT_ENCOUNTER_ROLL_CONFIG,
       mods,
-      textTierRange: DUNGEON_TIERS[tier - 1].textTierRange,
+      textTierRange: textTierRangeForNode(run.graph.nodes[revealId]),
       intTierCap: modifiers.intTierCap,
       rng,
       canReroll,
@@ -480,9 +488,10 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // header doesn't double-border around it. On a win it stays mounted while the
   // reward modal overlays it (a win doesn't clear activeNodeId until the modal's
   // Continue resolves the fight), so the modals below sit over either screen.
-  const encounterForBattle: FightEncounter | undefined = frozenEncounter
-    ? { roll: frozenEncounter, textTierRange: DUNGEON_TIERS[tier - 1].textTierRange }
-    : undefined
+  const encounterForBattle: FightEncounter | undefined =
+    frozenEncounter && activeNode
+      ? { roll: frozenEncounter, textTierRange: textTierRangeForNode(activeNode) }
+      : undefined
 
   const screen =
     activeNode && activeNode.monsterId && outcome === 'ongoing' ? (

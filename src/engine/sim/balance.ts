@@ -144,6 +144,18 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
 // the tier 1-7 growth curve would predict (~130/170/220 chars) — real prose,
 // sane length, so the sanity sweep measures dice/HP/mods, not M6's content
 // backlog.
+// Tiers 11-14 are M3's stamina passages, far longer than the 1-10 curve
+// (content-plan-v2.html §3.5: ~300/700/1275/2000 chars). The sim only needs a
+// representative *length* — characters drive typing time — so pad tier 10's
+// real prose up to each tier's content target rather than paste 2000-char walls
+// inline.
+const TIER_10_LINE =
+  'The gate to the old dungeon had been sealed for longer than anyone in the village could remember, its iron bars fused with rust and its lock long since seized shut around a keyhole nobody had a key for. Which was,'
+const padTo = (base: string, target: number): string => {
+  let s = base
+  while (s.length < target) s = `${s} ${base}`
+  return s.slice(0, target).trimEnd()
+}
 const REPRESENTATIVE_LINE_BY_TIER: Record<TextTier, string> = {
   1: 'a s d f j k l ;',
   2: 'the goblin is sneaky',
@@ -154,7 +166,11 @@ const REPRESENTATIVE_LINE_BY_TIER: Record<TextTier, string> = {
   7: 'The chest sat alone in the torchlight. It looked perfectly ordinary. That was exactly the problem.',
   8: 'There is a particular kind of silence that settles over a dungeon just before something goes wrong, and every adventurer worth',
   9: 'Long before the dungeon had monsters in it, it had simply been a very ambitious wine cellar, built by a merchant who badly overestimated how much wine one household',
-  10: 'The gate to the old dungeon had been sealed for longer than anyone in the village could remember, its iron bars fused with rust and its lock long since seized shut around a keyhole nobody had a key for. Which was,',
+  10: TIER_10_LINE,
+  11: padTo(TIER_10_LINE, 300),
+  12: padTo(TIER_10_LINE, 700),
+  13: padTo(TIER_10_LINE, 1275),
+  14: padTo(TIER_10_LINE, 2000),
 }
 
 export const promptForTier = (tier: TextTier): string => REPRESENTATIVE_LINE_BY_TIER[tier]

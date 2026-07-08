@@ -104,8 +104,14 @@ export const createBattleStore = async (
   const rng = createRng(seed)
   const { servedTier, targetTier, noCrits, fumbleDamageMultiplier, guaranteedFirstCrit } =
     resolveFightTier(monster, modifiers, encounter)
-  const playerPrompts = await textBank.makePromptSource(servedTier, rng)
-  const monsterPrompts = await textBank.makePromptSource(monster.textTier, rng)
+  // Content is themed per dungeon (content/text/library.json); a monster's own
+  // `tier` field IS its dungeon (1..11), so both prompt pools read from that
+  // dungeon at their respective text tiers — the player at the band's served
+  // tier, the monster at its own. The loader falls back off-theme only if a
+  // dungeon lacks the requested tier (an INT-capped served tier below its floor).
+  const dungeon = monster.tier
+  const playerPrompts = await textBank.makePromptSource(dungeon, servedTier, rng)
+  const monsterPrompts = await textBank.makePromptSource(dungeon, monster.textTier, rng)
 
   const battle = createBattle({
     combat: { ...combat, playerMaxHp: modifiers.maxHp },

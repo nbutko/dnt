@@ -1,4 +1,4 @@
-import type { Monster } from '../domain/types'
+import type { Monster, TextTier } from '../domain/types'
 import monstersData from './monsters.json'
 
 // `slack` (attack time limit = expected typing time x slack) is tuned per
@@ -11,7 +11,26 @@ import monstersData from './monsters.json'
 // single mistake costs more (more wrong characters typed before it
 // corrects). Later, stronger monsters should aim their own slack toward the
 // ~5% end using the same technique.
-const monsters = monstersData as Monster[]
+// monsters.json's `textTier` was authored on the old 10-tier ladder, where a
+// dungeon spanned only one or two text tiers. The shipped corpus is the 14-tier
+// ladder (content-plan-v2.html §2): dungeon N serves regular text [N, N+2] and
+// its boss N+3. Remap each monster's text tier into that band, preserving its
+// relative difficulty within the dungeon — the boss reads the top (N+3), and a
+// regular keeps its old offset above its dungeon's easiest monster, clamped to
+// the regular band. Done here, once, so every consumer (battle prompts, the
+// tier-gate, the sim) sees a single consistent value; the JSON stays the
+// legacy-scaled source of record.
+const rawMonsters = monstersData as Monster[]
+const dungeonFloor = new Map<number, number>()
+for (const m of rawMonsters) {
+  dungeonFloor.set(m.tier, Math.min(dungeonFloor.get(m.tier) ?? Infinity, m.textTier))
+}
+const remapTextTier = (m: Monster): TextTier => {
+  if (m.role === 'boss') return (m.tier + 3) as TextTier
+  const offset = m.textTier - (dungeonFloor.get(m.tier) ?? m.textTier)
+  return Math.max(m.tier, Math.min(m.tier + 2, m.tier + offset)) as TextTier
+}
+const monsters: Monster[] = rawMonsters.map((m) => ({ ...m, textTier: remapTextTier(m) }))
 
 export const listMonsters = (): readonly Monster[] => monsters
 

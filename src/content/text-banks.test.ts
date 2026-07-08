@@ -14,54 +14,70 @@ const fakeRng = (values: number[]): Rng => {
   }
 }
 
-const ALL_TIERS: TextTier[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+// Dungeon N ships text tiers [N, N+3] (content/text/library.json via
+// content-pipeline/ship.ts).
+const DUNGEONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+const tiersFor = (dungeon: number): TextTier[] =>
+  [dungeon, dungeon + 1, dungeon + 2, dungeon + 3] as TextTier[]
+// Every (dungeon, tier) cell the corpus ships, flattened for Promise.all.
+const ALL_CELLS = DUNGEONS.flatMap((dungeon) => tiersFor(dungeon).map((tier) => ({ dungeon, tier })))
 
 describe('text-banks', () => {
-  it('loads every seeded tier 1-10 as a non-empty line list', async () => {
-    const banks = await Promise.all(ALL_TIERS.map((tier) => textBank.loadTier(tier)))
-    banks.forEach((lines, i) => {
-      expect(lines.length, `tier ${ALL_TIERS[i]}`).toBeGreaterThan(0)
+  it('loads every dungeon×tier cell it ships as a non-empty line list', async () => {
+    const pools = await Promise.all(ALL_CELLS.map((c) => textBank.loadPool(c.dungeon, c.tier)))
+    pools.forEach((lines, i) => {
+      const { dungeon, tier } = ALL_CELLS[i]
+      expect(lines.length, `D${dungeon} T${tier}`).toBeGreaterThan(0)
     })
   })
 
-  it('serves each seeded tier its own distinct content, not a fallback', async () => {
-    // Story 7 bundles all 10, so a mid-tier request no longer degrades — tier
-    // 5 gets tier-5 lines, not tier 2's. (The fallback net below still guards
-    // any gap opened by a future, not-yet-authored tier.)
-    const tier2 = await textBank.loadTier(2)
-    const tier5 = await textBank.loadTier(5)
-    expect(tier5).not.toEqual(tier2)
+  it('serves each dungeon its own themed tier, not another dungeon’s', async () => {
+    // Swamp (D6) T6 and Forest's shared tier are different prose, not a shared
+    // flat pool — the whole point of per-dungeon content.
+    const swampT6 = await textBank.loadPool(6, 6)
+    const mountainT7 = await textBank.loadPool(7, 7)
+    expect(swampT6).not.toEqual(mountainT7)
   })
 
-  it('falls back to the highest bundled tier at or below an unbundled request', async () => {
-    // No valid TextTier is unbundled today, so force a gap: a tier past the
-    // authored set degrades to tier 10 instead of throwing (finding A).
-    const tier10 = await textBank.loadTier(10)
-    const unbundled = await textBank.loadTier(99 as TextTier)
-    expect(unbundled).toEqual(tier10)
+  it('falls back to the same tier from another dungeon when this one lacks it', async () => {
+    // Urban (D11) ships no tier 1; grassland (D1) is the only dungeon that
+    // does, so a D11 T1 request resolves to grassland's tier-1 content.
+    const urbanT1 = await textBank.loadPool(11, 1)
+    const grasslandT1 = await textBank.loadPool(1, 1)
+    expect(urbanT1.length).toBeGreaterThan(0)
+    expect(urbanT1).toEqual(grasslandT1)
   })
 
-  it('makePromptSource returns a picker that always returns a line from the tier', async () => {
+  it('degrades to the nearest easier tier past the top of the ladder', async () => {
+    // No valid TextTier is unshipped, so force a gap above T14: it degrades to
+    // T14 rather than throwing (the old loader's safety net, now downward).
+    const top = await textBank.loadPool(11, 14)
+    const past = await textBank.loadPool(11, 99 as TextTier)
+    expect(past).toEqual(top)
+  })
+
+  it('makePromptSource returns a picker that always returns a line from the pool', async () => {
     const rng = fakeRng([0, 0.25, 0.5, 0.75, 0.999])
-    const source = await textBank.makePromptSource(1, rng)
-    const lines = await textBank.loadTier(1)
+    const source = await textBank.makePromptSource(6, 6, rng)
+    const lines = await textBank.loadPool(6, 6)
     for (let i = 0; i < 5; i += 1) {
       expect(lines).toContain(source())
     }
   })
 
-  it('every seeded tier has ≥2 lines so no-repeat has an alternative (feedback #9)', async () => {
-    const banks = await Promise.all(ALL_TIERS.map((tier) => textBank.loadTier(tier)))
-    banks.forEach((lines, i) => {
-      expect(lines.length, `tier ${ALL_TIERS[i]}`).toBeGreaterThanOrEqual(2)
+  it('every shipped dungeon×tier cell has ≥2 lines so no-repeat has an alternative (feedback #9)', async () => {
+    const pools = await Promise.all(ALL_CELLS.map((c) => textBank.loadPool(c.dungeon, c.tier)))
+    pools.forEach((lines, i) => {
+      const { dungeon, tier } = ALL_CELLS[i]
+      expect(lines.length, `D${dungeon} T${tier}`).toBeGreaterThanOrEqual(2)
     })
   })
 
   it('never serves the same line twice in a row (feedback #9)', async () => {
-    // An rng that keeps returning 0 would, under the old with-replacement
-    // sampler, hand back lines[0] forever; the picker must step off it instead.
+    // An rng that keeps returning 0 would, under a with-replacement sampler,
+    // hand back lines[0] forever; the picker must step off it instead.
     const stuckRng = fakeRng([0])
-    const source = await textBank.makePromptSource(1, stuckRng)
+    const source = await textBank.makePromptSource(6, 6, stuckRng)
     let previous = source()
     for (let i = 0; i < 20; i += 1) {
       const next = source()

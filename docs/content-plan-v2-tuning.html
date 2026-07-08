@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combat Tuning Targets — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · <a href="content-plan-v2.html">Content Plan v2</a> · <a href="game-design.html">Game Design</a></nav>
+<header class="page-head">
+  <h1>Combat Tuning Targets</h1>
+  <p class="tagline">What "beating a dungeon boss" should <em>cost</em> — in level, wpm, and battle time — before we touch a single knob.</p>
+</header>
+<main>
+
+<p>
+  This is <strong>step B.1</strong> of the M4/M5 combat retune: write down the <em>theoretical</em> targets
+  first, so the simulation pass (step A) has something concrete to measure against, and the change plan
+  (step B.2) has a gap to close. Nothing here is implemented yet — every number is a <strong>target to be
+  validated or adjusted by the sim</strong>, not a tuned value. Where a cell is a hard anchor (given
+  directly, not interpolated) it is marked.
+</p>
+<div class="callout why">
+  The retune exists because wiring the 14-tier content (<code>content/text/library.json</code>) into the
+  M0-era combat math stretched the difficulty surface past what it was tuned for: prompts now run to ~2000
+  chars (was ~220), damage scales linearly-and-<em>uncapped</em> with prompt length
+  (<code>engine/damage.ts</code>'s <code>lengthFactor</code>), and the <code>hits-to-kill</code> balance
+  invariant is currently parked (<code>it.skip</code>). See <a href="game-design.html#damage">Game Design →
+  Damage</a> for the formula this doc is trying to re-anchor.
+</div>
+
+<h2 id="model">1. The three-corner model</h2>
+<p>
+  Every dungeon is <em>tuned to</em> a character level and a typing speed. But a player rarely sits exactly on
+  that mark, so each boss has a <strong>tradeoff surface</strong>: level + gear on one axis, typing wpm on the
+  other. They substitute for each other. We name three points on it:
+</p>
+<ul>
+  <li><strong>On-track</strong> — the anticipated level + kit, typing at the dungeon's expected speed. The center. Should win comfortably-but-not-trivially.</li>
+  <li><strong>Ahead</strong> — a <em>prodigy typist racing ahead of the level curve</em>: under-leveled, weaker kit, but fast hands carry it. Winnable, but tense.</li>
+  <li><strong>Behind</strong> — a <em>grinder catching up</em>: over-leveled, strong/maxed kit, slower hands. The level + gear buy back the speed they lack.</li>
+</ul>
+<div class="callout decision">
+  Two hard anchors given, everything else interpolated between them:
+  <ul style="margin:0.4rem 0 0;">
+    <li><strong>Dungeon 1 boss (T4):</strong> on-track = <strong>L2 @ ~10 wpm</strong>; behind = <strong>L4 @ ~7 wpm</strong>; ahead = <strong>L1</strong>, easy for any moderately competent typist.</li>
+    <li><strong>Dungeon 11 boss (T14):</strong> on-track = <strong>L15 @ 100 wpm</strong>, high-but-not-maxed kit; behind = <strong>L20 @ 85 wpm</strong>, maxed kit; ahead = <strong>L12</strong> (difficult), <strong>L10 basically impossible</strong>.</li>
+  </ul>
+</div>
+<p>
+  Two clean regularities fall out of those anchors and let us fill the ladder without guessing:
+</p>
+<ul>
+  <li><strong>On-track level ≈ <code>round(1.3·(N−1) + 2)</code></strong> — D1→L2, D11→L15, ~1.3 levels per dungeon.</li>
+  <li><strong>Behind-corner wpm ≈ the <em>previous</em> dungeon's on-track wpm</strong>, and <strong>ahead-corner wpm ≈ the <em>next</em> dungeon's on-track wpm.</strong> (This is exactly the given "grind D11 at 85, which is dungeon-10's target." Over-leveling lets you fight a dungeon at the pace of the one below; racing ahead means fighting it at the pace of the one above.)</li>
+</ul>
+
+<h2 id="targets">2. Level &amp; wpm targets — all 11 bosses</h2>
+<p>
+  On-track wpm tracks each dungeon's expected typing speed, pinned to the given anchors and to
+  <a href="content-plan-v2.html#ladder">Content Plan v2</a>'s stamina-tier speeds (T12 ≈ 70, T13 ≈ 85, T14 ≈
+  100 wpm). Levels and wpm below are <strong>the cost to clear that dungeon's boss at each corner</strong>.
+</p>
+<table>
+  <tr>
+    <th>Dungeon (boss tier)</th>
+    <th>Behind — grind<br><span style="font-weight:400;color:var(--text-dim)">lvl / wpm</span></th>
+    <th>On-track<br><span style="font-weight:400;color:var(--text-dim)">lvl / wpm</span></th>
+    <th>Ahead — prodigy<br><span style="font-weight:400;color:var(--text-dim)">lvl / wpm</span></th>
+  </tr>
+  <tr><td>D1 Grassland (T4)</td><td>4 / 7 <span class="tag">anchor</span></td><td>2 / 10 <span class="tag">anchor</span></td><td>1 / 16 <span class="tag">anchor</span></td></tr>
+  <tr><td>D2 Forest (T5)</td><td>6 / 10</td><td>3 / 16</td><td>2 / 22</td></tr>
+  <tr><td>D3 Hill (T6)</td><td>7 / 16</td><td>5 / 22</td><td>3 / 30</td></tr>
+  <tr><td>D4 Coastal (T7)</td><td>9 / 22</td><td>6 / 30</td><td>4 / 38</td></tr>
+  <tr><td>D5 Desert (T8)</td><td>10 / 30</td><td>7 / 38</td><td>5 / 47</td></tr>
+  <tr><td>D6 Swamp (T9)</td><td>12 / 38</td><td>9 / 47</td><td>7 / 57</td></tr>
+  <tr><td>D7 Mountain (T10)</td><td>14 / 47</td><td>10 / 57</td><td>8 / 65</td></tr>
+  <tr><td>D8 Arctic (T11)</td><td>15 / 57</td><td>11 / 65</td><td>9 / 70</td></tr>
+  <tr><td>D9 Underdark (T12)</td><td>17 / 65</td><td>12 / 70</td><td>10 / 85</td></tr>
+  <tr><td>D10 Underwater (T13)</td><td>18 / 70</td><td>14 / 85</td><td>11 / 100</td></tr>
+  <tr><td>D11 Urban (T14)</td><td>20 / 85 <span class="tag">anchor</span></td><td>15 / 100 <span class="tag">anchor</span></td><td>12 / 118 <span class="tag">anchor</span></td></tr>
+</table>
+<div class="callout why">
+  Read a row three ways. <strong>D6 Swamp:</strong> the anticipated hero is L9 typing ~47 wpm. A fast L7 who
+  hits ~57 wpm can still take it (ahead). A slower kid who ground to L12 and bought good gear can clear it at
+  ~38 wpm (behind). All three should be <em>possible</em>; the on-track one should feel <em>fair</em>.
+</div>
+
+<h2 id="shape">3. Battle shape — length, prompts, time</h2>
+<p>
+  "Battle time" is the product of two things the fight is made of: <strong>how long one prompt takes</strong>
+  (its char length ÷ the player's speed) and <strong>how many prompts it takes to win</strong> (monster HP ÷
+  damage per hit). The first is content; the second is what the retune actually tunes (via monster HP), so it
+  is the free variable the sim will set to hit a target battle time.
+</p>
+<div class="callout why">
+  Timing model used below: a prompt of <code>C</code> chars typed at <code>W</code> wpm takes
+  <code>C·12/W</code> seconds (5 chars/word), plus ~2 s to read/react before typing
+  (<code>playerReadingBufferMs</code>). Expected battle time ≈ <code>#prompts × per-prompt</code>. Speed bonus
+  (finishing early) and misses/retries are ignored here — the sim models them.
+</div>
+<table>
+  <tr>
+    <th>Boss tier</th>
+    <th>~Prompt len</th>
+    <th>Per-prompt @ on-track wpm</th>
+    <th>Target #prompts (on-track)</th>
+    <th>Target battle time</th>
+    <th>Regime</th>
+  </tr>
+  <tr><td>T4 (D1)</td><td>~22</td><td>~28 s @ 10</td><td>4</td><td>~1.9 min</td><td>skirmish</td></tr>
+  <tr><td>T5 (D2)</td><td>~48</td><td>~38 s @ 16</td><td>4</td><td>~2.5 min</td><td>skirmish</td></tr>
+  <tr><td>T6 (D3)</td><td>~42</td><td>~25 s @ 22</td><td>5</td><td>~2.1 min</td><td>skirmish</td></tr>
+  <tr><td>T7 (D4)</td><td>~50</td><td>~22 s @ 30</td><td>6</td><td>~2.2 min</td><td>skirmish</td></tr>
+  <tr><td>T8 (D5)</td><td>~75</td><td>~26 s @ 38</td><td>6</td><td>~2.6 min</td><td>skirmish</td></tr>
+  <tr><td>T9 (D6)</td><td>~100</td><td>~28 s @ 47</td><td>6</td><td>~2.8 min</td><td>skirmish</td></tr>
+  <tr><td>T10 (D7)</td><td>~200</td><td>~44 s @ 57</td><td>5</td><td>~3.7 min</td><td>transitional</td></tr>
+  <tr><td>T11 (D8)</td><td>~300</td><td>~57 s @ 65</td><td>6 <span class="tag">anchor</span></td><td>~6 min</td><td>stamina · epic</td></tr>
+  <tr><td>T12 (D9)</td><td>~700</td><td>~122 s @ 70</td><td>5 <span class="tag">anchor</span></td><td>~10 min</td><td>stamina · epic</td></tr>
+  <tr><td>T13 (D10)</td><td>~1275</td><td>~182 s @ 85</td><td>4 <span class="tag">anchor</span></td><td>~12 min</td><td>stamina · epic</td></tr>
+  <tr><td>T14 (D11)</td><td>~2000</td><td>~242 s @ 100</td><td>3 <span class="tag">anchor</span></td><td>~15 min</td><td>stamina · epic</td></tr>
+</table>
+<div class="callout decision">
+  <strong>Stamina bosses stay long <em>and</em> go multi-prompt — they should feel epic.</strong> The top four
+  bosses target <strong>6 / 5 / 4 / 3</strong> prompts (T11 / T12 / T13 / T14), i.e. roughly
+  <strong>6 / 10 / 12 / 15-minute</strong> battles. #prompts <em>falls</em> as the tier climbs because each
+  passage gets so much longer; battle time still <em>rises</em>. (The ~15 min at T14 assumes a couple of
+  reads/retries on a clean-ish run; three flawless 2000-char prompts alone are ~12 min.) This is the resolution
+  of the earlier "single-passage vs. repeated-prompts" fork — <em>both</em>: keep the long passages, and make a
+  boss several of them.
+</div>
+<p>
+  The corners aren't just "same fight, more or less of it" — they're <strong>two different ways to win</strong>,
+  each leaning on different stats:
+</p>
+<ul>
+  <li><strong>Ahead → burst / race.</strong> Under-leveled means thin HP, so you <em>can't</em> afford a long fight — every monster attack window is dangerous. You win by ending it fast: <strong>high INT</strong> pulls bigger, harder-hitting prompts, and <strong>fast hands</strong> land several of them in rapid succession, dropping the monster before your HP does. Fights run <em>shorter</em> than on-track. Leans on <strong>INT</strong> (heavy hits) + raw typing speed, with <strong>DEX</strong> dodges to shrug off the few hits that land.</li>
+  <li><strong>Behind → attrition / outlast.</strong> Over-leveled but slower-typing, so the fight is genuinely <em>longer</em> — the same attacks, just at a slower cadence. You survive the long haul with <strong>CON</strong> to soak the extra incoming hits and <strong>WIS</strong> to pad the typing timer so slow hands still land inside the budget. You take longer, but you get there.</li>
+</ul>
+<p>
+  So battle time is <em>not</em> corner-invariant: ahead <strong>compresses</strong> it, behind
+  <strong>stretches</strong> it. The sim tunes monster HP so both archetypes — and on-track between them —
+  converge on a win from opposite directions.
+</p>
+<div class="callout why">
+  These are <strong>builds</strong> (how you fight), a different axis from the ahead/on-track/behind
+  <em>corners</em> (where you sit on the level/wpm curve) — though they have affinities. Three coherent builds
+  fall out of the existing abilities:
+  <ul style="margin:0.4rem 0 0;">
+    <li><strong>Glass cannon</strong> — INT + DEX + speed. Read up, hit hard, dodge, burst. Natural fit for the <em>ahead</em> corner.</li>
+    <li><strong>Tank</strong> — CON + WIS. Soak hits, pad the timer, outlast. Natural fit for the <em>behind</em> corner.</li>
+    <li><strong>Brute / sandbagger</strong> — STR + CON, <em>low</em> INT. Deliberately roll into the dungeon's <em>easy</em> prompts and crush them with raw weapon damage and flawless, reliable execution. The forgiving, low-variance path (see §5).</li>
+  </ul>
+  That all six abilities anchor a build is evidence the knob <em>set</em> is right; whether the
+  <em>magnitudes</em> make each viable for every class is the §5 question.
+</div>
+
+<h3 id="regulars">Regular monsters vs. bosses — and why last dungeon's boss is this dungeon's warm-up</h3>
+<p>
+  Bosses are the walls; regular monsters are the runway. Two rules keep progression feeling <em>powerful</em>:
+</p>
+<ul>
+  <li><strong>Regulars die fast — ~2–3 prompts</strong> at the dungeon's on-track level and speed. They are where you rehearse the tier, not where you grind.</li>
+  <li><strong>Bosses are the epic spikes</strong> — the #prompts / battle-time above, climbing to a 15-minute final-boss marathon.</li>
+</ul>
+<p>
+  The satisfying part is the overlap. Each tier of content appears <strong>twice</strong>: as dungeon N's boss
+  (<code>T = N+3</code>) and as dungeon N+1's <em>high-band regular</em> (dungeon N+1 serves
+  <code>[N+1, N+3]</code>). A regular carries far less HP than a boss, and you've grown a level besides, so
+  <strong>content that was an epic boss becomes a routine regular one dungeon later.</strong> Concretely:
+  <strong>T13 is Dungeon 10's 4-prompt epic boss; by the start of Dungeon 11 a T13 high-band regular should
+  fall in ~2 prompts</strong> — and, typing at the same speed, feel <em>comfortable</em> rather than
+  white-knuckle. Then T14's final boss towers over it. "What wrecked me last week is now my warm-up" is the
+  power fantasy we're tuning toward.
+</p>
+<div class="callout decision">
+  A subtlety worth pinning down: the sharpened target is about <em>pressure</em>, not raw speed. Gaining a level
+  should primarily make a given tier feel <strong>less frenetic</strong> — more HP and hearts to absorb
+  mistakes, and (via WIS, or a small automatic per-level bump) more headroom on the typing timer, so you can
+  take the current tier at a leisurely pace instead of racing the clock. Fewer prompts <em>can</em> follow when
+  ASIs raise damage, but that's secondary; the felt reward is <strong>margin</strong>. The corollary is what
+  keeps the ladder climbable: that same margin makes the <strong>next</strong> tier approachable — proficiency
+  nudges you into it, and your new HP/timer let you survive its mistakes. So
+  <code>sweepLevelingMonotonicity</code> should assert "a level never makes a tier feel <em>tighter</em>"
+  (HP-remaining and miss-tolerance trend up), not merely "win-rate never drops."
+</div>
+
+<h2 id="stages">4. Within a dungeon: the five-stage ramp</h2>
+<p>
+  A boss is the capstone of a run, not a standalone. The dungeon graph already ramps difficulty across five
+  checkpoints — <strong>entrance → early fights (first branch) → waypoint → late fights (second branch) →
+  approach → boss</strong> — carried by the monster roster (weak early, tough at the approach) and, at the
+  boss, the shifted text-tier window. The per-stage target is a smooth interpolation: a run's <em>first</em>
+  fights sit near the <em>previous</em> dungeon's boss difficulty, and the ramp climbs to this dungeon's boss
+  row above. Full per-stage targets are out of scope for B.1 (bosses first); they get their own table once the
+  boss numbers survive the sim.
+</p>
+
+<h2 id="mechanics">5. Mechanical prerequisites these targets assume</h2>
+<p>
+  The tables above are only <em>reachable</em> if three structural things change first — they are assumptions
+  baked into the targets, flagged here so the sim tests them explicitly:
+</p>
+<div class="callout open">
+  <strong>INT gates the curriculum, and D&amp;D can't hand out enough of it.</strong> Today
+  <code>intTierCap</code> <em>hard-caps</em> the served tier, and leveling gives at most +8 INT across 20
+  levels — so an under-INT hero is <em>walled</em> out of level-appropriate content, then squared-penalized by
+  <code>tierGatePenalty</code> on top. <strong>Fix:</strong> make INT a <em>modifier on the encounter d20</em>
+  (alongside proficiency) instead of a cap. The full <code>[N, N+2]</code> window is always reachable; INT
+  merely <em>nudges</em> toward the high end. The squared gate <em>penalty</em> retires — but is
+  <em>replaced</em>, not deleted: a mild tier <em>reward</em> (higher served tier → more damage per hit, up to
+  the <code>lengthFactor</code> cap) so reading up is worth something without ever punishing reading down. That
+  positive pull is also what keeps sandbagging honest (see the brute prerequisite below). Boss window shifts
+  from <code>{N+3}</code> to <code>[N+1, N+3]</code> (grassland boss rolls 2–4, nudged toward 4). Content for
+  this already ships.
+</div>
+<div class="callout open">
+  <strong>Fights must not collapse to a single exchange.</strong> Uncapped <code>lengthFactor</code> means one
+  well-typed high-tier hit can exceed a boss's whole HP bar (and a crit doubles it), so the "#prompts" column
+  above is currently unachievable at high tiers — the fight ends in one hit. <strong>Fix:</strong> author
+  monster HP in "reference-hits" units so <code>hits-to-kill</code> is banded by construction, and soft-cap
+  <code>lengthFactor</code> so no single hit/crit exceeds a sane fraction of HP. Then re-enable the parked
+  invariant against this table's #prompts targets. This is doubly load-bearing now that stamina bosses are
+  <strong>deliberately multi-passage</strong> (§3: 6 / 5 / 4 / 3 prompts): if one well-typed 2000-char hit can
+  end the fight, a 15-minute three-passage T14 boss is impossible to build. The HP + <code>lengthFactor</code>
+  cap is exactly what lets a boss <em>survive</em> long enough to demand all its passages.
+</div>
+<div class="callout open">
+  <strong>Every class needs a viable path to each row, and the gear ladder is too short.</strong> A whole crit
+  subsystem (DEX crit chance, weapon <code>critRange</code>, the crit-boost item) is computed but ignored by
+  <code>damage.ts</code> — so the Rogue's identity is missing and Oil of Sharpness is a no-op. And weapons stop
+  at shop-tier 3 (top die d12): a player buys their last weapon before dungeon 4, so "high-but-not-maxed vs
+  maxed kit" — which the D11 anchors depend on — doesn't exist past the early game. <strong>Fix:</strong> wire
+  crit; extend the weapon/gear ladder the length of the game (per governing ability, so each class upgrades),
+  and add persistent defense/HP gear so survivability is a real progression axis. Items should be able to
+  counter-balance a character-sheet flaw at each price point.
+</div>
+<div class="callout open">
+  <strong>Support the third build: the brute / sandbagger.</strong> A low-INT, high-STR player can lean the
+  other way — deliberately roll into the dungeon's <em>easy</em> prompts and win on raw weapon damage plus
+  flawless, reliable execution (short prompts = near-max speed bonus, almost no misses or timeouts, so every hit
+  lands near its potential). For this to be a genuine <em>tradeoff</em> and not a dominant exploit, higher tiers
+  must pay more per hit (the tier <em>reward</em> in the INT prerequisite above) — the brute forgoes that reward
+  in exchange for consistency. Two properties make it safe for a <em>trainer</em>: it is
+  <strong>self-limiting</strong> (sandbagging caps you at the dungeon <em>floor</em> tier N, which still rises
+  every dungeon, so the curriculum keeps climbing — it just spares the ceiling N+2), and it is an
+  <strong>accessibility valve</strong> (a struggling kid can fight even a boss at N+1 instead of N+3 — the
+  15-minute T14 wall at T12 passages: still winnable, less glorious). <strong>Enabler needed:</strong>
+  proficiency always pushes the roll <em>up</em>, so the brute needs an item to pull it down — cleanest is a
+  <em>disadvantage</em> trinket (roll 2d20, keep the lower), robust at every proficiency level; optionally a
+  brute stone (−N to the roll, +STR-damage). Keep it to <em>one</em> item — this is a one-kid game, not a
+  build-crafting MMO.
+</div>
+
+<h2 id="sim">6. What the simulation pass (step A) must answer</h2>
+<p>
+  <code>engine/sim/balance.ts</code>'s <code>simulateCharacterBattles</code> already models the whole
+  pipeline — class, level, abilities, weapon, buffs, encounter roll, served tier, real <code>computeDamage</code>
+  — and reports win rate, hits-to-kill, crit rate, dodge rate. The sweep should print, for every
+  <strong>(dungeon boss × corner × class)</strong>:
+</p>
+<ul>
+  <li><strong>Win rate</strong> at the target (level, wpm) — on-track should be a comfortable win, ahead a marginal one, behind a safe one, and the "impossible" cells (e.g. D11 @ L10) should actually lose.</li>
+  <li><strong>Hits-to-kill / #prompts</strong> vs. the §3 targets — separately for <em>regulars</em> (target ~2–3) and <em>bosses</em> (the 4→6→…→3 epic curve). The gap tells us how far monster HP (and the <code>lengthFactor</code> cap) has to move.</li>
+  <li><strong>Level-up eases pressure</strong> — at a fixed tier and wpm, a higher level should leave <em>more HP remaining</em> and more miss-tolerance (calmer, not just winnable), and open the next tier. Track HP-fraction-at-win and timer headroom, not only win-rate. (The "T13 boss → T13 warm-up" prompt drop, ~4 → ~2, is mostly the regular's smaller HP bar, not leveling — keep the two effects separate.)</li>
+  <li><strong>Class spread</strong> — the four classes should all clear each row via <em>some</em> gear path; the spread between best and worst class at a fixed (level, wpm) is the balance error to close.</li>
+  <li><strong>Build viability &amp; sandbag calibration</strong> — glass-cannon, tank, and brute should all be able to clear on-track; and critically, sandbagging (roll-low + high STR) must be a <em>tradeoff</em>, not strictly dominant. Sweep tier-reward strength against the <code>lengthFactor</code> cap until reading up and playing the floor are within a reasonable band of each other.</li>
+  <li><strong>Sensitivity</strong> — how many wpm one character level is "worth," and vice-versa, so the ahead/behind corners are the right distance from center.</li>
+</ul>
+<p>
+  The output of step A is a measured surface laid next to this target surface. Wherever they diverge is a line
+  item in the step-B.2 change plan (knob values, HP authoring, new gear, crit wiring).
+</p>
+
+</main>
+<footer class="page-foot">
+  Dungeons &amp; Typing — combat tuning targets (M4/M5). Targets only; validated by simulation before any knob moves.
+</footer>
+</body>
+</html>

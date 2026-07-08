@@ -1,0 +1,3002 @@
+{
+  "dungeons": [
+    {
+      "n": 2,
+      "name": "forest",
+      "habitat": "Forest",
+      "crBand": [
+        1,
+        3
+      ],
+      "candidates": [
+        {
+          "name": "Brown Bear",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Dryad",
+          "cr": "1",
+          "type": "Fey"
+        },
+        {
+          "name": "Giant Spider",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Harpy",
+          "cr": "1",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Yuan-ti Infiltrator",
+          "cr": "1",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Centaur Trooper",
+          "cr": "2",
+          "type": "Fey"
+        },
+        {
+          "name": "Giant Boar",
+          "cr": "2",
+          "type": "Beast"
+        },
+        {
+          "name": "Gnoll Pack Lord",
+          "cr": "2",
+          "type": "Fiend"
+        },
+        {
+          "name": "Lizardfolk Geomancer",
+          "cr": "2",
+          "type": "Elemental"
+        },
+        {
+          "name": "Swarm of Stirges",
+          "cr": "2",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Will-o'-Wisp",
+          "cr": "2",
+          "type": "Undead"
+        },
+        {
+          "name": "Goblin Hexer",
+          "cr": "3",
+          "type": "Fey"
+        },
+        {
+          "name": "Hobgoblin Captain",
+          "cr": "3",
+          "type": "Fey"
+        },
+        {
+          "name": "Yuan-ti Malison",
+          "cr": "3",
+          "type": "Monstrosity"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [],
+          "modes": []
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [],
+          "modes": []
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [],
+          "modes": []
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [],
+          "modes": []
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            5
+          ],
+          "modes": [
+            "short"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          1,
+          13,
+          5,
+          9,
+          20,
+          20,
+          6,
+          11,
+          10,
+          1,
+          10,
+          8,
+          4,
+          14,
+          12,
+          12,
+          1,
+          17,
+          10,
+          15,
+          20,
+          18,
+          13,
+          11,
+          9,
+          18,
+          15,
+          20,
+          18,
+          1,
+          17,
+          13,
+          2,
+          9,
+          18,
+          19,
+          11,
+          14,
+          12,
+          20,
+          3,
+          2,
+          1,
+          2,
+          7,
+          17,
+          15,
+          15,
+          11,
+          19,
+          9,
+          13,
+          1,
+          19,
+          1,
+          9,
+          6,
+          8,
+          14,
+          7,
+          19,
+          10,
+          2,
+          18,
+          16,
+          16,
+          1,
+          9,
+          14,
+          3,
+          1,
+          12
+        ],
+        "d8": [
+          1,
+          3,
+          3,
+          7,
+          3,
+          5,
+          4,
+          7,
+          5,
+          3,
+          2,
+          6,
+          4,
+          3,
+          4,
+          7,
+          1,
+          7,
+          8,
+          5,
+          3,
+          1,
+          7,
+          8,
+          2,
+          5,
+          8,
+          6,
+          5,
+          1,
+          1,
+          4,
+          8,
+          1,
+          1,
+          4,
+          7,
+          2,
+          1,
+          3,
+          6,
+          1,
+          8,
+          3,
+          5
+        ],
+        "d6": [
+          1,
+          1,
+          4,
+          5,
+          3,
+          3,
+          6,
+          5,
+          5,
+          5,
+          5,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          5,
+          5,
+          4,
+          1,
+          2,
+          2,
+          2,
+          4,
+          1,
+          6,
+          6,
+          4,
+          4,
+          2,
+          2,
+          2,
+          3,
+          6,
+          1,
+          5,
+          6,
+          2,
+          6,
+          3,
+          2
+        ],
+        "d4": [
+          3,
+          2,
+          3,
+          4,
+          3,
+          3,
+          4,
+          2,
+          3,
+          1,
+          4,
+          4,
+          1,
+          3,
+          4,
+          4,
+          3,
+          1,
+          3,
+          1,
+          4,
+          2,
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "n": 3,
+      "name": "hill",
+      "habitat": "Hill",
+      "crBand": [
+        1,
+        4
+      ],
+      "candidates": [
+        {
+          "name": "Brown Bear",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Dire Wolf",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Giant Hyena",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Harpy",
+          "cr": "1",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Lion",
+          "cr": "1",
+          "type": "Beast"
+        },
+        {
+          "name": "Bulette Pup",
+          "cr": "2",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Gnoll Pack Lord",
+          "cr": "2",
+          "type": "Fiend"
+        },
+        {
+          "name": "Ogre",
+          "cr": "2",
+          "type": "Giant"
+        },
+        {
+          "name": "Saber-Toothed Tiger",
+          "cr": "2",
+          "type": "Beast"
+        },
+        {
+          "name": "Swarm of Venomous Snakes",
+          "cr": "2",
+          "type": "Beast"
+        },
+        {
+          "name": "Green Hag",
+          "cr": "3",
+          "type": "Fey"
+        },
+        {
+          "name": "Phase Spider",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Ettin",
+          "cr": "4",
+          "type": "Giant"
+        },
+        {
+          "name": "Wereboar",
+          "cr": "4",
+          "type": "Monstrosity"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            5
+          ],
+          "modes": [
+            "short"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            5
+          ],
+          "modes": [
+            "short"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            5
+          ],
+          "modes": [
+            "short"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            5
+          ],
+          "modes": [
+            "short"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            6
+          ],
+          "modes": [
+            "short"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          12,
+          2,
+          3,
+          16,
+          10,
+          13,
+          20,
+          4,
+          3,
+          20,
+          11,
+          5,
+          18,
+          7,
+          11,
+          7,
+          15,
+          7,
+          11,
+          3,
+          1,
+          19,
+          6,
+          3,
+          5,
+          2,
+          14,
+          3,
+          19,
+          5,
+          7,
+          10,
+          14,
+          9,
+          1,
+          5,
+          6,
+          10,
+          5,
+          3,
+          2,
+          9,
+          20,
+          19,
+          10,
+          6,
+          15,
+          20,
+          3,
+          5,
+          1,
+          11,
+          13,
+          13,
+          7,
+          4,
+          2,
+          12,
+          7,
+          4,
+          7,
+          4,
+          7,
+          4,
+          19,
+          18,
+          6,
+          11,
+          1,
+          3,
+          7,
+          5
+        ],
+        "d8": [
+          1,
+          6,
+          2,
+          6,
+          5,
+          5,
+          1,
+          6,
+          2,
+          3,
+          8,
+          2,
+          1,
+          6,
+          2,
+          5,
+          2,
+          4,
+          6,
+          2,
+          5,
+          8,
+          2,
+          5,
+          5,
+          3,
+          7,
+          6,
+          6,
+          6,
+          7,
+          1,
+          2,
+          6,
+          6,
+          8,
+          8,
+          6,
+          8,
+          3,
+          2,
+          7,
+          3,
+          8,
+          2
+        ],
+        "d6": [
+          6,
+          5,
+          4,
+          5,
+          4,
+          4,
+          1,
+          1,
+          3,
+          3,
+          5,
+          6,
+          1,
+          2,
+          6,
+          4,
+          6,
+          5,
+          4,
+          6,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          4,
+          2,
+          1,
+          6,
+          1,
+          1,
+          5,
+          3,
+          2,
+          5,
+          4,
+          3,
+          2,
+          6,
+          6,
+          1,
+          1,
+          2,
+          2
+        ],
+        "d4": [
+          4,
+          1,
+          1,
+          2,
+          2,
+          1,
+          3,
+          2,
+          4,
+          3,
+          1,
+          3,
+          4,
+          2,
+          1,
+          3,
+          2,
+          2,
+          2,
+          1,
+          4,
+          4,
+          1,
+          4,
+          3
+        ]
+      }
+    },
+    {
+      "n": 4,
+      "name": "coastal",
+      "habitat": "Coastal",
+      "crBand": [
+        2,
+        5
+      ],
+      "candidates": [
+        {
+          "name": "Bronze Dragon Wyrmling",
+          "cr": "2",
+          "type": "Dragon"
+        },
+        {
+          "name": "Griffon",
+          "cr": "2",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Merrow",
+          "cr": "2",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Plesiosaurus",
+          "cr": "2",
+          "type": "Beast"
+        },
+        {
+          "name": "Sahuagin Priest",
+          "cr": "2",
+          "type": "Fiend"
+        },
+        {
+          "name": "Sea Hag",
+          "cr": "2",
+          "type": "Fey"
+        },
+        {
+          "name": "Swarm of Venomous Snakes",
+          "cr": "2",
+          "type": "Beast"
+        },
+        {
+          "name": "Blue Dragon Wyrmling",
+          "cr": "3",
+          "type": "Dragon"
+        },
+        {
+          "name": "Kuo-toa Monitor",
+          "cr": "3",
+          "type": "Aberration"
+        },
+        {
+          "name": "Manticore",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Chuul",
+          "cr": "4",
+          "type": "Aberration"
+        },
+        {
+          "name": "Giant Crocodile",
+          "cr": "5",
+          "type": "Beast"
+        },
+        {
+          "name": "Sahuagin Baron",
+          "cr": "5",
+          "type": "Fiend"
+        },
+        {
+          "name": "Water Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            5,
+            6
+          ],
+          "modes": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            5,
+            6
+          ],
+          "modes": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            5,
+            6
+          ],
+          "modes": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            5,
+            6
+          ],
+          "modes": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            7
+          ],
+          "modes": [
+            "short"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          3,
+          8,
+          15,
+          3,
+          18,
+          17,
+          4,
+          7,
+          12,
+          6,
+          5,
+          19,
+          15,
+          10,
+          5,
+          15,
+          10,
+          4,
+          18,
+          9,
+          7,
+          8,
+          16,
+          11,
+          15,
+          12,
+          18,
+          13,
+          1,
+          14,
+          14,
+          17,
+          12,
+          16,
+          11,
+          5,
+          8,
+          16,
+          16,
+          1,
+          20,
+          9,
+          17,
+          3,
+          2,
+          7,
+          8,
+          1,
+          5,
+          14,
+          13,
+          20,
+          14,
+          8,
+          15,
+          2,
+          17,
+          17,
+          12,
+          14,
+          8,
+          1,
+          11,
+          10,
+          14,
+          5,
+          6,
+          16,
+          9,
+          6,
+          4,
+          13
+        ],
+        "d8": [
+          5,
+          2,
+          7,
+          5,
+          5,
+          4,
+          4,
+          8,
+          7,
+          5,
+          8,
+          3,
+          7,
+          4,
+          2,
+          4,
+          7,
+          3,
+          4,
+          2,
+          5,
+          2,
+          8,
+          7,
+          5,
+          7,
+          1,
+          8,
+          7,
+          1,
+          5,
+          4,
+          2,
+          1,
+          2,
+          7,
+          8,
+          7,
+          5,
+          6,
+          6,
+          6,
+          8,
+          5,
+          7
+        ],
+        "d6": [
+          4,
+          6,
+          1,
+          3,
+          3,
+          6,
+          6,
+          6,
+          3,
+          6,
+          5,
+          6,
+          3,
+          5,
+          2,
+          2,
+          5,
+          4,
+          1,
+          1,
+          4,
+          2,
+          3,
+          3,
+          2,
+          6,
+          2,
+          1,
+          3,
+          5,
+          1,
+          3,
+          2,
+          3,
+          5,
+          5,
+          5,
+          2,
+          3,
+          5,
+          4,
+          6,
+          4,
+          1,
+          6
+        ],
+        "d4": [
+          2,
+          3,
+          1,
+          2,
+          4,
+          3,
+          1,
+          2,
+          4,
+          3,
+          1,
+          4,
+          3,
+          2,
+          1,
+          4,
+          3,
+          4,
+          1,
+          2,
+          3,
+          3,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "n": 5,
+      "name": "desert",
+      "habitat": "Desert",
+      "crBand": [
+        3,
+        6
+      ],
+      "candidates": [
+        {
+          "name": "Blue Dragon Wyrmling",
+          "cr": "3",
+          "type": "Dragon"
+        },
+        {
+          "name": "Giant Scorpion",
+          "cr": "3",
+          "type": "Beast"
+        },
+        {
+          "name": "Hobgoblin Captain",
+          "cr": "3",
+          "type": "Fey"
+        },
+        {
+          "name": "Mummy",
+          "cr": "3",
+          "type": "Undead"
+        },
+        {
+          "name": "Phase Spider",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Yuan-ti Malison",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Couatl",
+          "cr": "4",
+          "type": "Celestial"
+        },
+        {
+          "name": "Gnoll Fang of Yeenoghu",
+          "cr": "4",
+          "type": "Fiend"
+        },
+        {
+          "name": "Lamia",
+          "cr": "4",
+          "type": "Fiend"
+        },
+        {
+          "name": "Air Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        },
+        {
+          "name": "Fire Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        },
+        {
+          "name": "Cyclops Sentry",
+          "cr": "6",
+          "type": "Giant"
+        },
+        {
+          "name": "Hobgoblin Warlord",
+          "cr": "6",
+          "type": "Fey"
+        },
+        {
+          "name": "Young Brass Dragon",
+          "cr": "6",
+          "type": "Dragon"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            5,
+            6,
+            7
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            5,
+            6,
+            7
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            5,
+            6,
+            7
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            5,
+            6,
+            7
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            8
+          ],
+          "modes": [
+            "short"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          3,
+          20,
+          4,
+          20,
+          17,
+          16,
+          8,
+          19,
+          15,
+          20,
+          8,
+          9,
+          4,
+          14,
+          6,
+          11,
+          8,
+          12,
+          19,
+          11,
+          1,
+          13,
+          15,
+          9,
+          6,
+          8,
+          9,
+          8,
+          13,
+          15,
+          10,
+          14,
+          3,
+          12,
+          4,
+          6,
+          8,
+          14,
+          4,
+          7,
+          10,
+          19,
+          10,
+          7,
+          2,
+          16,
+          20,
+          15,
+          20,
+          17,
+          17,
+          5,
+          12,
+          10,
+          17,
+          6,
+          14,
+          15,
+          8,
+          12,
+          12,
+          3,
+          12,
+          7,
+          19,
+          2,
+          2,
+          12,
+          19,
+          3,
+          8,
+          12
+        ],
+        "d8": [
+          7,
+          3,
+          7,
+          4,
+          6,
+          4,
+          4,
+          4,
+          1,
+          7,
+          8,
+          4,
+          2,
+          5,
+          1,
+          6,
+          5,
+          5,
+          3,
+          2,
+          5,
+          3,
+          1,
+          5,
+          7,
+          6,
+          6,
+          6,
+          1,
+          3,
+          7,
+          2,
+          8,
+          6,
+          5,
+          8,
+          1,
+          7,
+          8,
+          5,
+          2,
+          5,
+          2,
+          4,
+          2
+        ],
+        "d6": [
+          6,
+          6,
+          1,
+          3,
+          3,
+          1,
+          5,
+          1,
+          1,
+          1,
+          3,
+          3,
+          3,
+          4,
+          4,
+          5,
+          6,
+          3,
+          6,
+          5,
+          5,
+          3,
+          6,
+          6,
+          3,
+          3,
+          2,
+          5,
+          5,
+          6,
+          2,
+          6,
+          2,
+          1,
+          1,
+          1,
+          6,
+          3,
+          5,
+          1,
+          3,
+          6,
+          4,
+          6,
+          6
+        ],
+        "d4": [
+          2,
+          3,
+          4,
+          2,
+          4,
+          2,
+          4,
+          3,
+          1,
+          1,
+          2,
+          4,
+          3,
+          3,
+          4,
+          3,
+          2,
+          3,
+          4,
+          4,
+          4,
+          2,
+          3,
+          2,
+          4
+        ]
+      }
+    },
+    {
+      "n": 7,
+      "name": "mountain",
+      "habitat": "Mountain",
+      "crBand": [
+        4,
+        9
+      ],
+      "candidates": [
+        {
+          "name": "Aarakocra Aeromancer",
+          "cr": "4",
+          "type": "Elemental"
+        },
+        {
+          "name": "Ettin",
+          "cr": "4",
+          "type": "Giant"
+        },
+        {
+          "name": "Red Dragon Wyrmling",
+          "cr": "4",
+          "type": "Dragon"
+        },
+        {
+          "name": "Air Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        },
+        {
+          "name": "Earth Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        },
+        {
+          "name": "Troll",
+          "cr": "5",
+          "type": "Giant"
+        },
+        {
+          "name": "Azer Pyromancer",
+          "cr": "6",
+          "type": "Elemental"
+        },
+        {
+          "name": "Cyclops Sentry",
+          "cr": "6",
+          "type": "Giant"
+        },
+        {
+          "name": "Galeb Duhr",
+          "cr": "6",
+          "type": "Elemental"
+        },
+        {
+          "name": "Hobgoblin Warlord",
+          "cr": "6",
+          "type": "Fey"
+        },
+        {
+          "name": "Stone Giant",
+          "cr": "7",
+          "type": "Giant"
+        },
+        {
+          "name": "Frost Giant",
+          "cr": "8",
+          "type": "Giant"
+        },
+        {
+          "name": "Cloud Giant",
+          "cr": "9",
+          "type": "Giant"
+        },
+        {
+          "name": "Young Silver Dragon",
+          "cr": "9",
+          "type": "Dragon"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            7,
+            8,
+            9
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            7,
+            8,
+            9
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            7,
+            8,
+            9
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            7,
+            8,
+            9
+          ],
+          "modes": [
+            "short",
+            "short",
+            "short"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            10
+          ],
+          "modes": [
+            "long"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          5,
+          16,
+          14,
+          3,
+          17,
+          9,
+          13,
+          3,
+          16,
+          19,
+          10,
+          12,
+          1,
+          11,
+          9,
+          2,
+          11,
+          19,
+          19,
+          14,
+          17,
+          1,
+          14,
+          20,
+          20,
+          5,
+          8,
+          3,
+          14,
+          9,
+          7,
+          20,
+          11,
+          7,
+          9,
+          18,
+          3,
+          13,
+          13,
+          1,
+          4,
+          18,
+          19,
+          10,
+          20,
+          1,
+          7,
+          3,
+          1,
+          13,
+          12,
+          16,
+          9,
+          3,
+          8,
+          6,
+          14,
+          12,
+          1,
+          7,
+          13,
+          15,
+          18,
+          14,
+          16,
+          4,
+          18,
+          7,
+          18,
+          16,
+          15,
+          19
+        ],
+        "d8": [
+          5,
+          6,
+          1,
+          8,
+          6,
+          4,
+          1,
+          8,
+          3,
+          3,
+          2,
+          6,
+          5,
+          6,
+          3,
+          2,
+          1,
+          6,
+          7,
+          2,
+          8,
+          7,
+          4,
+          5,
+          8,
+          4,
+          5,
+          6,
+          6,
+          2,
+          5,
+          7,
+          5,
+          5,
+          1,
+          5,
+          4,
+          6,
+          2,
+          5,
+          3,
+          6,
+          3,
+          6,
+          2
+        ],
+        "d6": [
+          6,
+          2,
+          1,
+          5,
+          6,
+          6,
+          5,
+          6,
+          4,
+          4,
+          5,
+          6,
+          3,
+          1,
+          1,
+          3,
+          5,
+          4,
+          4,
+          6,
+          2,
+          6,
+          3,
+          5,
+          5,
+          1,
+          5,
+          2,
+          6,
+          2,
+          6,
+          5,
+          4,
+          5,
+          2,
+          6,
+          6,
+          2,
+          2,
+          4,
+          6,
+          6,
+          3,
+          2,
+          4
+        ],
+        "d4": [
+          3,
+          4,
+          4,
+          2,
+          1,
+          4,
+          2,
+          4,
+          1,
+          2,
+          3,
+          1,
+          4,
+          2,
+          3,
+          3,
+          3,
+          1,
+          2,
+          1,
+          4,
+          3,
+          1,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "n": 8,
+      "name": "arctic",
+      "habitat": "Arctic",
+      "crBand": [
+        3,
+        13
+      ],
+      "candidates": [
+        {
+          "name": "Manticore",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Winter Wolf",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Yeti",
+          "cr": "3",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Giant Axe Beak",
+          "cr": "5",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Troll",
+          "cr": "5",
+          "type": "Giant"
+        },
+        {
+          "name": "Werebear",
+          "cr": "5",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Mammoth",
+          "cr": "6",
+          "type": "Beast"
+        },
+        {
+          "name": "Young Remorhaz",
+          "cr": "6",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Frost Giant",
+          "cr": "8",
+          "type": "Giant"
+        },
+        {
+          "name": "Abominable Yeti",
+          "cr": "9",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Remorhaz",
+          "cr": "11",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Roc",
+          "cr": "11",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Adult White Dragon",
+          "cr": "13",
+          "type": "Dragon"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            8,
+            9,
+            10
+          ],
+          "modes": [
+            "short",
+            "short",
+            "long"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            8,
+            9,
+            10
+          ],
+          "modes": [
+            "short",
+            "short",
+            "long"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            8,
+            9,
+            10
+          ],
+          "modes": [
+            "short",
+            "short",
+            "long"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            8,
+            9,
+            10
+          ],
+          "modes": [
+            "short",
+            "short",
+            "long"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            11
+          ],
+          "modes": [
+            "long"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          2,
+          16,
+          10,
+          2,
+          19,
+          8,
+          6,
+          13,
+          6,
+          3,
+          9,
+          15,
+          19,
+          20,
+          17,
+          3,
+          17,
+          2,
+          2,
+          6,
+          18,
+          13,
+          6,
+          16,
+          20,
+          18,
+          11,
+          10,
+          17,
+          2,
+          20,
+          10,
+          2,
+          6,
+          3,
+          1,
+          17,
+          15,
+          19,
+          18,
+          16,
+          12,
+          9,
+          17,
+          4,
+          3,
+          8,
+          1,
+          12,
+          19,
+          13,
+          3,
+          16,
+          19,
+          19,
+          1,
+          9,
+          9,
+          10,
+          10,
+          3,
+          14,
+          1,
+          4,
+          7,
+          19,
+          4,
+          16,
+          4,
+          5,
+          17,
+          7
+        ],
+        "d8": [
+          2,
+          7,
+          2,
+          5,
+          5,
+          5,
+          5,
+          6,
+          8,
+          8,
+          3,
+          5,
+          3,
+          1,
+          3,
+          4,
+          6,
+          8,
+          2,
+          1,
+          1,
+          3,
+          8,
+          1,
+          2,
+          4,
+          2,
+          8,
+          7,
+          1,
+          3,
+          3,
+          4,
+          4,
+          3,
+          8,
+          1,
+          8,
+          5,
+          2,
+          8,
+          2,
+          3,
+          5,
+          2
+        ],
+        "d6": [
+          3,
+          5,
+          3,
+          2,
+          5,
+          4,
+          2,
+          5,
+          3,
+          3,
+          5,
+          1,
+          2,
+          1,
+          3,
+          3,
+          1,
+          6,
+          2,
+          4,
+          6,
+          2,
+          4,
+          2,
+          3,
+          1,
+          6,
+          1,
+          4,
+          5,
+          4,
+          3,
+          3,
+          1,
+          1,
+          2,
+          1,
+          4,
+          4,
+          6,
+          4,
+          4,
+          3,
+          1,
+          6
+        ],
+        "d4": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          4,
+          4,
+          4,
+          3,
+          3,
+          1,
+          4,
+          3,
+          1,
+          2,
+          1,
+          1,
+          3,
+          2,
+          2,
+          2,
+          1,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "n": 9,
+      "name": "underdark",
+      "habitat": "Underdark",
+      "crBand": [
+        7,
+        12
+      ],
+      "candidates": [
+        {
+          "name": "Grick Ancient",
+          "cr": "7",
+          "type": "Aberration"
+        },
+        {
+          "name": "Mind Flayer",
+          "cr": "7",
+          "type": "Aberration"
+        },
+        {
+          "name": "Stone Giant",
+          "cr": "7",
+          "type": "Giant"
+        },
+        {
+          "name": "Violet Fungus Necrohulk",
+          "cr": "7",
+          "type": "Plant"
+        },
+        {
+          "name": "Cloaker",
+          "cr": "8",
+          "type": "Aberration"
+        },
+        {
+          "name": "Fomorian",
+          "cr": "8",
+          "type": "Giant"
+        },
+        {
+          "name": "Spirit Naga",
+          "cr": "8",
+          "type": "Fiend"
+        },
+        {
+          "name": "Vampire Nightbringer",
+          "cr": "8",
+          "type": "Undead"
+        },
+        {
+          "name": "Fire Giant",
+          "cr": "9",
+          "type": "Giant"
+        },
+        {
+          "name": "Aboleth",
+          "cr": "10",
+          "type": "Aberration"
+        },
+        {
+          "name": "Cyclops Oracle",
+          "cr": "10",
+          "type": "Giant"
+        },
+        {
+          "name": "Behir",
+          "cr": "11",
+          "type": "Monstrosity"
+        },
+        {
+          "name": "Dao",
+          "cr": "11",
+          "type": "Elemental"
+        },
+        {
+          "name": "Mind Flayer Arcanist",
+          "cr": "11",
+          "type": "Aberration"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            9,
+            10,
+            11
+          ],
+          "modes": [
+            "short",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            9,
+            10,
+            11
+          ],
+          "modes": [
+            "short",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            9,
+            10,
+            11
+          ],
+          "modes": [
+            "short",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            9,
+            10,
+            11
+          ],
+          "modes": [
+            "short",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            12
+          ],
+          "modes": [
+            "long"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          6,
+          12,
+          11,
+          13,
+          4,
+          13,
+          1,
+          9,
+          20,
+          12,
+          9,
+          3,
+          9,
+          7,
+          5,
+          13,
+          4,
+          9,
+          20,
+          19,
+          9,
+          4,
+          1,
+          4,
+          8,
+          10,
+          11,
+          1,
+          12,
+          4,
+          15,
+          2,
+          20,
+          13,
+          3,
+          3,
+          1,
+          4,
+          14,
+          2,
+          15,
+          16,
+          13,
+          5,
+          9,
+          19,
+          16,
+          1,
+          17,
+          12,
+          11,
+          13,
+          11,
+          2,
+          17,
+          5,
+          14,
+          20,
+          9,
+          8,
+          15,
+          19,
+          6,
+          2,
+          12,
+          11,
+          10,
+          6,
+          20,
+          2,
+          14,
+          10
+        ],
+        "d8": [
+          1,
+          4,
+          5,
+          5,
+          7,
+          3,
+          3,
+          4,
+          1,
+          4,
+          4,
+          3,
+          1,
+          5,
+          8,
+          7,
+          3,
+          4,
+          3,
+          4,
+          3,
+          7,
+          1,
+          6,
+          8,
+          4,
+          2,
+          3,
+          4,
+          6,
+          8,
+          8,
+          5,
+          7,
+          7,
+          8,
+          2,
+          4,
+          8,
+          3,
+          3,
+          7,
+          7,
+          6,
+          8
+        ],
+        "d6": [
+          1,
+          2,
+          2,
+          1,
+          5,
+          1,
+          1,
+          5,
+          3,
+          6,
+          3,
+          6,
+          5,
+          3,
+          6,
+          3,
+          6,
+          6,
+          4,
+          3,
+          1,
+          3,
+          3,
+          1,
+          5,
+          4,
+          5,
+          2,
+          6,
+          1,
+          6,
+          6,
+          1,
+          2,
+          4,
+          4,
+          1,
+          1,
+          6,
+          4,
+          5,
+          2,
+          6,
+          2,
+          3
+        ],
+        "d4": [
+          4,
+          3,
+          4,
+          4,
+          2,
+          1,
+          1,
+          1,
+          2,
+          3,
+          3,
+          4,
+          1,
+          1,
+          2,
+          1,
+          1,
+          4,
+          3,
+          3,
+          2,
+          1,
+          4,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "n": 10,
+      "name": "underwater",
+      "habitat": "Underwater",
+      "crBand": [
+        5,
+        17
+      ],
+      "candidates": [
+        {
+          "name": "Giant Shark",
+          "cr": "5",
+          "type": "Beast"
+        },
+        {
+          "name": "Sahuagin Baron",
+          "cr": "5",
+          "type": "Fiend"
+        },
+        {
+          "name": "Water Elemental",
+          "cr": "5",
+          "type": "Elemental"
+        },
+        {
+          "name": "Giant Squid",
+          "cr": "6",
+          "type": "Beast"
+        },
+        {
+          "name": "Merfolk Wavebender",
+          "cr": "6",
+          "type": "Elemental"
+        },
+        {
+          "name": "Aboleth",
+          "cr": "10",
+          "type": "Aberration"
+        },
+        {
+          "name": "Marid",
+          "cr": "11",
+          "type": "Elemental"
+        },
+        {
+          "name": "Storm Giant",
+          "cr": "13",
+          "type": "Giant"
+        },
+        {
+          "name": "Dragon Turtle",
+          "cr": "17",
+          "type": "Dragon"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            10,
+            11,
+            12
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            10,
+            11,
+            12
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            10,
+            11,
+            12
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            10,
+            11,
+            12
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            13
+          ],
+          "modes": [
+            "long"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          5,
+          12,
+          2,
+          6,
+          2,
+          5,
+          5,
+          4,
+          10,
+          15,
+          17,
+          17,
+          20,
+          10,
+          3,
+          16,
+          18,
+          2,
+          8,
+          16,
+          18,
+          10,
+          6,
+          1,
+          19,
+          19,
+          15,
+          18,
+          2,
+          20,
+          11,
+          3,
+          7,
+          10,
+          8,
+          6,
+          3,
+          8,
+          9,
+          18,
+          6,
+          2,
+          16,
+          12,
+          4,
+          13,
+          10,
+          13,
+          2,
+          2,
+          1,
+          17,
+          11,
+          3,
+          19,
+          4,
+          20,
+          2,
+          17,
+          7,
+          10,
+          11,
+          16,
+          16,
+          1,
+          6,
+          18,
+          4,
+          5,
+          17,
+          9,
+          11
+        ],
+        "d8": [
+          2,
+          5,
+          2,
+          1,
+          3,
+          6,
+          5,
+          1,
+          3,
+          1,
+          5,
+          7,
+          7,
+          3,
+          5,
+          5,
+          3,
+          3,
+          3,
+          4,
+          4,
+          8,
+          3,
+          4,
+          5,
+          2,
+          7,
+          8,
+          8,
+          4,
+          7,
+          4,
+          5,
+          2,
+          1,
+          8,
+          7,
+          6,
+          6,
+          2,
+          6,
+          6,
+          3,
+          8,
+          5
+        ],
+        "d6": [
+          4,
+          1,
+          6,
+          6,
+          6,
+          4,
+          3,
+          6,
+          3,
+          1,
+          6,
+          6,
+          2,
+          6,
+          6,
+          4,
+          3,
+          3,
+          6,
+          4,
+          4,
+          2,
+          2,
+          4,
+          4,
+          3,
+          5,
+          1,
+          1,
+          2,
+          3,
+          1,
+          2,
+          4,
+          5,
+          6,
+          6,
+          1,
+          3,
+          6,
+          4,
+          3,
+          3,
+          6,
+          5
+        ],
+        "d4": [
+          1,
+          1,
+          3,
+          4,
+          4,
+          4,
+          4,
+          2,
+          1,
+          4,
+          2,
+          2,
+          1,
+          4,
+          2,
+          1,
+          2,
+          4,
+          2,
+          1,
+          2,
+          2,
+          4,
+          1,
+          4
+        ]
+      }
+    },
+    {
+      "n": 11,
+      "name": "urban",
+      "habitat": "Urban",
+      "crBand": [
+        8,
+        22
+      ],
+      "candidates": [
+        {
+          "name": "Vampire Nightbringer",
+          "cr": "8",
+          "type": "Undead"
+        },
+        {
+          "name": "Clay Golem",
+          "cr": "9",
+          "type": "Construct"
+        },
+        {
+          "name": "Young Silver Dragon",
+          "cr": "9",
+          "type": "Dragon"
+        },
+        {
+          "name": "Haunting Revenant",
+          "cr": "10",
+          "type": "Undead"
+        },
+        {
+          "name": "Rakshasa",
+          "cr": "13",
+          "type": "Fiend"
+        },
+        {
+          "name": "Vampire",
+          "cr": "13",
+          "type": "Undead"
+        },
+        {
+          "name": "Vampire Umbral Lord",
+          "cr": "15",
+          "type": "Undead"
+        },
+        {
+          "name": "Adult Silver Dragon",
+          "cr": "16",
+          "type": "Dragon"
+        }
+      ],
+      "sections": [
+        {
+          "n": 1,
+          "role": "First Branch",
+          "tiers": [
+            11,
+            12,
+            13
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 2,
+          "role": "Waypoint",
+          "tiers": [
+            11,
+            12,
+            13
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 3,
+          "role": "Second Branch",
+          "tiers": [
+            11,
+            12,
+            13
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 4,
+          "role": "Approach",
+          "tiers": [
+            11,
+            12,
+            13
+          ],
+          "modes": [
+            "long",
+            "long",
+            "long"
+          ]
+        },
+        {
+          "n": 5,
+          "role": "Boss",
+          "tiers": [
+            14
+          ],
+          "modes": [
+            "long"
+          ]
+        }
+      ],
+      "dice": {
+        "d20": [
+          13,
+          6,
+          5,
+          7,
+          3,
+          15,
+          19,
+          12,
+          19,
+          6,
+          1,
+          16,
+          7,
+          5,
+          10,
+          4,
+          12,
+          9,
+          2,
+          7,
+          10,
+          10,
+          13,
+          16,
+          10,
+          14,
+          1,
+          15,
+          14,
+          14,
+          7,
+          14,
+          10,
+          17,
+          14,
+          3,
+          19,
+          15,
+          14,
+          8,
+          3,
+          13,
+          8,
+          12,
+          18,
+          13,
+          4,
+          7,
+          18,
+          1,
+          12,
+          9,
+          20,
+          9,
+          8,
+          11,
+          5,
+          17,
+          15,
+          2,
+          12,
+          3,
+          3,
+          5,
+          11,
+          1,
+          14,
+          13,
+          10,
+          20,
+          11,
+          4
+        ],
+        "d8": [
+          3,
+          2,
+          3,
+          1,
+          4,
+          1,
+          3,
+          2,
+          8,
+          3,
+          7,
+          7,
+          7,
+          7,
+          4,
+          1,
+          3,
+          2,
+          3,
+          1,
+          1,
+          8,
+          6,
+          6,
+          1,
+          2,
+          5,
+          6,
+          1,
+          7,
+          4,
+          7,
+          4,
+          2,
+          8,
+          3,
+          4,
+          2,
+          5,
+          5,
+          4,
+          3,
+          8,
+          3,
+          1
+        ],
+        "d6": [
+          2,
+          4,
+          1,
+          2,
+          1,
+          4,
+          3,
+          1,
+          4,
+          1,
+          6,
+          1,
+          5,
+          6,
+          1,
+          4,
+          4,
+          1,
+          2,
+          3,
+          5,
+          2,
+          1,
+          3,
+          6,
+          4,
+          3,
+          1,
+          2,
+          1,
+          1,
+          6,
+          2,
+          6,
+          6,
+          2,
+          5,
+          3,
+          6,
+          6,
+          4,
+          4,
+          2,
+          1,
+          1
+        ],
+        "d4": [
+          4,
+          3,
+          3,
+          1,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          4,
+          4,
+          1,
+          4,
+          1,
+          1,
+          4,
+          4,
+          1,
+          3,
+          4,
+          2,
+          1,
+          4,
+          3
+        ]
+      }
+    }
+  ]
+}

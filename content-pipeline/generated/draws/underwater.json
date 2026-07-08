@@ -1,0 +1,212 @@
+{
+  "dungeon": "underwater",
+  "n": 10,
+  "sections": [
+    {
+      "n": 1,
+      "role": "First Branch",
+      "monster": "Giant Shark",
+      "tiers": [
+        10,
+        11,
+        12
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        10,
+        11,
+        12
+      ],
+      "sourceLines": 31,
+      "shortBundles": [],
+      "longBundles": [
+        "always armor feet front mouth murk out plus rolls scrapes sharpened shoves single sorry themselves thought turn wand",
+        "always animal back bard black calm colony crescendo instead metal mountain mouthful out picks shape themselves twenty wit",
+        "because boiling colony course damage dismal doesn flakes flourish large out pale points shudders slow takes thrashes traction",
+        "animal banner big boiling columns down drawn first four kicked parts point rolls row sending shark spite testing",
+        "answers dagger finds hearts hit hurry kick knife motes natural once only rapier small snow sound twelve warmth",
+        "alone boiling bury calm dismal first hall left low none once parts patience refuse roll steers teeth which",
+        "armor becomes big bracing correct course doesn eyes feet hearts kick mouth muscle shape sharpened shudders single thought",
+        "alone answers around churn enough good groaning instead loudest picks plus slow steers stops thirteen thought wait way",
+        "around big currents damage dark drum enormous finds hearts leap loudest low point rolls sound thank until used",
+        "always biggest brace drowned eye five gift leap maximum mouth pass sense sorry straight themselves three turn turns",
+        "close coin color column drawn first giant loudest means mouthful once polite rest sound stacks thought water ways",
+        "because close correlating drawn five giant green groaning picks roll rude sense sharpened shudders small soft testing turns",
+        "animal around ask black colony heartbeat hit hurry keen muscle none part pierces quick steel taking used wall",
+        "bard because bruised collapsed cracked dark didn eleven gold hang makes muscle pushes reflexes row small throat toward",
+        "always armor calm color currents down fight first flakes hall keen low polite roll single sound wait worst",
+        "abused different meat more mouthful polite pure questions shark soft spite steel sword themselves through turn wand washing",
+        "armor biggest bruise close dark good hurry nine part questions rolls scrapes snow spite straining temple wand worst",
+        "because churn close colony course crescendo damage hall initiative invent matters mountain pale reflexes snow thirteen while whole",
+        "back boiling bruise carved drifts fingers kick length much new patience point shark sword wand waypoint while wind",
+        "adverse another becomes boiling comes crescendo curve fast feels glancing makes out reflexes sorry through traction way wide",
+        "better big breathes color every eye fast gives gloom hate incidentally longer muscle out pass questions somewhere straining",
+        "ask collapsed damage eye hall hit loudest mouth nine shudders single slam sorry takes thirteen thought traction wait"
+      ]
+    },
+    {
+      "n": 2,
+      "role": "Waypoint",
+      "monster": "Sahuagin Baron",
+      "tiers": [
+        10,
+        11,
+        12
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        10,
+        11,
+        12
+      ],
+      "sourceLines": 33,
+      "shortBundles": [],
+      "longBundles": [
+        "across back becomes blue borrowed clatter contempt falling fan fish fountain held much nine teach together twelve word",
+        "arm comfortably cut down fills fingers flagstone four plaza rope shadow shy tallest throw wall weed whatever without",
+        "back between big committed confidence earlier eleven fold fumbling green herding knee leaderless number spearhead sulking ten weed",
+        "barely becomes deep drives every feet fingers fold gone gravity holding plus rock smart staggers through weeping whatever",
+        "actual clangs decided eyes fills four green herding light line points seamless snout spine sulking through uses without",
+        "also barnacle down gone green holding opens real same second somehow sulking sword ten thin three tips weed",
+        "answers bites confused dice felt frost glorious indignation nine nineteen patient pinks rim shy spines thin uses whole",
+        "area big current devotion enough faceless fire flagstone flank freezes rim rock schooling second staggers twenty vaults wide",
+        "aside bard behavior bright close currently dozen eyes fan friend glorious hit initiative move only rim size vaults",
+        "across armory finishes five fountain fumbling gone grabbed instant line lunge opportunity real ring seeking tips way without",
+        "barely don every handing herding killers mind plaza plenty roll shadow spines statue sword thousand together tonight worst",
+        "dice don drifts even exploit fan flaring flung greedy ink natural only rim singing spear tallest twelve wall",
+        "answers both breath clatter close first frozen glorious head indignation lifts longsword moment nearest new slow timing webbed",
+        "aiming along answers becomes enough footwork four hands holding jaw lip manners move plaza seize statue stone trident",
+        "answers around barely bright freezes grabbed handing herding indignation longsword math natural old out size swing twelve while",
+        "again barnacle betrays carries deep eleven everywhere eyes first killers old only plus pounds second swinging tangled tonight",
+        "again blood cloud either finally five four line little patient points precisely statue tightening tonight waiting wall wide",
+        "along behavior court dagger dozen drifts earlier entire front glorious him hit jaw roll seeking side thin waiting",
+        "around aside behind blood climb faster five flank frost frozen grabbed herding opportunity saint spear terror ton without",
+        "blood carries eyes floor friend high holds narrow rises roll scales sky stone taller taste together variables wand",
+        "blood bright cold cord current don exactly fountain four frost grabbed great herding old real spearhead spines sulking",
+        "broken carries currently dozen eyes flagstone frost green mind pounds ridge ring spinning statue thousand tide tips waiting"
+      ]
+    },
+    {
+      "n": 3,
+      "role": "Second Branch",
+      "monster": "Giant Squid",
+      "tiers": [
+        10,
+        11,
+        12
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        10,
+        11,
+        12
+      ],
+      "sourceLines": 23,
+      "shortBundles": [],
+      "longBundles": [
+        "alarm alive angry ankle beautiful drawn exactly eye eyes great knows leading leaving leg motes springs takes through",
+        "ahead alarm begin bone braces drive first hates hold living magnificent needs ring sharp skin somewhere surprised true",
+        "arm behind braces cannot drawn failed honor hunger initiative leading perception reach still tentacle third together truly water",
+        "ancient bards blind cloud every finished flinch head hunger knife reach rim roll specifically swing talks true turns",
+        "bards burn central chest current exactly eye fight flinch gold point points resent roll sharp somehow twenty way",
+        "ankle arm body burns darkness five hands instead insulted jars left little red rib roll somewhere three unhelpful",
+        "back bone ceiling cups down golden reach red ring spear stab still straight surprised together true truly yourself",
+        "closed colors comes emptied finds flinches furious head him magnificent partway patience second sound thins tow way whole",
+        "appetite chest closing drives everywhere flat grip leg lifespan moment negotiations ribs rogue snapping squeezes suckers suspended truly",
+        "alarm behind bend black blade braces earn fountain friend head opening people purse roar sharp third uncomplicated unhelpful",
+        "beak before braces ceiling currently dares dinner double end hanging lifespan make mind other purse sucker warm whale",
+        "arms cannot ceiling earn eyes fingertip flesh mass needs other squeezes squid stage stone suddenly suspended turns vault",
+        "asking base cannot completely drive flesh hard instead line move never red regard shape spasms specifically three water",
+        "appraise becomes center closing darkness flings hates knows natural resent rope sound spare squid suddenly thrust truly twenty",
+        "behind completely crack ends faster knife line mouth needs rapier regard ribs spear suckers thirteen three together vault",
+        "along becomes clean cups current fifteen him leg moment opens plants rapier reeled sound still thrust totally water",
+        "ahead along arms base brushes curl gold grip lamp leg pale people purchase reach small sparks squeeze vault",
+        "against alarm appetite asking born center cloud crack darkness eyes hands hunger opening purse specifically talks tumble which",
+        "alive becomes behind black drifting earn enough four hunger ink lies moving other plaza size spasms spear trailing",
+        "beautiful before bright burns clean dark dart eyes fight make patience shot size stage takes trick whale worse",
+        "because burn dice down drag enough every four furious open packing past peel record red rogue sahuagin three",
+        "becomes bone cracks curl curtain double empty ink insulted lies simply skin taught three tow uncomplicated whole worse"
+      ]
+    },
+    {
+      "n": 4,
+      "role": "Approach",
+      "monster": "Merfolk Wavebender",
+      "tiers": [
+        10,
+        11,
+        12
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        10,
+        11,
+        12
+      ],
+      "sourceLines": 27,
+      "shortBundles": [],
+      "longBundles": [
+        "author becomes brightest control dark dead depths face finest leash life low rooted shifts some ugly water weakest",
+        "acts already answers bucks control coral didn exact focused front grabbed hand lives patiently sea stands stern while",
+        "along answers biggest bite control crown doorways focus grabbed heard holds moment natural out prettily rooftop temple wrestling",
+        "closes didn don doorway first free grabbed ground lit nine pinching recalculates same sees snarls wavebender wrist wrong",
+        "alive carry creature fire grow hard heard little low music nineteen slot standing still temple webbed whole wore",
+        "actually around break detonates front grabbed lovely music power prettily read she sixteen slab terrible waiting won wrong",
+        "actually becomes bet bucks clean comes creature falling living noting perhaps presses she shifts spear strength thrashes water",
+        "comes control coral creature detonates falling five flinch furious recalculates roll shifts spent target temple tumbling without wrestling",
+        "actually along bet closes didn enough feet happens plowing points slingshot spend stone together turning twice water wrist",
+        "attack bite break draws ever fast finest first floating good initiative lies life lovely moment performance toll wavebender",
+        "actually appraise becomes bucks canyon closes court down dozen falling push she slingshot stone teeth turn ugly wrestling",
+        "balance becomes catches flinch grabbed ground immediate kiss longer ordinary pinching recalculates sea share silt temple turning weakest",
+        "author boots braced catches cold coral dark detonates doorway enough fire hard kiss lovely pinching temple waiting work",
+        "around canyon deep depths felt half last life lovely more push raised real spend toll trying weapon wrestling",
+        "against closes damage detonates distracted down duty find grip lovely once patiently pinching sadly soundless teeth terrible wall",
+        "arena balance concentration down hard holds life out roll rooftop standing streaking sung teeth terrible together while whole",
+        "almost creature detonates disruption exact fast fire guarding past patiently pearl sixteen song squid still terrible trying understand",
+        "current exact face floating floor genuinely grabbed grip hate holding mote sadly shifts thousand thrashes while without wrong",
+        "balance becomes bet bite charisma current enormous holding holds inside life long patiently pressure rooted toll twelve ugly",
+        "author duet felt holding instead meet moves once patiently perfectly sentence silver spend stands temple terrible through voice",
+        "already bet bite break coral doorway fight genuinely hand heart kick knuckle never rooftop slab softens twice way",
+        "against already attack author braced bucks court cracks dozen furious heart immediate never real relief roll same work"
+      ]
+    },
+    {
+      "n": 5,
+      "role": "Boss",
+      "monster": "Dragon Turtle",
+      "tiers": [
+        13
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        13
+      ],
+      "sourceLines": 28,
+      "shortBundles": [],
+      "longBundles": [
+        "adds coins columns drama front great ink knock once parting shock shove spearhead stillness surface ten vial way",
+        "before bolt column current displaced guarding hoard lives longship oldest place reflexes small steam strokes water wavebender wore",
+        "allows base enough eye fifteen fixed gets hits horned initiative jaw low play pulsing same spinning wizard years",
+        "acts boil collapsed column eight gold golden instead never rapier roof rumbles shut silt sits stone turned underside",
+        "altar anchor back columns crack eleven gets gout nine once parting past rapier reprises soft storm tendon underside",
+        "aim carefully dig drive enough friendly human opens rattled roar shy single soft takes warm whole wider without",
+        "away bass felled flat impossible party pulling recovering scalding seven shove single spin sunken thought took warned water",
+        "aim between brush current fastest fourteen fully gets gives hold nineteen oldest past shoves squid stone twenty unlike",
+        "away between bolt calls capped great millennium pulling rapier scalding stone surface teeth ten tide water whoop write",
+        "actually aimed away bard barnacled base coins creature deep half moment physical regret right spin stone took twenty",
+        "bite bolt feet fixed gives glances inward life make nine prayer single truly turn underside warm world worse",
+        "ancient around dig felled flat gambled hands human instead kettle kick parting promised sea streak swinging takes turtle",
+        "above black boiling brings dragon fails great hauled hold jam knock nearest pulling snatch sorry time trick wall",
+        "bard black bought creature dragon fifteen gap hand handspan jam moment once peel point shut swings trick whirls",
+        "already angry because brush eye far getting head kick physics pool rains reach scalding shove snatch turtle underside",
+        "acts already awake crack creature eight grabs hauled keeps lizard scalding sea seam shaft skin sorry warm widening",
+        "black damage dungeon first fixed gout inward keeps line near plant shoved smoked spins still stop stopping wear",
+        "bellows dark dice enough fighter four free front gold inward none party pivoting points shakes spin tidal way",
+        "blink close cold ever every fire geometry hill knock mind points reprises rumbling slamming splinter still underside wears",
+        "beaten become cooked drifts enormous fifteen gone hands physics place rains real shoves shut size storm tendon tries",
+        "above awake drowning enough eyes gift ground kick ocean promised sea seam shove thought tradition turtle unlike water",
+        "air bard bass broken chain crossed deepest feet fire forelimbs less out plant portcullis record roar turned wanted"
+      ]
+    }
+  ]
+}

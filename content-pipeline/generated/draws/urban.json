@@ -1,0 +1,212 @@
+{
+  "dungeon": "urban",
+  "n": 11,
+  "sections": [
+    {
+      "n": 1,
+      "role": "First Branch",
+      "monster": "Vampire Nightbringer",
+      "tiers": [
+        11,
+        12,
+        13
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        11,
+        12,
+        13
+      ],
+      "sourceLines": 20,
+      "shortBundles": [],
+      "longBundles": [
+        "body book ear fine flame full gloved handsome high lights only quiet quietly ribbons seat sound uncle whump",
+        "bury drunk finds fork money morning never nightbringer rogue sings succeeds ten three turn twelve weather weeps wind",
+        "blood check crooked dropped end fill five identify lashes lesser narrow rain reading streets syllables ten trunk usher",
+        "attack branch branches broke condensing courier dig eyes fork good knees note openly split three tries ways weather",
+        "back cobbles counts directly fight fine heard large lashes mist partly shiny slipped trouble usher weather weeps world",
+        "called color doesn face find fog full lights older quick reading rogue shutters stays steel theme thin verse",
+        "attack bent bill blank cobbles end forever full hard knees lamppost low mist morning shall taken undead wind",
+        "already beckons beneath bonus bury carries directly drops fill head money nightbank openly passes plus streets voice which",
+        "beckons bent branches broke drowned gladly great identify kicks lamppost lesser locals meet morals narrow rain seat weeps",
+        "check ear finds fire gladly hand hard knife knows last memory plate quiet raise slides smile streetlamp top",
+        "across appropriate bank blood bonus condensing die doors helpfully kicks landlord lifts nail out seat shoulder street ten",
+        "ballad barrel emotional enough good gutters hinges hour intent lesser locals lovely points theme tired top tries voice",
+        "brain branch broke called dead distress down drowned emotional identify knees out quick shiny streetlamp twelve weather wedding",
+        "blank bones book candle clatters dropped fill finder great guild high older smile smiling split top twelve vaults",
+        "against another attack blade clean falls fine highest inn lashes lodging modifier much seat wedding wet which widens",
+        "beckons branches every first gloved humble locals lost lovely opens pass sings small smile stays steel throat usher",
+        "because bent doesn first gone half high identify lesser miser roads since succeeds surprised tavern thin until weeps",
+        "angle dagger fork half hand knees low moment never partly points shoulder slides smooth spark stays through wind",
+        "book branches called city enough fruit handsome lit longsword miser openly rotting shall succeeds taken taller until weather",
+        "back beckons beneath branch dinner drops elegant gladly good lamp lovely politeness quite reading realize slammed slips succeeds",
+        "blade blood dinner dropped elegant find lit longsword moving shape sings slammed strikes three uncle until waypoint wide",
+        "below claws falls fee finds great intent landlord light lodging modifier pools raking rapier rises tired trunk weeps"
+      ]
+    },
+    {
+      "n": 2,
+      "role": "Waypoint",
+      "monster": "Clay Golem",
+      "tiers": [
+        11,
+        12,
+        13
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        11,
+        12,
+        13
+      ],
+      "sourceLines": 17,
+      "shortBundles": [],
+      "longBundles": [
+        "brittle check crawls crime dark drives fist frost hard house made none point rather rising roll standing total",
+        "ache center chimney copper crowd feet fifteen flame great grinding lock money riverbed roar shiver smallest straightest tooth",
+        "ajar building centuries coins descend guild halls hour impact key live packed purpose seen shaped shelf ten touch",
+        "blew comes died drift head love made marked mouth nightbringer provided revealed room shiver singing stood voice wizard",
+        "breath clippers footprints frost guarding guilds infinite lands loose love mint money piece purse shield ten tooth voice",
+        "fire flame ledgers live lose mouth packed pamphlets piece room roughly shiver since stood thicker three week working",
+        "barred check copper door dust flaw halls held importantly made more mouth performs purpose reach slide wanted water",
+        "away breathing center five four freeze halls hard map mint people road roll selling singing standing stone week",
+        "ahead balance check cold cracks crawls died everybody gives inside nine number pick roughly runs theft wall years",
+        "beneath body breaking centuries clay everybody grate house loose mouth point points seal shin somebody ten way wet",
+        "clean color door drift entirely fire fist great move offended river riverbed shaped singing slot square toward worn",
+        "below bright center check chestnuts city clattering correct doors drives eat iron mint somebody square which whole zero",
+        "beneath catch chute close cold define delivered dust footprints frozen impact number precisely revealed runs size years zero",
+        "abide ache air anvil catch cracks damage faster grate hundred lands mighty millstone opinions pick shield taken touch",
+        "balance chute delivered door down everybody flares foot mark points shaped skids somebody time tooth twitch which whole",
+        "blew comes connects cracks cross didn figure flares frost hand man millstone raises sing singing sound thank toward",
+        "ache catch dark finally freeze initiative kindly long loose merely money right roughly skull soft square stood waypoint",
+        "before close cold comes connects flail hard hears listening offended printing rather slot soft square swings through zero",
+        "against crime damage frozen hand head kindly lock mighty more piece singing started stood week which yawns years",
+        "before burning catch crack define footprints fully grate hot pamphlets purpose red right seal stranger three touch wizard",
+        "betrays brittle chest dark figure flame four gives initiative listening marked revealed rising seal shelf toward water wet",
+        "banded counts eat fire fully hard head hundred leg locked narrow none pale piece rising stone which years"
+      ]
+    },
+    {
+      "n": 3,
+      "role": "Second Branch",
+      "monster": "Haunting Revenant",
+      "tiers": [
+        11,
+        12,
+        13
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        11,
+        12,
+        13
+      ],
+      "sourceLines": 15,
+      "shortBundles": [],
+      "longBundles": [
+        "blue candle clay cover don door drive eye front holds mourners natural point single step tears undone waiting",
+        "daggers don downstream drift eight following honest little old once ounce rafts ribs silence stone turn walk way",
+        "back boots frozen golem hold left longsword moment remembers simply slowly tired twenty twin unfinished water whole windows",
+        "across belt dark discovery friend gave hate knee little longsword mooring once pivoting sound specifically though today water",
+        "along chosen closes crit curl died discovery fog freeze himself house left lying reasons right stone whoever wrong",
+        "adrift anywhere black cannot chute city doubled enough fast fixed heavy knee reflections silence slowly stone though turn",
+        "canal city doubled drive enough errand feeling freeze grip hold interposes pull reflections set staggers steam ten walk",
+        "around belt beneath boots city crooked end first floors happened himself last left side sixteen wearing whoever whole",
+        "chain clawed coat daggers decided drift drown drowned edge halfway hauls hurried interposes knee longsword part short still",
+        "air ambitious around business coin died either following grasping hand rafts specifically ten tonight turn whoever whole years",
+        "ambitious aside cannot comes earth edge floors flourish great inside knee point points poured raised spot steam twin",
+        "beneath dragging finally fixed good grave gutters happened hate hiss knee lantern quick step straight together weed wisdom",
+        "boots buildings candle cutting error flourish golem grip happened himself jar natural part roll single tears tired took",
+        "ahead beautiful city coin coming dark earth feeling first footprints holds interposes longsword reflections revenant ribs shape waiting",
+        "around blue both coin couplet died hauls hold memory natural spell stride timber today tonight turn twin whole",
+        "always around breath business cold counted filing halfway instead low lowest mid points rooted set still walk windows",
+        "ballad beautiful canal coin doorways hurried iron lantern last lead reasons reflections released rooted safe three walk wrong",
+        "aside blind both breath comes day eighteen great links longsword nature ounce raft sound together true weed years",
+        "across ambitious angle aside both coming crit cutting drown enough errand grave halfway interposes moment slammed straight tonight",
+        "blind clinging coal coming errand fall floating freeze mint never poured reflections second specifically streaming stride wearing weed",
+        "black branch business canal drown footprints grip ground hand himself honest raised slowly stride ten turn wearing worked",
+        "belt causeway clawed dragging floor freezing haunting hung lantern longsword nature only quick second tonight true turn whoever"
+      ]
+    },
+    {
+      "n": 4,
+      "role": "Approach",
+      "monster": "Rakshasa",
+      "tiers": [
+        11,
+        12,
+        13
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        11,
+        12,
+        13
+      ],
+      "sourceLines": 17,
+      "shortBundles": [],
+      "longBundles": [
+        "cannon chestnuts claws deal decoration finally hide honest longsword out purrs roll simply snuff sticks top verse wand",
+        "beneath beyond comes door face flicks gentleman instant lever mean rich rises snarls snuff strikes stung white yourselves",
+        "back course directly exposed flashes four gravel guy honey lies palms past rakes round slide turns warm watches",
+        "back chestnuts commit cracks darkness flashes hilt laughing lever light offer only real rush safest smile stop stretches",
+        "air amber ambitious beneath blow cat collect decanter eat eight genuinely manner nightbank peeled seeking stuck thought true",
+        "along around arranged because belong cat catching collect decanter entered hate little people richly tell truly whispered young",
+        "between beyond blow casts catching don entered everything fears gets holy hot instant may open people way win",
+        "cannon exposed eyes fine follow gravel little means only past promises seam simply skin speaking superheat triumph troubling",
+        "arithmetic attention back backward beyond bleeding darkness fingers freezing glow head obvious opening peeled seam sixteen way which",
+        "arithmetic cleverness cut eighteen firelight giving gold hide human lies offer only quarried rakes rises wand whole works",
+        "balance bard because commit darkness debt decanter dispel hospitality knock little please plunges strikes tiger vertical way whips",
+        "bleeding circle clean every faintly gold initiative itself lip means past read someone sound stone wandtip weight whole",
+        "blow dark flicker home ice later light moment ordinary right seeking simply slab snarls truly use useless wand",
+        "across blooms cannot door fur hide mean mind more plunges post stone superheat swinging teeth ten turn works",
+        "anything behind blooms cannon clever dark faintly frozen glow inward more opening roll sighs snarls truly use wide",
+        "attention cleverness gets heat isn lever little make peeled possible pulse rush spells stop turned turns wand wide",
+        "anything bleeding broken clever collect decoration don empty four later next person roll snuff tell turn vault wizard",
+        "around blow cannon directly eighteen guy itself light obvious plunges read real safest seam slab top tutting win",
+        "behind boss coat eat fears fine freezing frozen fur heartbeat hit hot lecture other place seam sword use",
+        "along belong cellars down dressed everything fiend hate head more please teeth tell toward use useless vault way",
+        "across arithmetic both cut easy exit flashes height honey knock last parlor person right shatters turned use water",
+        "amber entered fiend flicker flows frozen glow height lecture murder nightbank person points purrs snuff superheat turns wizard"
+      ]
+    },
+    {
+      "n": 5,
+      "role": "Boss",
+      "monster": "Vampire Umbral Lord",
+      "tiers": [
+        14
+      ],
+      "shortTiers": [],
+      "longTiers": [
+        14
+      ],
+      "sourceLines": 23,
+      "shortBundles": [],
+      "longBundles": [
+        "almost anything around coat coin counts cut differently fours glowing reach realize snuffed splash swordsman tire true vast",
+        "blade comes crime damage distress don drops first five guard ice longsword nineteen raining rings tink turns way",
+        "becomes carry center count counting damage fee front hush job kingdom moment right snuffed superheated tink white world",
+        "attention cannot climbing coat damage dune full hangs him metal never pouring rakshasa rise snuffed spinning stolen vault",
+        "carry counting darkness drifted fire first heartbeat hide lies longsword sliding space stolen swordsman through tipping until worst",
+        "barrels cavern counted frozen gather half hot only open pit rings shiny smoke spell splash stays throne took",
+        "back blooming dragged fall fee gently instant job light plan points quiet reach roar spinning tipping turns valid",
+        "before cavern fee filling hangs landing last moment nowhere once plunging reach screaming shall sixteen superheated temperature verse",
+        "cannot dark distress eyes fall froze half hour hush keeping make oil perched points right slope stored words",
+        "anything double faster first furious gold hands itself mountains perched pit pour scary shining slope voice weren words",
+        "cast cavern climbing collapsing first five fizzles front gently head job moving plunging rears roar strength throne tink",
+        "climb drifted dunes first follows hand hot longsword mean meets right shattered shot spell stacked tire wary words",
+        "anything begin count dark down draws drinking fifteen him instant nineteen right rolled sitting slopes slowly temperature weakest",
+        "air almost bard cat coin counted every initiative missed only open relief roll silver slide song true weren",
+        "balanced barrels century climbing dark direction directly eyes furious half lord moving rakshasa roar song spinning three weakest",
+        "balanced crime dark down draws floating front gentleman gutter hangs him hush knife light mint reaches shattered space",
+        "beyond directly full glowing half head instant itself lash last longsword mean mint plan temperature throne tipping wizard",
+        "air anything breath buy coat crime cut eighteen folds hand hands hilt iron noise recoils sitting snuffed splash",
+        "climbing curtain distress drops end four hush lord meets plant rings settles silence sword umbral valid whips wizard",
+        "air before breath carry courier eighteen floated full half hard hoard lash meeting ringing rope sudden thousand turns",
+        "above again apart avalanche believe cast fifteen finder hush lamp mean nineteen noticed pour scary singed sitting small",
+        "aura bard canals climbing cold end four glowing hand hands holding ice lord slope song throat through tipping"
+      ]
+    }
+  ]
+}

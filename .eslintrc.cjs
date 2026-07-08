@@ -21,7 +21,9 @@ module.exports = {
       typescript: { alwaysTryTypes: true },
     },
   },
-  ignorePatterns: ['dist', 'node_modules', '*.cjs', 'vite.config.ts'],
+  // content-pipeline/ is a standalone offline content-generation toolchain (tsx
+  // scripts, not app code) — outside the app/node tsconfigs, so it's not typed-linted here.
+  ignorePatterns: ['dist', 'node_modules', '*.cjs', 'vite.config.ts', 'content-pipeline'],
   rules: {
     // No `function` keyword: arrow functions only (object method shorthand is unaffected).
     'no-restricted-syntax': [

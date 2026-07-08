@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content Plan v2 — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · <a href="content-plan.html">Content Plan (v1)</a></nav>
+<header class="page-head">
+  <h1>Content Plan v2</h1>
+  <p class="tagline">A gentler 14-tier ladder, and a pipeline to fill it.</p>
+</header>
+<main>
+
+<p>
+  Supersedes the tiering &amp; sourcing sections of <a href="content-plan.html">Content Plan v1</a>. Two big
+  changes: a <strong>gentler, longer ladder</strong> (10 tiers → 14, so the early ramp introduces one new
+  thing at a time instead of jumping home-row → full sentences in two steps), and a real
+  <strong>generation method</strong> — v1 shipped a handful of hand-written lines per tier (~8 per section,
+  measured — nowhere near enough), v2 defines a repeatable pipeline that produces a large, on-theme,
+  <em>almost non-repeating</em> pool, generated <strong>offline</strong> and shipped as static JSON.
+</p>
+<div class="callout why">
+  Every number below was prototyped and <em>measured</em> on the <strong>Swamp</strong> (Dungeon 6), not
+  projected. Prototype artifacts live under <code>content-pipeline/</code>.
+</div>
+
+<h2 id="ladder">1. The 14-tier ladder</h2>
+<p>
+  Design rule: <strong>each tier adds exactly one new demand</strong> — new keys, or more length, or one new
+  character class. Character sets are cumulative from T5 upward (each tier is a superset of the one below).
+  Lengths are order-of-magnitude guidelines, not hard gates.
+</p>
+<table>
+  <tr><th>Tier</th><th>The one new thing</th><th>Character set</th><th>~len</th><th>Example</th></tr>
+  <tr><td>1</td><td>Home row only</td><td><code>asdfg hjkl;</code> + space</td><td>15–40</td><td><code>a lass has a flask</code></td></tr>
+  <tr><td>2</td><td>Left hand</td><td><code>qwert asdfg zxcvb</code>, lowercase</td><td>~40</td><td><code>a brave bear ate red crabs at a cave</code></td></tr>
+  <tr><td>3</td><td>Right hand</td><td><code>yuiop hjkl nm</code>, lowercase</td><td>~40</td><td><code>you look up my pink pony on my hill</code></td></tr>
+  <tr><td>4</td><td>Whole keyboard (short)</td><td>full kbd, lowercase, <strong>3–5 word phrases</strong></td><td>15–30</td><td><code>grab the loot</code>, <code>run for the cave door</code></td></tr>
+  <tr><td>5</td><td>Sentence length</td><td>full kbd, lowercase, no caps/punct</td><td>40–55</td><td><code>the dragon hides deep in the old dark cave</code></td></tr>
+  <tr><td>6</td><td>Capital + <code>,</code> <code>.</code></td><td>one leading capital; <code>,</code> <code>.</code> only</td><td>~40</td><td><code>The goblin ran, and the knight gave chase.</code></td></tr>
+  <tr><td>7</td><td>Unshifted punctuation</td><td>adds <code>'</code> <code>-</code> <code>;</code> <code>/</code>, mid-caps; no digits</td><td>~50</td><td><code>Don't open that chest - it's a mimic.</code></td></tr>
+  <tr><td>8</td><td>Plain digits</td><td>adds <code>0-9</code>; no shifted symbols</td><td>~75</td><td><code>The dragon has 250 hp and 3 nasty attacks.</code></td></tr>
+  <tr><td>9</td><td>Shifted symbols</td><td>adds <code>! ? : + &amp; % ( )</code> — full complexity</td><td>~100</td><td><code>Roll 2d6+3 vs AC 15! The chest holds 47 gold &amp; a +1 sword.</code></td></tr>
+  <tr><td>10</td><td>3–4 sentences</td><td>full complexity</td><td>~200</td><td>short scene</td></tr>
+  <tr><td>11</td><td>Paragraph</td><td>full complexity</td><td>~300</td><td>paragraph</td></tr>
+  <tr><td>12</td><td>Stamina (~2 min @ 70 wpm)</td><td>full complexity</td><td>~700</td><td>passage</td></tr>
+  <tr><td>13</td><td>Stamina (~3 min @ 85 wpm)</td><td>full complexity</td><td>~1275</td><td>long passage</td></tr>
+  <tr><td>14</td><td>Stamina (~4 min @ 100 wpm)</td><td>full complexity</td><td>~2000</td><td>boss set-piece</td></tr>
+</table>
+<div class="callout why">
+  <strong>Home row (1) → left hand (2) → right hand (3)</strong> is deliberate. Right comes after left because
+  with the left hand busy the right is free to reach Backspace reliably — a 10-year-old fixing mistakes needs
+  that. Only at (4) do both hands work together, in short bursts, before length arrives at (5). And the
+  <strong>complexity ceiling is reached at T9</strong>: tiers 10–14 add nothing to the character set — they
+  are a pure length/stamina ramp, which makes them a different content <em>shape</em> (passages, not lines).
+</div>
+
+<h2 id="mapping">2. Dungeon → tier mapping</h2>
+<p>
+  11 dungeons, 14 tiers. <strong>Dungeon N serves regular tiers <code>[N, N+1, N+2]</code>; its boss serves
+  <code>N+3</code>.</strong> The encounter d20's band picks within the range (low → N, mid → N+1, high →
+  N+2); the boss is forced to the top+1.
+</p>
+<table>
+  <tr><th>Dungeon</th><th>Habitat</th><th>Regular (d20 band)</th><th>Boss</th></tr>
+  <tr><td>1</td><td>Grassland</td><td>1–3</td><td>4</td></tr>
+  <tr><td>2</td><td>Forest</td><td>2–4</td><td>5</td></tr>
+  <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+  <tr><td>6</td><td>Swamp</td><td>6–8</td><td>9</td></tr>
+  <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+  <tr><td>11</td><td>Urban</td><td>11–13</td><td>14</td></tr>
+</table>
+<p>Engine wiring this implies (all additive to existing seams):</p>
+<ul>
+  <li><code>TextTier</code> widens <code>1..10</code> → <code>1..14</code> (<code>domain/types.ts</code>); add tier files <code>11–14</code>.</li>
+  <li><code>config/dungeon-tiers.ts</code> re-mapped to the <code>[N, N+2]</code> ranges above.</li>
+  <li>Boss encounters resolve to <code>rangeTop + 1</code> (today they take the range top / monster tier).</li>
+  <li><code>bandToServedTier</code> already maps low/mid/high across a range — with width-3 ranges it now yields three distinct tiers cleanly. Served tier is still <code>min(targetTier, intTierCap)</code> (Wizard's <code>+1</code> cap bonus unchanged).</li>
+</ul>
+<div class="callout open">
+  <strong>The one new plumbing need:</strong> content is indexed by <em>difficulty</em> (tier) <em>and</em>
+  <em>theme</em> (dungeon + section). To let a section draw its own themed pool, <code>FightEncounter</code>
+  (<code>state/battle-store.ts</code>) must carry the dungeon id + section alongside <code>textTierRange</code>.
+</div>
+
+<h2 id="method">3. The content-generation method</h2>
+
+<h3>3.0 Non-negotiable principle: generate offline, ship static JSON</h3>
+<p>
+  No LLM and no generator runs on the kid's Chromebook. Every technique below is an
+  <strong>authoring-time batch</strong>; its output is curated JSON bundled at build time — same as v1, just
+  far more of it. This keeps the "no backend, no accounts, works offline" invariant and lets us
+  <em>quality-gate</em> every line before it ships.
+</p>
+
+<h3>3.1 The corpus: a hidden campaign per dungeon</h3>
+<p>
+  Each dungeon has a hidden 5-part D&amp;D campaign built from its <strong>habitat + monster roster</strong>,
+  run by the standing cast (<a href="#cast">§4</a>) with <strong>pre-rolled dice</strong>
+  (<code>dice.json</code>, 1000 each of d4/d6/d8/d10/d20, consumed in order — inconvenient rolls are written
+  <em>into</em> the story, not re-rolled; the chaos is a feature). The dungeon's five structural sections map
+  to the five campaign parts, so <strong>the story advances as the kid goes deeper</strong>. The campaign is
+  the source of <em>voice and themed vocabulary</em> — not the bulk itself (hand/LLM-authored prose tops out
+  at ~23 usable lines per section; it feeds the engine below).
+</p>
+
+<h3>3.2 The engine: seed-and-compose</h3>
+<p>We tested three approaches and kept the third:</p>
+<ul>
+  <li><strong>Raw harvest</strong> (slice lines straight from transcripts): too scarce (~8 T6/section), and dialogue can't be concatenated into long-form (chopping across speakers = word-salad).</li>
+  <li><strong>Templates</strong> (slot-filling from word banks): unlimited volume (~6,800 T6 lines from a 50-word seed) but ~⅓ are broken (<code>the planks waits</code>, <code>the torch stirs across the boardwalk</code>) and even the clean ones feel <strong>mechanical and boring</strong>. Reserved only for the drill tiers (<a href="#drills">§3.3</a>), never for prose.</li>
+  <li><strong>Seed-and-compose</strong> ✅ — random words drawn from the <em>voiced</em> corpus, handed to the LLM as inspiration to write <em>fresh</em> sentences. Keeps the corpus's flavor + vocabulary; the LLM keeps it grammatical and alive; the tier target keeps it legal.</li>
+</ul>
+<table>
+  <tr><th>Mode</th><th>Seed</th><th>Output</th><th>Feeds</th><th>Measured yield</th></tr>
+  <tr><td><strong>compose-short</strong></td><td>4 words / 3 adjacent lines</td><td>4 tier-targeted sentences (one each T6–9)</td><td>T6–9 bulk</td><td>~4 clean prompts/draw</td></tr>
+  <tr><td><strong>compose-long</strong></td><td>20 words / 15 lines</td><td>one ~2000-char coherent passage</td><td>T10–14, <em>and</em> re-harvests to T6–9</td><td>1×T13 + 2×T12 + 6×T11 + 9×T10 from a single 1824-char run</td></tr>
+</table>
+<p>
+  Draws are cheap, so seed quality is handled by <strong>over-sampling</strong>: filter stopwords + weak words
+  (interjections/contractions/generic verbs), require ≥3 content words per draw (re-draw otherwise), and bias
+  the random start toward narration-heavy lines (they seed denser than quip-heavy dialogue). Raw strong-seed
+  rate ≈ 40%; you just run more draws.
+</p>
+
+<h3 id="drills">3.3 Drill tiers (T1–5): constrained generation, not harvest</h3>
+<p>
+  Prose can't produce home-row-only or single-hand words — those are keyboard constraints that fight natural
+  language. T1–5 come from a <strong>constrained word-list generator</strong>: filter a dictionary to each
+  tier's legal key set, compose short phrases, and <em>deliberately seed rare letters</em> (j/q/z/x/v) so they
+  get practiced. This is the one place templates are the right tool (and the only source for T1–3). It only
+  matters for Dungeons 1–3, where these tiers appear.
+</p>
+
+<h3>3.4 The lint (runs on every generated batch)</h3>
+<ol>
+  <li><strong>Tier-legality</strong> — character set + length window per tier (already prototyped).</li>
+  <li><strong>Dedup</strong> — drop near-duplicates.</li>
+  <li><strong>Coverage</strong> — assert each <code>(tier × section)</code> cell hits its target count <em>and</em> its required character classes (T8 every line has a digit; T9 has shifted symbols) <em>and</em> enough letter diversity. Gaps get flagged and back-filled, not shipped silently.</li>
+</ol>
+
+<h3>3.5 Volume target</h3>
+<p>
+  Targets <em>decrease</em> as tiers lengthen, because longer prompts are consumed far fewer per battle (a T6
+  fight burns ~8–12 short prompts; a T14 fight is only ~2–3 of the 2000-char walls) <em>and</em> the encounter
+  d20 splits each stage's fights across its three tiers, so a single <code>(stage × tier)</code> cell is drawn
+  only ~one battle's worth per playthrough:
+</p>
+<table>
+  <tr><th>Tier band</th><th>Target</th><th>Keyed by</th><th>~fresh replays</th></tr>
+  <tr><td>T1–5 (drills)</td><td>≥100 (floor)</td><td>flat, per tier</td><td>free tier — overshoot on T4–5; T1–3 cap near their vocabulary ceiling</td></tr>
+  <tr><td>T6–10</td><td>~50</td><td>per <code>(dungeon-stage × tier)</code> cell</td><td>~5–8</td></tr>
+  <tr><td>T11–12</td><td>~30</td><td>per cell</td><td>~7</td></tr>
+  <tr><td>T13–14</td><td>~20</td><td>per cell</td><td>~7–8</td></tr>
+</table>
+<p>
+  The shrinking pools track the shrinking consumption, so every band holds <strong>~5–8 fresh replays</strong>
+  before the pool cycles — and within any single sitting the repeat rate is near zero everywhere (you draw
+  ~10 from a 50-pool, ~2–3 from a 20-pool). compose-short at ~4/draw fills a T6–9 cell in ~13 good draws;
+  compose-long fills a length-tier cell in a run or two. The batch is one-time and offline, so overshoot
+  where it's cheap (the drill tiers especially).
+</p>
+
+<h2 id="cast">4. The cast <span style="font-weight:400">(draft — tweak freely)</span></h2>
+<p>
+  Standing ensemble reused across every dungeon. <strong>Character handles, not real-person names:</strong>
+  each name carries its own flavor and lets the group be varied without it reading as tokenism. Voices are
+  tuned so different members feed different tier bands.
+</p>
+<h3>Mab — the GM (narrator)</h3>
+<p>
+  Runs the table; warm, vivid, a little wicked — lives for a cliffhanger and a well-timed "…roll me a save."
+  Paints the scene in short sensory strokes, then drops the mechanics like a trap door.
+  <strong>Feeds:</strong> scene description → T6/T7; stat blocks &amp; calls for rolls → T8/T9. <em>Also the
+  primary source of long-form narration (T10–14).</em>
+</p>
+<h3>Bront — the Fighter <span style="font-weight:400">(STR/CON · longsword · Second Wind)</span></h3>
+<p>
+  Ex-caravan guard. Calm, immovable, allergic to drama; has survived worse and doesn't need you to know it.
+  <strong>Voice:</strong> terse deadpan, four-word sentences, understatement as a personality —
+  <em>"That's a big lizard."</em> <strong>Feeds:</strong> T6 goldmine (short plain declaratives).
+</p>
+<h3>Quill — the Wizard <span style="font-weight:400">(INT/WIS · wand · arcane mind)</span></h3>
+<p>
+  Youngest at the table, oldest soul, carries three notebooks. A rules-lawyer who wants to be <em>correct</em>
+  more than brave. <strong>Voice:</strong> precise, fussy, over-explains, cites the numbers — <em>"It has
+  resistance to bludgeoning; the club was a mistake, statistically."</em> <strong>Feeds:</strong> T8/T9
+  goldmine (HP, gold, <code>2d6+3</code>, DCs, percentages).
+</p>
+<h3>Sable — the Rogue <span style="font-weight:400">(DEX/CHA · dagger · cunning)</span></h3>
+<p>
+  Joined "for the loot," stays for the party; trusts locks more than people, already counting treasure that
+  isn't hers yet. <strong>Voice:</strong> sly, sarcastic, deflects with questions and asides — <em>"How much
+  do we think the teeth are worth?"</em> <strong>Feeds:</strong> T9 (the <code>!</code> and <code>?</code> of
+  a heist gone sideways).
+</p>
+<h3>Fife — the Bard <span style="font-weight:400">(CHA/WIS · rapier · silver tongue)</span></h3>
+<p>
+  Self-appointed chronicler of the party's legend, most of which he's inventing in real time; would rather die
+  than miss a rhyme. <strong>Voice:</strong> theatrical, florid, pun-forward, exclamation-heavy, narrates his
+  own heroics in third person — <em>"Fife the Undaunted advances — mostly!"</em> <strong>Feeds:</strong> T7/T9
+  (flourish, dashes, exclamations).
+</p>
+
+<h2 id="swamp">5. Worked example — the Swamp (Dungeon 6, serves T6–9)</h2>
+<p>Brief in <code>content-pipeline/swamp/brief.md</code>. Sections → roster:</p>
+<table>
+  <tr><th>#</th><th>Section</th><th>Beat</th><th>Monster</th></tr>
+  <tr><td>1</td><td>First branch</td><td>the too-good-to-be-true chest</td><td>Swamp Mimic</td></tr>
+  <tr><td>2</td><td>Waypoint</td><td>a sunken shrine; a bargain</td><td>Green Hag</td></tr>
+  <tr><td>3</td><td>Second branch</td><td>the dead don't stay down</td><td>Mummy, Wight</td></tr>
+  <tr><td>4</td><td>Approach</td><td>serpent-cult wards</td><td>Yuan-ti Malison</td></tr>
+  <tr><td>5</td><td>Boss</td><td>the mere rises, many heads</td><td>Hydra</td></tr>
+</table>
+<p>
+  Prototype artifacts: <code>swamp/section-1.md</code> (transcript), <code>swamp/longform-experiment.md</code>
+  (compose-long output), <code>gen-t6-swamp.ts</code> (the rejected template baseline, kept for reference).
+  <em>Prototype transcripts predate the rename — Mab/Bront/Quill/Sable/Fife appear there as
+  Priya/Kwame/Bea/Sila/Fitz.</em>
+</p>
+
+<h2 id="status">6. Status &amp; build order</h2>
+<p><strong>Proven on the Swamp:</strong> the 14-tier ladder shape and the D&amp;D-mechanics → free T8/T9
+  numbers/symbols; compose-short (~4 clean prompts/draw) and compose-long (fills a length-tier cell/run); the
+  tier-legality lint.</p>
+<div class="callout open">
+  <strong>Not yet proven / to do:</strong> a verified clean <strong>T14</strong> (compose-long targeted at
+  ~2300 chars); the <strong>drill-tier</strong> generator (T1–5); the <strong>coverage lint</strong> and dedup
+  at batch scale; the <strong>section→pool</strong> engine plumbing.
+</div>
+<div class="callout decision">
+  <strong>Suggested sequence:</strong> (1) lock cast + ladder → (2) build the seed-and-compose batch + lint as
+  a runnable tool → (3) generate the full Swamp pool and playtest → (4) build the drill generator → (5) do the
+  engine wiring (TextTier 1..14, dungeon remap, boss tier, section pools) → (6) roll the pipeline across the
+  remaining 10 dungeons.
+</div>
+
+<h2 id="cost">7. Implementation — generating it cheaply</h2>
+<p>
+  Done well this is a <strong>one-time ~1M token job</strong> for the whole game's content library. Done
+  badly it's tens of millions. The difference is one principle:
+</p>
+<div class="callout decision">
+  <strong>Scripts do all the reading; agents only ever compose.</strong> Deterministic TypeScript (run with
+  <code>npx tsx</code>, matching the codebase) does the corpus-reading (draws), the legality/dedup/coverage
+  checks, and the T1–5 drills — all at
+  <strong>zero token cost</strong>. LLM tokens are spent <em>only</em> on the compose step, and each compose
+  agent sees a <em>tiny</em> slice of context (a handful of seed-word bundles), never a whole transcript,
+  plan, or codebase.
+</div>
+
+<h3>7.1 How much to generate</h3>
+<p>
+  Content is keyed by <code>(dungeon × section × tier)</code>. Two bands, very different economics:
+</p>
+<table>
+  <tr><th>Band</th><th>Source</th><th>Appears in</th><th>Target</th><th>Token cost</th></tr>
+  <tr><td><strong>T1–5</strong> (drills)</td><td>deterministic word-list generator</td><td>dungeons 1–3</td><td>≥100 / tier (flat), overshoot on T4–5</td><td><strong>~zero</strong> (no LLM)</td></tr>
+  <tr><td><strong>T6–10</strong> (short prose)</td><td>compose-short (+ compose-long for T10)</td><td>dungeons 3–10</td><td>~50 / cell</td><td>LLM</td></tr>
+  <tr><td><strong>T11–12</strong> (long prose)</td><td>compose-long</td><td>dungeons 8–11</td><td>~30 / cell</td><td>LLM</td></tr>
+  <tr><td><strong>T13–14</strong> (long prose)</td><td>compose-long</td><td>dungeons 10–11</td><td>~20 / cell</td><td>LLM</td></tr>
+</table>
+<p>
+  That's roughly <strong>~100–140 prose cells</strong> to fill → on the order of <strong>~4,500 short prompts
+  + ~800 long passages</strong> (and each long passage re-slices into more short prompts). The drill tiers add
+  ~500+ phrases for free. Enough that a kid won't see a repeat for a very long time.
+</p>
+
+<h3>7.2 The agent tree (keep every context tiny)</h3>
+<table>
+  <tr><th>Level</th><th>Role</th><th>Gets (context in)</th><th>Produces</th><th>~calls</th><th>LLM?</th></tr>
+  <tr><td>L0</td><td>Orchestrator</td><td>the manifest (dungeons × sections × tiers, targets)</td><td>dispatch &amp; track coverage — <em>no content</em></td><td>—</td><td>no</td></tr>
+  <tr><td>L1</td><td>Showrunner <em>(per dungeon)</em></td><td>one brief + compact cast bible + roster (~2k tok)</td><td>the 5-section campaign transcript (~3k tok)</td><td>~11</td><td>yes</td></tr>
+  <tr><td>—</td><td><strong>Draw script</strong></td><td>a transcript (reads it <em>once</em>, deterministically)</td><td>pre-drawn <code>(seed + 3-line window)</code> bundles</td><td>—</td><td><strong>no</strong></td></tr>
+  <tr><td>L2a</td><td>compose-short filler</td><td>~25 tiny seed bundles + T6–9 spec (~1.5k tok)</td><td>~25 quads ≈ 100 prompts</td><td>~40</td><td>yes</td></tr>
+  <tr><td>L2b</td><td>compose-long filler</td><td>one section slice + long-tier spec (~1k tok)</td><td>~6–8 × ~2000-char passages</td><td>~40</td><td>yes</td></tr>
+  <tr><td>—</td><td><strong>Lint script</strong></td><td>a filled cell's JSON</td><td>legality + dedup + coverage verdict</td><td>—</td><td><strong>no</strong></td></tr>
+</table>
+<div class="callout why">
+  The <strong>L2 fillers are the bulk of the spend and they are deliberately shallow</strong> — no L2 agent
+  reads a transcript; the draw script already extracted its seeds, so its whole context is a page of seed
+  bundles + a spec. That's what lets ~170 compose calls cover the entire library. L1 showrunners are the only
+  agents that hold a "big" (still only ~2k-token) creative context, and there are just eleven of them.
+</div>
+
+<h3>7.3 Cost estimate (order of magnitude)</h3>
+<p>At the §3.5 volume targets (~50 / T6–10 cell, ~30 / T11–12, ~20 / T13–14):</p>
+<table>
+  <tr><th>Step</th><th>Calls × (in + out)</th><th>~Tokens</th></tr>
+  <tr><td>L1 showrunners</td><td>11 × (2k + 3k)</td><td>55k</td></tr>
+  <tr><td>L2a compose-short</td><td>~80 × (1.5k + 2.5k)</td><td>320k</td></tr>
+  <tr><td>L2b compose-long</td><td>~90 × (1k + 4k)</td><td>450k</td></tr>
+  <tr><td>Draws + lint + drills</td><td>scripts</td><td>~0</td></tr>
+  <tr><td>Retries / coverage top-ups (~20%)</td><td>—</td><td>~165k</td></tr>
+  <tr><td><strong>Total (one-time)</strong></td><td></td><td><strong>~1M</strong></td></tr>
+</table>
+<p>
+  About a million tokens for every dungeon's content, generated once and shipped as static JSON forever — it's
+  an authoring cost, not a per-play cost. This is a <em>projection</em>; step 7.5 measures the real number on
+  the Swamp before we trust it.
+</p>
+
+<h3>7.4 How this blows up (the anti-patterns to avoid)</h3>
+<ul>
+  <li><strong>One monolithic agent</strong> generating everything: context grows unbounded, every call re-reads the accumulated history, and quality degrades as it fills. 50–100× the cost.</li>
+  <li><strong>One agent per prompt:</strong> thousands of calls, each paying fixed instruction/overhead tokens to emit one line.</li>
+  <li><strong>Agents that read the corpus/plan/codebase</strong> each call: the single biggest input-token sink. The draw &amp; lint <em>scripts</em> exist precisely so agents never do this.</li>
+  <li><strong>Regenerating a whole cell on a coverage miss</strong> instead of dispatching a small top-up for just the shortfall.</li>
+  <li><strong>Recomposing cells that already passed:</strong> draws are free to re-run, composes are not — never recompose a good cell.</li>
+</ul>
+
+<h3>7.5 Execution — explicit spawn plan</h3>
+<p>
+  Run it as a single <strong>deterministic workflow script</strong> (the L0 orchestrator). Two rules make the
+  whole thing safe:
+</p>
+<div class="callout decision">
+  <strong>The orchestrator is a script, not an LLM; agents are leaf workers, exactly two tiers deep.</strong>
+  L0 is plain JS — it accumulates <em>no</em> token context as it tracks the 143-cell manifest, so there is no
+  reason to "offload" its bookkeeping into nested agents. Context stays small because the
+  <em>agents</em> (L1 showrunner, L2 filler) each see a tiny slice — <strong>not</strong> because the tree is
+  deep. <strong>No agent spawns another agent</strong> (that would be the monolith anti-pattern re-introduced
+  one level down). Fan-out lives in the script; composing lives in the leaves.
+</div>
+
+<h4>L0 — orchestrator (the workflow script)</h4>
+<p>Spawns, in this order:</p>
+<ol>
+  <li><strong>1 drill generator</strong> (deterministic TS, T1–5) — independent and free; kick it off first and forget it.</li>
+  <li><strong>11 dungeon pipelines</strong>, dispatched as a <em>pipeline</em> (no barrier between dungeons): dungeon 1 can be composing while dungeon 7's showrunner is still writing. Each pipeline is the four stages below.</li>
+  <li>As each dungeon returns, write its JSON pools; emit a final coverage report.</li>
+</ol>
+
+<h4>Per-dungeon pipeline (11 in flight, throttled by the concurrency cap)</h4>
+<ol>
+  <li><strong>Stage 1 — Showrunner: 1 agent, serial.</strong> Writes the dungeon's 5-section transcript. Blocking prerequisite for everything downstream in this dungeon. Context ≈ brief + cast + roster (~2k).</li>
+  <li><strong>Stage 2 — Draw: script, free.</strong> Reads that transcript <em>once</em>, emits <code>(seed + window)</code> bundles per section &amp; tier. No agent.</li>
+  <li><strong>Stage 3 — Compose: fan out, parallel.</strong> The orchestrator (not the showrunner) spawns the fillers:
+    <ul>
+      <li><strong>compose-short — one agent per section</strong> (~4–5/dungeon). Each emits quads covering that section's short tiers (~50/tier). Context = that section's seed bundles + specs.</li>
+      <li><strong>compose-long — one agent per <code>(section × long-tier)</code></strong> (high dungeons only). Each emits ~20–30 passages. Context = seeds + one long spec.</li>
+      <li>Where a dungeon has <em>both</em>, run compose-long <em>first</em> — its passages re-harvest (free, via a draw pass) into the short pools, cutting compose-short work.</li>
+    </ul>
+  </li>
+  <li><strong>Stage 4 — Lint: script, free, per cell.</strong> Legality + dedup + coverage. On a shortfall, spawn <strong>one top-up filler</strong> for just the gap — never regenerate a passing cell. Then return the dungeon's pools.</li>
+</ol>
+
+<h4>Parallelization at a glance</h4>
+<table>
+  <tr><th>Scope</th><th>Unit</th><th>Count</th><th>Parallelism</th></tr>
+  <tr><td>Across dungeons</td><td>pipeline</td><td>11</td><td>fully concurrent — no barrier</td></tr>
+  <tr><td>Showrunner</td><td>agent</td><td>1 / dungeon</td><td>serial (gates its own dungeon)</td></tr>
+  <tr><td>compose-short</td><td>agent</td><td>~5 / dungeon</td><td>parallel within the dungeon</td></tr>
+  <tr><td>compose-long</td><td>agent</td><td>~0–N / dungeon (high only)</td><td>parallel within the dungeon</td></tr>
+  <tr><td>draws · lint · drills</td><td>script</td><td>—</td><td>free, inline in L0</td></tr>
+</table>
+<p>
+  ~<strong>110 agent calls total</strong> (11 showrunners + ~80 fillers + ~20% top-ups). The runtime caps
+  concurrency at <code>min(16, cores−2)</code> ≈ 10–14 live agents; everything else queues automatically, so
+  the orchestrator can dispatch all 143 cells without minding the cap. The batch is
+  <strong>token-budgeted</strong> so it hard-stops rather than overrunning.
+</p>
+
+<div class="callout decision">
+  <strong>Pilot first — the actual first action.</strong> Run <em>only</em> the Swamp end to end:
+  1 showrunner → draw → ~5 compose-short fillers → lint → ~2 top-ups ≈ <strong>~8 agent calls</strong>. Record
+  the real token spend, confirm the ~1M ×11 extrapolation holds, <em>then</em> release the other ten dungeons.
+  Same measure-first discipline as the rest of this plan; it ships as a one-shot authoring run, never in the app.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

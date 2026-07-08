@@ -1,7 +1,14 @@
 import type { CombatConfig } from '../domain/types'
 
-// All combat tuning knobs live here — retuned in Story 6's balance harness,
-// never scattered through engine code.
+// All combat tuning knobs live here, never scattered through engine code.
+// Retuned twice: M0 Story 6's balance harness landed the original values,
+// and the M4 combat-tuning pass (content-plan-v2-tuning-implementation.html)
+// re-tuned a subset against the 14-tier content's much longer prompts —
+// `lengthFactorCap` (new) and `playerBaselineWpm` (12 → 8) are that pass's
+// changed knobs; everything else here is unchanged since M0. Both passes are
+// now closed: every value below is the current committed baseline and
+// stays frozen until the next deliberate, reviewed retune, not a drive-by
+// edit (CLAUDE.md's architecture invariants).
 const combatConfig: CombatConfig = {
   // Landed via engine/sim/balance.ts against the Slime/Goblin roster: at 10
   // this puts a beginner-ish player (~15-18wpm) through the tutorial Slime

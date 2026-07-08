@@ -14,19 +14,12 @@ import {
 // and balance.test.ts's Story 13 report for what each check catches and why
 // its band/milestones are shaped the way they are).
 describe('combat invariant sweep', () => {
-  // PARKED pending the M4/M5 combat retune. Wiring the 14-tier content
-  // (content/text/library.json) into the engine deliberately stretched the
-  // difficulty surface the M0-era combat math was tuned against: prompts now run
-  // up to ~2000 chars (was ~220), and damage scales with prompt length
-  // (engine/damage.ts's lengthFactor), so high-INT readers one-shot high-tier
-  // bosses while INT-gated melee grind them. The flat [1.2, 26] hits-to-kill band
-  // assumed uniformly short prompts; the new content intends *few big* prompts at
-  // high tiers (content-plan-v2.html §3.5), so this guard needs re-expressing
-  // against the new design as part of the planned combat-tuning pass, not a
-  // drive-by number change here (config/combat.ts stays frozen until then).
-  // Re-enable and re-shape once that retune lands. The other four invariants
-  // below (monotonicity, tier-difficulty) are length-independent and still hold.
-  it.skip('keeps hits-to-kill in a healthy multi-prompt band and every sampled fight winnable', () => {
+  // Re-enabled by Story 5 (content-plan-v2-tuning-implementation.html), which
+  // re-expressed the flat [1.2, 26] band as separate regular/boss bands
+  // matching the "few big prompts" boss design (content-plan-v2-tuning.html
+  // §3) — see combat-invariants.ts's Check 1 comment for the new shape and
+  // why it's split by role.
+  it('keeps hits-to-kill in a healthy band for its role and every sampled fight winnable', () => {
     const violations = sweepHitsToKillBand()
     expect(violations).toEqual([])
   })
@@ -46,18 +39,14 @@ describe('combat invariant sweep', () => {
     expect(violations).toEqual([])
   })
 
-  // PARKED alongside the hits-to-kill band, for the same reason and the same
-  // retune. Making INT a *nudge* on the encounter roll instead of a hard tier
-  // cap (content-plan-v2-tuning.html §5) removed the wall that used to keep a
-  // fixed hero OUT of a boss's N+3 prompt — the intTierCap + squared
-  // tierGatePenalty inflated their hits-to-kill at high tiers and, as a side
-  // effect, kept this monotonicity check green. With the cap gone the hero now
-  // reads the long boss prompt, whose uncapped lengthFactor (engine/damage.ts)
-  // makes the tier-6 and tier-11 *bosses* land at FEWER hits-to-kill than the
-  // milestone below them — the boss-length spike outrunning HP growth. That is
-  // the exact lengthFactor/HP problem the next retune step fixes (soft-cap
-  // lengthFactor + author monster HP in reference-hits); re-enable this then.
-  it.skip('never makes a higher dungeon tier easier for a fixed hero', () => {
+  // Re-enabled by Story 5. Story 1's lengthFactor cap + re-authored HP fixed
+  // the *winnability* of a fixed hero against a higher tier, but hitsToKill
+  // itself turned out to be the wrong signal to assert monotonicity on here —
+  // see combat-invariants.ts's Check 3 comment for why (a real, hero-
+  // independent D6->D11 dip in boss.hp / lengthFactor(bossTextTier) that no
+  // amount of hero-side tuning can close) and why winRate is the honest
+  // replacement signal.
+  it('never makes a higher dungeon tier easier for a fixed hero', () => {
     const violations = sweepTierMonotonicity()
     expect(violations).toEqual([])
   })

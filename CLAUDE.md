@@ -69,11 +69,12 @@ plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
   requires an exact match; `migrate()` wipes anything unrecognized (it knows one real migration, v2 → v3, which
   drops the retired `skillTree` and sets `character: null` so the player is routed through creation once). Bump
   the version _and_ write a real migration when the shape changes again, or existing saves silently reset.
-- **A known pending wiring gap, not a design decision:** DEX's `critChanceBonus`, a weapon's `critRange`, and a
-  crit-boost item's `critDamageMult` are all computed into `PlayerModifiers` (`engine/character/modifiers.ts`)
-  but `engine/damage.ts`'s `rollIsCrit`/`computeDamage` never read them — crit chance today is still the flat
-  `combat.criticalChance`, unchanged since M0. Don't assume raising DEX or swapping to a wider-crit-range weapon
-  currently does anything to crit odds.
+- **Crit is fully wired (as of the M4 combat retune):** DEX's `critChanceBonus`, a weapon's `critRange`, and
+  Oil of Sharpness's `critDamageMult` all flow from `PlayerModifiers` (`engine/character/modifiers.ts`) into
+  `engine/damage.ts`'s crit roll and damage calc — effective crit chance is `combat.criticalChance +
+  critChanceBonus + (20 − critRange)/20`, and a crit's `critDamageMult` multiplies its `baseHit`. Raising DEX or
+  equipping a wider-crit-range weapon (or item) does move crit odds/damage now; this was a real gap through M3
+  but content-plan-v2-tuning-implementation.html's Story 3 closed it.
 - **Battle is not a top-level screen** — it launches _inside_ `DungeonScreen` so the ephemeral run stays mounted,
   and returns via an `onResult` callback.
 - **Tuning knobs are deferred to M5 on purpose.** Per-point magnitudes ship as placeholders (M3 corrals them into

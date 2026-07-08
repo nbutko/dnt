@@ -329,7 +329,22 @@
   </ul>
   <p><strong>Done when:</strong> both parked invariants are un-skipped and green, the full sweep matches the target
   surface, and the tuning doc records the converged "after" numbers.</p>
-  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  <p><strong>Landed:</strong> both invariants un-skipped and green — <strong>0 skipped tests</strong>.
+  <code>sweepHitsToKillBand</code>'s old flat <code>[1.2, 26]</code> split into separate regular
+  <code>[1.0, 4]</code> / boss <code>[1.8, 5]</code> bands (regulars disposable, bosses the multi-prompt spikes,
+  per §3). <code>sweepTierMonotonicity</code>: fixing a real sim bug first — the invariant sweeps served bosses off
+  the <em>regular</em> <code>textTierRange</code> instead of the singleton boss tier real gameplay uses (new
+  <code>bossTextTierRangeForTier</code> helper) — then re-based the assertion from <code>hitsToKill</code> to
+  <code>winRate</code>: htk is <em>structurally</em> non-monotonic at widely-spaced tiers (a served tier's
+  <code>lengthFactor</code> scales avg hit faster than HP grows), but win-rate is honestly monotone-non-increasing
+  (100 → ≤100 → lowest across 5 fixed builds), which is the truer difficulty signal now that top bosses are
+  time-dominated marathons (htk still reported in violation detail). Final re-sweep recorded as tuning-doc §9
+  "After the retune": every §7 <code>1.0</code> one-shot gone, D9/D10 behind-vs-ahead inversion undone. Config
+  re-frozen (<code>combat.ts</code> header notes the M4 pass's changed knobs — <code>lengthFactorCap</code>,
+  <code>playerBaselineWpm</code> 12→8 — as the new committed baseline) and the now-false crit gotcha in CLAUDE.md
+  corrected. Residual under-target htk from D6 on (tier-3 gear plateau) and the Wizard spread stay flagged for
+  user verification, not gated on.</p>
+  <div class="status"><span class="done">☑ Code merged</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
 </div>
 
 <h2 id="adjacent">Adjacent, deliberately not in this pass</h2>

@@ -496,6 +496,21 @@ export const textTierRangeForTier = (tier: number): readonly [TextTier, TextTier
   return dungeonTier.textTierRange
 }
 
+// A boss fight's served text tier isn't drawn from the dungeon's regular
+// textTierRange — DungeonScreen.tsx collapses a boss node's band to
+// [bossTextTier, bossTextTier] (config/dungeon-tiers.ts's own doc comment)
+// so every roll lands on the boss's one hardest, longest set-piece prompt,
+// never the dungeon's lower regular tiers. Story 5 (content-plan-v2-tuning-
+// implementation.html): combat-invariants.ts's boss encounters used to reuse
+// textTierRangeForTier for both regulars and bosses, under-serving the boss
+// relative to what a real fight (and retune-sweep.ts) actually serves it —
+// this is the real-gameplay-matching range a boss encounter should use.
+export const bossTextTierRangeForTier = (tier: number): readonly [TextTier, TextTier] => {
+  const dungeonTier = DUNGEON_TIERS.find((candidate) => candidate.tier === tier)
+  if (!dungeonTier) throw new Error(`Unknown dungeon tier: ${tier}`)
+  return [dungeonTier.bossTextTier, dungeonTier.bossTextTier]
+}
+
 // A sensible gear-up path per class: start on the class's own starting
 // weapon (config/classes.ts), then climb config/weapons.ts's Story 3 "+N"
 // ladder at the same three level breakpoints for every class (5/9/12,

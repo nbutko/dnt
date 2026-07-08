@@ -405,6 +405,36 @@
   a reasonable band.
 </p>
 
+<h2 id="after">9. After the retune — converged numbers (Story 5)</h2>
+<p>
+  Re-measured with the same <code>content-pipeline/retune-sweep.ts</code> harness (40 battles/cell) against the
+  tree as Stories 1–4 left it (<code>lengthFactorCap</code>, re-authored HP, WIS/CHA levers, the weapon ladder +
+  crit wiring, <code>playerBaselineWpm</code> 12→8 + the early-level HP bonus) — same six bosses as §7's table,
+  same column shape, so the before/after reads side by side.
+</p>
+<table>
+  <tr><th>Boss</th><th>target htk</th><th>after htk (F/W/R/B range)</th><th>after on-track win% (F/W/R/B)</th><th>after behind vs ahead win%</th></tr>
+  <tr><td>D1 · T4</td><td>4</td><td>3.8–4.1</td><td>83 / <strong>8</strong> / 83 / 90</td><td>behind 45–95 · ahead 73–98</td></tr>
+  <tr><td>D6 · T9</td><td>6</td><td>3.1–3.9</td><td>93 / 40 / 100 / 100</td><td>behind 63–100 · ahead 15–100</td></tr>
+  <tr><td>D8 · T11</td><td>6</td><td>2.9–3.5</td><td>57 / 30 / 100 / 100</td><td>behind 73–100 · ahead 48–100</td></tr>
+  <tr><td>D9 · T12</td><td>5</td><td>2.1–2.7</td><td>98 / 70 / 100 / 100</td><td>behind 93–100 · ahead 75–100</td></tr>
+  <tr><td>D10 · T13</td><td>4</td><td>1.9–2.8</td><td>90 / 30 / 100 / 100</td><td>behind 53–100 · ahead 30–100</td></tr>
+  <tr><td>D11 · T14</td><td>3</td><td>2.2–2.7</td><td>100 / 100 / 100 / 100</td><td>behind 100 · ahead 100</td></tr>
+</table>
+<div class="callout why">
+  <strong>The one-shot collapse is gone.</strong> Every §7 <code>1.0</code> (D9–D11, "boss dies to a single
+  landed hit") is now a genuine multi-hit fight, and D9/D10's behind-vs-ahead <strong>inversion is un-inverted</strong>:
+  D9 was behind 40 · ahead 95 (over-leveled-but-slow the <em>worst</em> corner); it's now behind 93–100 ·
+  ahead 75–100 (behind safe again, as the three-corner model in §1 intends). D10 was behind 3–15 · ahead
+  95–98; it's now behind 53–100 · ahead 30–100. Htk still runs a little under the raw §3 target from D6 on —
+  a known, already-flagged residual (<code>weaponForTierLevel</code> plateaus at tier-3 gear, Story 3's landed
+  note), not a new gap. Wizard on-track win% (D1 8%, D8 30%) is the one large outlier left, the same structural
+  gap (lower HP die + Arcane Mind pulling harder against a d6-then-wand-line weapon) flagged since Story 3 and
+  still open for user verification, not something this pass's invariants gate on. <code>sweepHitsToKillBand</code>
+  and <code>sweepTierMonotonicity</code> (<code>combat-invariants.test.ts</code>) are both un-skipped and pass
+  honestly against this surface.
+</div>
+
 </main>
 <footer class="page-foot">
   Dungeons &amp; Typing — combat tuning targets (M4/M5). Targets only; validated by simulation before any knob moves.

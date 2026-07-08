@@ -19,7 +19,16 @@ const combatConfig: CombatConfig = {
   // Loosened from 15 after real playtesting felt rushed: the countdown
   // starts the instant a prompt appears, so the budget also has to cover
   // reading the line, not just typing it. See playerReadingBufferMs below.
-  playerBaselineWpm: 12,
+  // Lowered again, 12 -> 8, in Story 4 (content-plan-v2-tuning-implementation.
+  // html): this is the assumed typing speed the player's OWN time limit is
+  // budgeted against (independent of a monster's own clock), and 12 sat
+  // ABOVE D1's on-track (10wpm) and behind (7wpm) anchors — a genuine
+  // beginner was budgeted less time than their own real typing needs and
+  // timed out on their own prompt regardless of HP or the monster. 8 clears
+  // both D1 anchors with margin; verified via retune-sweep.ts that a fast
+  // typist's speedBonus (already near its 2x cap everywhere the player's
+  // actual wpm exceeds this baseline) barely moves at the high end.
+  playerBaselineWpm: 8,
   avgWordLength: 5,
   playerTimeLimitFloorMs: 3000,
   // Flat headroom added to every player time limit for reading/reacting to

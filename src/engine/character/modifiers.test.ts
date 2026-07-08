@@ -20,7 +20,10 @@ const dagger = getWeapon('dagger')
 describe("resolveModifiers — base character reproduces today's M2 baseline", () => {
   it('a level-1 Fighter with all-10 abilities and a dagger, no buffs', () => {
     expect(resolveModifiers(fighter, dagger)).toEqual({
-      maxHp: 40, // hit die (10) * HP_SCALE (4), matching combat.playerMaxHp
+      // hit die (10) * HP_SCALE (4) = 40, plus Story 4's levels-1-3 early
+      // survivability bonus (config/leveling.ts's EARLY_LEVEL_HP_BONUS[0] =
+      // 24) — no longer equal to combat.playerMaxHp now that the bonus exists.
+      maxHp: 64,
       maxHearts: 1,
       timeBudgetBonusMs: 0,
       encounterBonus: 2, // level-1 proficiency bonus + INT mod 0
@@ -47,13 +50,15 @@ describe("resolveModifiers — base character reproduces today's M2 baseline", (
 describe('resolveModifiers — CON raises maxHp per the leveling formula', () => {
   it('a level-2 Fighter with +2 CON gains the level-1 base plus the level-2 CON-boosted grant', () => {
     const character: Character = { ...fighter, level: 2, abilities: { ...baseAbilities, con: 14 } }
-    // level 1: 10 * 4 = 40; level 2: ceil((10+1)/2) * 4 + 2 * 4 = 24 + 8 = 32
-    expect(resolveModifiers(character, dagger).maxHp).toBe(72)
+    // level 1: 10 * 4 = 40; level 2: ceil((10+1)/2) * 4 + 2 * 4 = 24 + 8 = 32;
+    // plus Story 4's EARLY_LEVEL_HP_BONUS[1] (current level 2) = 16.
+    expect(resolveModifiers(character, dagger).maxHp).toBe(88)
   })
 
   it('a level-1 Fighter ignores CON entirely (level-1 HP is hit-die only)', () => {
     const character: Character = { ...fighter, abilities: { ...baseAbilities, con: 20 } }
-    expect(resolveModifiers(character, dagger).maxHp).toBe(40)
+    // 40 (hit die only, CON ignored at level 1) + EARLY_LEVEL_HP_BONUS[0] (24).
+    expect(resolveModifiers(character, dagger).maxHp).toBe(64)
   })
 })
 

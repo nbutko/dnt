@@ -288,7 +288,22 @@
   </ul>
   <p><strong>Done when:</strong> a ~10-wpm, level-2 typist clears the D1 boss on the sweep (a fair first fight,
   not a wall), with no regression to the capped top end.</p>
-  <div class="status">☐ Code merged&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by Claude&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
+  <p><strong>Landed:</strong> D1 turned out to have TWO root causes. (1) A self-timeout bug — the per-prompt budget
+  is built on <code>combat.playerBaselineWpm</code>, so a typist slower than the baseline times out on their own
+  clock regardless of HP; lowered <strong>12 → 8</strong> (a beginner's assumed speed). Proven via full sweep to
+  be a near-no-op at mid/high tiers — fast typists there already finish far under budget, so their
+  <code>speedBonus</code> barely moves. (2) Genuine low-level fragility — softened the D1 Goblin Boss (wpm 25 → 9,
+  acc 0.85 → 0.75, local to that one entry) and added a <strong>tapering</strong> early HP bonus
+  <code>EARLY_LEVEL_HP_BONUS = [24, 16, 8]</code> for levels 1–3, looked up by <em>current</em> level (NOT folded
+  into the cumulative per-level grant — doing that inflated every later dungeon 20–35 pts; the current-level lookup
+  vanishes at L4+ and keeps total HP monotonic, so <code>sweepLevelingMonotonicity</code> still passes). D1
+  on-track 3% → <strong>83%</strong> (fighter/rogue/bard); full-sweep regression clean (htk floor still 1.9, no new
+  one-shots, high-tier on-track win% unchanged within sampling noise). Leveling reads as intended — L2→L4 at fixed
+  10 wpm holds htk ~4 (same #prompts) while win% climbs 81 → 98 (survival margin, "less frenetic," not "fewer
+  prompts"). Residuals: Wizard D1 on-track only 8% (its documented structural gap, no longer a D1-specific wall);
+  a narrow behind-vs-ahead inversion within D1 for wizard/bard only, left rather than risk tuning drift — both
+  for user verification.</p>
+  <div class="status"><span class="done">☑ Code merged</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="done">☑ Verified by Claude</span>&nbsp;&nbsp;·&nbsp;&nbsp;☐ Verified by User</div>
 </div>
 
 <div class="milestone" id="story-5">

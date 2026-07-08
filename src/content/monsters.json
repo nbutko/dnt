@@ -49,11 +49,11 @@
     "habitat": "Grassland",
     "hp": 140,
     "textTier": 3,
-    "wpm": 25,
-    "accuracy": 0.85,
+    "wpm": 9,
+    "accuracy": 0.75,
     "attention": 0.6,
     "slack": 1.7,
-    "flavor": "Grassland's boss \u2014 more HP and more careful than a Goblin Minion, not faster"
+    "flavor": "Grassland's boss \u2014 more HP than a Goblin Minion, but slow and deliberate: the first boss should be a fair fight, not a wall"
   },
   {
     "id": "grassland-mimic",

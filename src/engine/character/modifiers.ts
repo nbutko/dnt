@@ -45,12 +45,19 @@ const heartsForLevel = (level: number): number =>
 // level's grant computed by Story 2's grantsForLevel so HP is derived at read
 // time and can never drift from the abilities/level that produce it (the
 // derive-don't-store rule — m3-implementation.html Story 2).
+//
+// Story 4 (content-plan-v2-tuning-implementation.html): on top of that sum,
+// a flat survivability bonus keyed off the character's CURRENT level (not
+// summed across history, unlike the loop above) — it only ever applies while
+// level <= 3, so it buys HP margin at the tier a fresh character is actually
+// fighting and vanishes the moment they level past it, instead of becoming a
+// permanent flat add that would also inflate every later dungeon's fights.
 const totalHpForLevel = (character: Character, cfg: LevelingConfig): number => {
   let hp = 0
   for (let level = 1; level <= character.level; level += 1) {
     hp += grantsForLevel(character.class, level, character.abilities.con, cfg).hpAdded
   }
-  return hp
+  return hp + (cfg.earlyLevelHpBonus[character.level - 1] ?? 0)
 }
 
 // Folds one active buff's item effect into a mutable accumulator. Only

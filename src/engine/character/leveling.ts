@@ -12,7 +12,7 @@
 // abilities/level that produce them.
 
 import { getClass, type ClassFeature } from '../../config/classes'
-import { ASI_LEVELS, HP_SCALE, PROFICIENCY_BY_LEVEL, XP_THRESHOLDS } from '../../config/leveling'
+import { ASI_LEVELS, EARLY_LEVEL_HP_BONUS, HP_SCALE, PROFICIENCY_BY_LEVEL, XP_THRESHOLDS } from '../../config/leveling'
 import { abilityMod, type AbilityScores, type CharacterClass } from '../../domain/character'
 
 // The knobs every function below reads, bundled so a caller (or a test) can
@@ -24,6 +24,10 @@ export interface LevelingConfig {
   asiLevels: readonly number[]
   proficiencyByLevel: readonly number[]
   hpScale: number
+  // Story 4 (content-plan-v2-tuning-implementation.html): a tapering flat HP
+  // bonus for levels 1-3, index 0 = level 1. Empty/short arrays are fine —
+  // a level past the array's length just gets 0.
+  earlyLevelHpBonus: readonly number[]
 }
 
 export const DEFAULT_LEVELING_CONFIG: LevelingConfig = {
@@ -31,6 +35,7 @@ export const DEFAULT_LEVELING_CONFIG: LevelingConfig = {
   asiLevels: ASI_LEVELS,
   proficiencyByLevel: PROFICIENCY_BY_LEVEL,
   hpScale: HP_SCALE,
+  earlyLevelHpBonus: EARLY_LEVEL_HP_BONUS,
 }
 
 const clampLevel = (level: number, length: number): number => Math.min(Math.max(level, 1), length)

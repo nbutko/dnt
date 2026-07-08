@@ -32,6 +32,25 @@ export const PROFICIENCY_BY_LEVEL: readonly number[] = [
 // this is just the one scale constant it reads. A Story 13/M5 placeholder.
 export const HP_SCALE = 4
 
+// content-plan-v2-tuning-implementation.html Story 4: D1's on-track anchor
+// (L2 @ 10wpm) measured a near-unwinnable ~3% against the Goblin Boss even
+// after softening its cadence (monsters.json) and widening the player's time
+// budget (config/combat.ts's playerBaselineWpm) — a level-1-3 character
+// simply doesn't have the HP margin to survive to its own 2nd-3rd landed hit.
+// A flat survivability bonus (index 0 = level 1), read by
+// engine/character/modifiers.ts's totalHpForLevel keyed off the character's
+// CURRENT level only — deliberately NOT folded into grantsForLevel's
+// per-level hpAdded, which totalHpForLevel sums cumulatively across every
+// level up to the current one, because that would make an early bonus a
+// permanent flat add carried into every later dungeon's fights too. Applying
+// it only at the current level means it buys margin exactly at the tier a
+// fresh character is fighting (levels 1-3 -> D1-D2) and vanishes the moment
+// they level past it (0 for level 4+) — "less frenetic," not a stealth
+// buff to the whole game. Landed via content-pipeline/retune-sweep.ts against
+// Goblin Boss's softened cadence (see monsters.json) — tuned together, not
+// derived on paper.
+export const EARLY_LEVEL_HP_BONUS: readonly number[] = [24, 16, 8]
+
 const clampLevel = (level: number, table: readonly number[]): number => Math.min(Math.max(level, 1), table.length)
 
 // Small bounds-checked lookups, not the leveling engine itself — levelForXp

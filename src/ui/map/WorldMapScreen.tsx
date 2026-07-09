@@ -31,9 +31,6 @@ const WorldMapScreen = ({ onNavigate }: WorldMapScreenProps) => {
         <h1 className="font-display text-[22px] font-bold tracking-[0.12em] text-accent-gold-bright uppercase">
           World Map
         </h1>
-        <div className="mt-1 font-mono text-[11px] text-text-dim">
-          highestUnlockedTier: {save.highestUnlockedTier}
-        </div>
         {/* Status cluster, mirroring the Inn header (feedback #5). */}
         <div className="absolute top-0 right-0">
           <StatusReadout

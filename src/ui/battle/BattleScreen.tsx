@@ -189,7 +189,10 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
           <Flash key={f.id} text={f.text} variant={f.variant} sublabel={f.sublabel} className={SLOT_CLASS[f.slot]} />
         ))}
         <div className="mt-3 flex items-start gap-4">
-          <div className="flex-1 rounded border border-border-gold-dim bg-black/30 p-3">
+          {/* min-w-0: without it the flex item's default min-width:auto lets the
+              non-wrapping prompt line dictate (and blow out) the column width,
+              which broke TypedProgress's width measurement. */}
+          <div className="min-w-0 flex-1 rounded border border-border-gold-dim bg-black/30 p-3">
             {state.monster.paused ? (
               <p className="font-mono text-lg text-danger-bright">
                 Time Limit Expired. Attack missed!
@@ -231,7 +234,7 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
         )}
 
         <div className="mt-3 flex items-start gap-4">
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <PlayerPrompt
               prompt={state.player.prompt}
               input={input}

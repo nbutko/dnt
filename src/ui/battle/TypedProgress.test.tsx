@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import TypedProgress from './TypedProgress'
+import TypedProgress, { wrapPrompt } from './TypedProgress'
 
 describe('TypedProgress', () => {
   it('shows a wrong space as a red underscore, not an invisible gap (feedback #10)', () => {
@@ -42,5 +42,50 @@ describe('TypedProgress', () => {
     // "ca" correct → normal colour, no red; "t" remains as dimmed remainder.
     expect(container.querySelector('.text-danger-bright')).toBeNull()
     expect(container.textContent).toContain('cat')
+  })
+})
+
+describe('wrapPrompt — deterministic, prompt-only line breaking (the reflow fix)', () => {
+  const passage = 'the quick brown fox jumps over the lazy dog again and again today'
+
+  it('loses no characters: concatenating the lines rebuilds the prompt exactly', () => {
+    for (const cols of [1, 5, 8, 12, 20, 40]) {
+      const lines = wrapPrompt(passage, cols)
+      expect(lines.map((l) => l.text).join(''), `cols ${cols}`).toBe(passage)
+    }
+  })
+
+  it('gives each line a start offset that matches the running length (indices map 1:1)', () => {
+    const lines = wrapPrompt(passage, 12)
+    let running = 0
+    for (const line of lines) {
+      expect(line.start).toBe(running)
+      running += line.text.length
+    }
+  })
+
+  it('keeps every line within the column budget when words fit', () => {
+    const lines = wrapPrompt(passage, 12)
+    for (const line of lines) {
+      // trailing whitespace can push a line one over, but the visible word run
+      // never exceeds the budget
+      expect(line.text.trimEnd().length).toBeLessThanOrEqual(12)
+    }
+  })
+
+  it('hard-breaks a single word longer than the whole line', () => {
+    const lines = wrapPrompt('supercalifragilistic', 5)
+    expect(lines.map((l) => l.text)).toEqual(['super', 'calif', 'ragil', 'istic'])
+  })
+
+  it('does not depend on how much has been typed — the split is a pure function of the prompt', () => {
+    // The old bug was that the wrap point moved as you typed; wrapPrompt takes
+    // no `typed` argument at all, so the same prompt always yields the same lines.
+    expect(wrapPrompt(passage, 12)).toEqual(wrapPrompt(passage, 12))
+  })
+
+  it('returns a single line when unmeasured (cols <= 0) or when the prompt fits', () => {
+    expect(wrapPrompt(passage, 0)).toEqual([{ text: passage, start: 0 }])
+    expect(wrapPrompt('short', 40)).toEqual([{ text: 'short', start: 0 }])
   })
 })

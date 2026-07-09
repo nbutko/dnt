@@ -64,6 +64,7 @@ const PlayerPrompt = ({
         revealRemaining
         blinkCaret={!disabled}
         className="text-lg"
+        maxVisibleLines={4}
       />
       {/* The real control, kept in the DOM (and focusable) but visually hidden:
           the TypedProgress line above is now the sole on-screen typing surface

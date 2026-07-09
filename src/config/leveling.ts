@@ -5,9 +5,13 @@
 // character's derived numbers.
 
 // 5e's own XP table (m3-scope.html: "0, 300, 900, 2700, 6500, 14000, … as
-// the starting curve") — index 0 is level 1's threshold (0 XP). Whether this
-// wants compressing for dnt's reward economy is an explicit M5 pacing
-// question (m3-scope.html#open "XP pacing"), not a Story 1 one.
+// the starting curve") — index 0 is level 1's threshold (0 XP). M5 kept these
+// real D&D thresholds deliberately: rather than reshape the level curve, the
+// per-dungeon reward curve (config/rewards.ts's xp.normalPerDungeon) was tuned
+// to them — ~1.3 levels of progress per dungeon, hand-adjusted so per-kill XP
+// stays monotonic across the table's own non-uniform deltas (a naive
+// interpolation dips at the small L11→L12 gap). That closed the "XP pacing"
+// M5 knob (m3-scope.html#open) without moving the thresholds.
 export const XP_THRESHOLDS: readonly number[] = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000,
   265000, 305000, 355000,

@@ -5,7 +5,7 @@ import { getClass } from '../../config/classes'
 import { DUNGEON_TIERS } from '../../config/dungeon-tiers'
 import rewardsConfig, { type RewardAmount } from '../../config/rewards'
 import { getWeapon } from '../../config/weapons'
-import { getMonster } from '../../content/monsters'
+import { getMonster, xpDifficultyBand } from '../../content/monsters'
 import { abilityMod } from '../../domain/character'
 import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 import type { MonsterRole, TextTier } from '../../domain/types'
@@ -357,7 +357,10 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       saveDispatch(buyWeapon(weaponId, 0))
       loot = { kind: 'weapon', id: weaponId }
     } else {
-      amount = rewardForKill(tier, roleForNode(node), rewardsConfig)
+      // A regular's XP scales by its easy/medium/hard band (its WPM rank within
+      // the dungeon); a mimic ignores the band (rewardForKill fixes its mult).
+      const band = node.monsterId ? xpDifficultyBand(node.monsterId) : 'medium'
+      amount = rewardForKill(tier, roleForNode(node), rewardsConfig, rewardsConfig.xp.difficulty[band])
     }
 
     saveDispatch(award(amount.coins, amount.xp))

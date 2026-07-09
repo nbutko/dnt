@@ -8,32 +8,55 @@ import type { WeaponId } from '../../domain/weapons'
 // Pure reward math — no React, no save/combat imports. The dungeon UI (Story
 // 11) reads these and dispatches award() per-kill.
 
-// Grow a tier-1 base by tierGrowth per tier above 1, rounded to whole points.
-const scale = (base: RewardAmount, tier: number, growth: number): RewardAmount => {
-  const factor = 1 + (tier - 1) * growth
-  return { xp: Math.round(base.xp * factor), coins: Math.round(base.coins * factor) }
+// A normal (medium-difficulty) kill's XP in a tier-N dungeon — the tuned unit
+// everything else scales off (config/rewards.ts's xp.normalPerDungeon; see its
+// header for how the table tracks the 5e curve monotonically). Clamped so a
+// tier past the table (e.g. the "tier 12" a boss unlock names) still resolves.
+export const normalXpForDungeon = (dungeon: number, cfg: RewardConfig): number => {
+  const table = cfg.xp.normalPerDungeon
+  return table[Math.min(Math.max(dungeon, 1), table.length) - 1]
 }
 
+// Coins only: grow a tier-1 base by tierGrowth per tier above 1 (unchanged
+// from M2/M3 — see config/rewards.ts's header on why the shop economy is kept).
+const coinsForTier = (base: number, tier: number, growth: number): number =>
+  Math.round(base * (1 + (tier - 1) * growth))
+
 // The reward for defeating a monster of the given role in a tier-N dungeon.
+// XP scales off the dungeon's normal-kill unit: a regular by its easy/medium/
+// hard band (difficultyMult, defaulting to medium — the caller passes the
+// monster's band, content/monsters.ts's xpDifficultyBand), a mimic by the
+// fixed mimicMult, a boss by bossMult. Production routes the boss through
+// rewardForBossKill (below) for its coin bonus + gear; this still handles
+// 'boss' so the two agree on XP.
 export const rewardForKill = (
   tier: number,
   role: MonsterRole,
   cfg: RewardConfig,
-): RewardAmount => scale(cfg.base[role], tier, cfg.tierGrowth)
-
-// The reward for opening the one real chest — a flat payout, no fight.
-export const rewardForChest = (tier: number, cfg: RewardConfig): RewardAmount =>
-  scale(cfg.realChest, tier, cfg.tierGrowth)
-
-// The boss's coin/xp payout — the same tier-scaled base.boss reward as
-// rewardForKill('boss', ...), multiplied by bossPayoutMult on top (finding:
-// m3-scope.html#loot "Bosses add a larger payout").
-export const rewardForBossKill = (tier: number, cfg: RewardConfig): RewardAmount => {
-  const base = scale(cfg.base.boss, tier, cfg.tierGrowth)
-  return {
-    xp: Math.round(base.xp * cfg.bossPayoutMult),
-    coins: Math.round(base.coins * cfg.bossPayoutMult),
+  difficultyMult: number = cfg.xp.difficulty.medium,
+): RewardAmount => {
+  const normal = normalXpForDungeon(tier, cfg)
+  const xpMultByRole: Record<MonsterRole, number> = {
+    boss: cfg.xp.bossMult,
+    mimic: cfg.xp.mimicMult,
+    regular: difficultyMult,
   }
+  return { xp: Math.round(normal * xpMultByRole[role]), coins: coinsForTier(cfg.baseCoins[role], tier, cfg.tierGrowth) }
+}
+
+// The reward for opening the one real chest — a no-fight payout: a small XP
+// hoard (realChestMult normals) plus tier-scaled coins.
+export const rewardForChest = (tier: number, cfg: RewardConfig): RewardAmount => ({
+  xp: Math.round(normalXpForDungeon(tier, cfg) * cfg.xp.realChestMult),
+  coins: coinsForTier(cfg.realChestCoins, tier, cfg.tierGrowth),
+})
+
+// The boss's coin/xp payout — bossMult normals of XP (via rewardForKill), with
+// bossCoinMult layered onto its coins on top (m3-scope.html#loot "Bosses add a
+// larger payout").
+export const rewardForBossKill = (tier: number, cfg: RewardConfig): RewardAmount => {
+  const base = rewardForKill(tier, 'boss', cfg)
+  return { xp: base.xp, coins: Math.round(base.coins * cfg.bossCoinMult) }
 }
 
 // A tier-appropriate pool never offers gear above the dungeon's own tier

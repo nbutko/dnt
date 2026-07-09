@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DUNGEON_TIERS } from '../config/dungeon-tiers'
-import { byRole, byTier, getMonster, listMonsters } from './monsters'
+import rewardsConfig from '../config/rewards'
+import { byRole, byTier, getMonster, listMonsters, xpDifficultyBand } from './monsters'
 import textBank from './text-banks'
 
 // The generator (Story 8) draws regulars *with repetition* to fill ~30 nodes,
@@ -64,5 +65,40 @@ describe('seed rosters (Story 7)', () => {
     banks.forEach((lines, i) => {
       expect(lines.length, `${listMonsters()[i].id}`).toBeGreaterThan(0)
     })
+  })
+})
+
+describe('xpDifficultyBand (M5 per-monster XP spread)', () => {
+  it('tags the weakest tier-1 regular easy, the toughest hard, the middle medium', () => {
+    // tier 1 regulars by WPM: slime(15) < goblin(25) < skeleton(30).
+    expect(xpDifficultyBand('slime')).toBe('easy')
+    expect(xpDifficultyBand('goblin')).toBe('medium')
+    expect(xpDifficultyBand('skeleton')).toBe('hard')
+  })
+
+  it('leaves bosses, mimics, and unknown ids at medium', () => {
+    expect(xpDifficultyBand('slime-king')).toBe('medium') // boss
+    expect(xpDifficultyBand('grassland-mimic')).toBe('medium') // mimic
+    expect(xpDifficultyBand('no-such-monster')).toBe('medium')
+  })
+
+  it('tags exactly one easy + one hard among each dungeon\'s regulars, the rest medium', () => {
+    for (const { tier } of DUNGEON_TIERS) {
+      const regulars = byRole(tier, 'regular')
+      const bands = regulars.map((m) => xpDifficultyBand(m.id))
+      expect(bands.filter((b) => b === 'easy'), `tier ${tier} easy`).toHaveLength(1)
+      expect(bands.filter((b) => b === 'hard'), `tier ${tier} hard`).toHaveLength(1)
+      expect(bands.filter((b) => b === 'medium'), `tier ${tier} medium`).toHaveLength(regulars.length - 2)
+    }
+  })
+
+  it("keeps each roster's XP multiplier averaging exactly the medium unit (1x)", () => {
+    const { easy, medium, hard } = rewardsConfig.xp.difficulty
+    const multFor = { easy, medium, hard }
+    for (const { tier } of DUNGEON_TIERS) {
+      const regulars = byRole(tier, 'regular')
+      const total = regulars.reduce((sum, m) => sum + multFor[xpDifficultyBand(m.id)], 0)
+      expect(total / regulars.length, `tier ${tier} average`).toBeCloseTo(medium)
+    }
   })
 })

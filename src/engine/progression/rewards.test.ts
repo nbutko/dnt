@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { ITEMS } from '../../config/items'
+import { XP_THRESHOLDS } from '../../config/leveling'
 import rewardsConfig from '../../config/rewards'
 import { WEAPONS } from '../../config/weapons'
 import type { Rng } from '../../domain/types'
 import { createRng } from '../rng'
 import {
+  normalXpForDungeon,
   rewardForBossGear,
   rewardForBossKill,
   rewardForChest,
@@ -26,44 +28,81 @@ const fakeRng = (values: number[]): Rng => {
   }
 }
 
-describe('reward math', () => {
-  it('pays the tier-1 base with no growth applied', () => {
-    expect(rewardForKill(1, 'regular', rewardsConfig)).toEqual({ xp: 8, coins: 5 })
-    expect(rewardForKill(1, 'boss', rewardsConfig)).toEqual({ xp: 40, coins: 30 })
-    expect(rewardForChest(1, rewardsConfig)).toEqual({ xp: 30, coins: 24 })
+describe('reward XP — the M5 curve-derived model', () => {
+  it('a normal (medium) kill reads the tuned per-dungeon table and rises monotonically', () => {
+    // The hand-tuned per-dungeon normal-kill XP (config/rewards.ts, tracking
+    // the 5e curve at ~1.3 levels/dungeon). Pinned so a retune is a visible edit.
+    const expected = [5, 15, 41, 97, 127, 167, 230, 249, 251, 260, 340]
+    for (let dungeon = 1; dungeon <= 11; dungeon += 1) {
+      expect(normalXpForDungeon(dungeon, rewardsConfig), `D${dungeon}`).toBe(expected[dungeon - 1])
+      expect(rewardForKill(dungeon, 'regular', rewardsConfig).xp, `D${dungeon} regular`).toBe(expected[dungeon - 1])
+    }
+    for (let dungeon = 2; dungeon <= 11; dungeon += 1) {
+      expect(
+        normalXpForDungeon(dungeon, rewardsConfig),
+        `D${dungeon} > D${dungeon - 1}`,
+      ).toBeGreaterThan(normalXpForDungeon(dungeon - 1, rewardsConfig))
+    }
   })
 
-  it('grows a base by tierGrowth per tier above 1', () => {
-    // tier 3 → factor 1 + 2*0.35 = 1.7; regular xp 8*1.7 = 13.6 → 14.
-    expect(rewardForKill(3, 'regular', rewardsConfig)).toEqual({ xp: 14, coins: 9 })
-    // tier 11 boss → factor 1 + 10*0.35 = 4.5; xp 40*4.5 = 180.
-    expect(rewardForKill(11, 'boss', rewardsConfig)).toEqual({ xp: 180, coins: 135 })
+  it('~100 normal kills bridge a dungeon toward the next 5e target (~1.3 levels)', () => {
+    // The design intent: ~100 normal kills raise a player about 1.3 levels on
+    // the real 5e curve. D1 (100*5 = 500 XP) clears the level-2 threshold (300)
+    // and reaches into level 3's band — a fresh character's first target.
+    expect(normalXpForDungeon(1, rewardsConfig) * 100).toBeGreaterThan(XP_THRESHOLDS[1])
+    expect(normalXpForDungeon(1, rewardsConfig) * 100).toBeLessThan(XP_THRESHOLDS[2])
   })
 
-  it('ranks roles: mimic beats a regular, a boss beats both, at every tier', () => {
+  it('a boss is worth bossMult (10x) a normal kill, at every tier', () => {
+    for (let tier = 1; tier <= 11; tier += 1) {
+      const normal = normalXpForDungeon(tier, rewardsConfig)
+      expect(rewardForBossKill(tier, rewardsConfig).xp, `tier ${tier}`).toBe(Math.round(normal * 10))
+    }
+  })
+
+  it('easy/medium/hard bands multiply the normal unit 0.75 / 1 / 1.25, averaging medium', () => {
+    const tier = 6
+    const normal = normalXpForDungeon(tier, rewardsConfig)
+    const { easy, medium, hard } = rewardsConfig.xp.difficulty
+    expect(rewardForKill(tier, 'regular', rewardsConfig, easy).xp).toBe(Math.round(normal * 0.75))
+    expect(rewardForKill(tier, 'regular', rewardsConfig, medium).xp).toBe(normal)
+    expect(rewardForKill(tier, 'regular', rewardsConfig, hard).xp).toBe(Math.round(normal * 1.25))
+    // a balanced easy+hard pair averages exactly two mediums (what keeps a
+    // roster's average at 1x — content/monsters.ts tags one of each).
+    expect(Math.round(normal * 0.75) + Math.round(normal * 1.25)).toBe(2 * normal)
+  })
+
+  it('ranks roles: a mimic beats a regular, a boss beats both, at every tier', () => {
     for (let tier = 1; tier <= 11; tier += 1) {
       const regular = rewardForKill(tier, 'regular', rewardsConfig)
       const mimic = rewardForKill(tier, 'mimic', rewardsConfig)
-      const boss = rewardForKill(tier, 'boss', rewardsConfig)
+      const boss = rewardForBossKill(tier, rewardsConfig)
       expect(mimic.xp, `tier ${tier}`).toBeGreaterThan(regular.xp)
       expect(boss.xp, `tier ${tier}`).toBeGreaterThan(mimic.xp)
     }
   })
+})
 
-  it('earns enough across a first tier-1 clear to afford an early skill node', () => {
-    // A minimal tier-1 clear: shortest path is ~8 regular fights + the boss.
-    // Even that floor should clear the 50-XP first Endurance node.
-    const path = 8 * rewardForKill(1, 'regular', rewardsConfig).xp
-    const boss = rewardForKill(1, 'boss', rewardsConfig).xp
-    expect(path + boss).toBeGreaterThanOrEqual(50)
+describe('reward coins — the unchanged M2/M3 tier-growth curve', () => {
+  it('pays the tier-1 coin base with no growth applied', () => {
+    expect(rewardForKill(1, 'regular', rewardsConfig).coins).toBe(5)
+    expect(rewardForKill(1, 'boss', rewardsConfig).coins).toBe(30)
+    expect(rewardForChest(1, rewardsConfig).coins).toBe(24)
   })
 
-  it('rewardForBossKill pays more than a plain rewardForKill boss reward, at every tier', () => {
+  it('grows the coin base by tierGrowth per tier above 1', () => {
+    // tier 3 → factor 1 + 2*0.35 = 1.7; regular coins 5*1.7 = 8.5 → 9.
+    expect(rewardForKill(3, 'regular', rewardsConfig).coins).toBe(9)
+    // tier 11 boss coins: base 30 * 4.5 = 135, then bossCoinMult 1.5.
+    expect(rewardForBossKill(11, rewardsConfig).coins).toBe(Math.round(135 * 1.5))
+  })
+
+  it('rewardForBossKill layers bossCoinMult onto the boss coin reward, at every tier', () => {
     for (let tier = 1; tier <= 11; tier += 1) {
-      const plain = rewardForKill(tier, 'boss', rewardsConfig)
-      const boss = rewardForBossKill(tier, rewardsConfig)
-      expect(boss.xp, `tier ${tier}`).toBeGreaterThan(plain.xp)
-      expect(boss.coins, `tier ${tier}`).toBeGreaterThan(plain.coins)
+      const plainCoins = rewardForKill(tier, 'boss', rewardsConfig).coins
+      const bossCoins = rewardForBossKill(tier, rewardsConfig).coins
+      expect(bossCoins, `tier ${tier}`).toBe(Math.round(plainCoins * rewardsConfig.bossCoinMult))
+      expect(bossCoins, `tier ${tier}`).toBeGreaterThan(plainCoins)
     }
   })
 })

@@ -32,6 +32,28 @@ const remapTextTier = (m: Monster): TextTier => {
 }
 const monsters: Monster[] = rawMonsters.map((m) => ({ ...m, textTier: remapTextTier(m) }))
 
+// M5 XP retune: within a dungeon, regular monsters vary easy/medium/hard so
+// the harder (faster-typing) ones pay more XP. To keep the roster average
+// exactly the "medium" unit (engine/progression/rewards.ts's normalXpForDungeon)
+// regardless of how many regulars a tier has, rank each tier's regulars by WPM
+// and tag only the single weakest 'easy' and single toughest 'hard' — the
+// balanced 0.75/1.25 pair averages 1 against every 'medium' in between. Bosses
+// and mimics don't use this (their XP mult is fixed in config/rewards.ts).
+// Derived once here, same pattern as the textTier remap above.
+export type XpBand = 'easy' | 'medium' | 'hard'
+const bandByMonsterId = new Map<string, XpBand>()
+for (const tier of new Set(monsters.map((m) => m.tier))) {
+  const regulars = monsters.filter((m) => m.tier === tier && m.role === 'regular').sort((a, b) => a.wpm - b.wpm)
+  if (regulars.length >= 2) {
+    bandByMonsterId.set(regulars[0].id, 'easy')
+    bandByMonsterId.set(regulars[regulars.length - 1].id, 'hard')
+  }
+}
+
+// The XP difficulty band for a monster id — 'medium' for anything untagged
+// (bosses, mimics, a lone regular, an unknown id).
+export const xpDifficultyBand = (id: string): XpBand => bandByMonsterId.get(id) ?? 'medium'
+
 export const listMonsters = (): readonly Monster[] => monsters
 
 export const getMonster = (id: string): Monster => {

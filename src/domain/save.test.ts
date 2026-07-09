@@ -23,7 +23,7 @@ describe('migrate', () => {
       character: {
         name: 'Aldric',
         class: 'fighter',
-        level: 1, // stale — 900 XP is level 3
+        level: 1, // stale — 900 XP is level 3 (the 5e L3 threshold)
         xp: 900,
         abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 13, cha: 8 },
         pendingAsi: 0,
@@ -42,7 +42,7 @@ describe('migrate', () => {
         name: 'Aldric',
         class: 'fighter',
         level: 1, // frozen by the pre-v4 bug (award never advanced it)
-        xp: 2700, // level 4 — an ASI level
+        xp: 2700, // level 4 (the 5e L4 threshold) — an ASI level
         abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 13, cha: 8 },
         pendingAsi: 0, // never banked, because the plumbing was dead
       },

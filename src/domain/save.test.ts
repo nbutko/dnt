@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { defaultSave, hardResetSave, migrate } from './save'
 
 describe('defaultSave', () => {
-  it('is a fresh v3 save with an uncreated character', () => {
+  it('is a fresh v4 save with an uncreated character', () => {
     const save = defaultSave()
-    expect(save.version).toBe(3)
+    expect(save.version).toBe(4)
     expect(save.character).toBeNull()
     expect(save.equippedWeapon).toBe('dagger')
     expect(save.inventory.weapons).toEqual(['dagger'])
@@ -12,9 +12,48 @@ describe('defaultSave', () => {
 })
 
 describe('migrate', () => {
-  it('passes a well-formed v3 save through unchanged', () => {
+  it('passes a well-formed v4 save (uncreated character) through unchanged', () => {
     const save = defaultSave()
     expect(migrate(save)).toEqual(save)
+  })
+
+  it('re-derives a v4 character whose stored level drifted from its XP (idempotent load reconcile)', () => {
+    const drifted = {
+      ...defaultSave(),
+      character: {
+        name: 'Aldric',
+        class: 'fighter',
+        level: 1, // stale — 900 XP is level 3
+        xp: 900,
+        abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 13, cha: 8 },
+        pendingAsi: 0,
+      },
+    }
+    expect(migrate(drifted).character?.level).toBe(3)
+    // idempotent: migrating the already-reconciled save changes nothing
+    expect(migrate(migrate(drifted))).toEqual(migrate(drifted))
+  })
+
+  it('migrates a v3 save: re-derives the frozen level from XP and banks the ASI points it earned', () => {
+    const v3 = {
+      ...defaultSave(),
+      version: 3,
+      character: {
+        name: 'Aldric',
+        class: 'fighter',
+        level: 1, // frozen by the pre-v4 bug (award never advanced it)
+        xp: 2700, // level 4 — an ASI level
+        abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 13, cha: 8 },
+        pendingAsi: 0, // never banked, because the plumbing was dead
+      },
+    }
+
+    const migrated = migrate(v3)
+
+    expect(migrated.version).toBe(4)
+    expect(migrated.character?.level).toBe(4)
+    expect(migrated.character?.pendingAsi).toBe(2) // the level-4 ASI, finally granted
+    expect(migrated.character?.xp).toBe(2700) // untouched
   })
 
   it('migrates a v2 save: keeps coins/unlocks/defeats/stats, drops skillTree, nulls the character', () => {
@@ -31,7 +70,7 @@ describe('migrate', () => {
 
     const migrated = migrate(v2)
 
-    expect(migrated.version).toBe(3)
+    expect(migrated.version).toBe(4)
     expect(migrated.character).toBeNull()
     expect(migrated.coins).toBe(42)
     expect(migrated.highestUnlockedTier).toBe(5)
@@ -41,7 +80,7 @@ describe('migrate', () => {
     expect('xp' in migrated).toBe(false)
   })
 
-  it('a v2 blob round-trips to a playable v3 save (has a starting weapon and empty inventory)', () => {
+  it('a v2 blob round-trips to a playable v4 save (has a starting weapon and empty inventory)', () => {
     const v2 = {
       version: 2,
       coins: 10,
@@ -60,7 +99,7 @@ describe('migrate', () => {
     expect(migrated.inventory.consumables['potion-healing']).toBe(0)
   })
 
-  it('falls back to a fresh v3 save for anything older or unrecognized', () => {
+  it('falls back to a fresh v4 save for anything older or unrecognized', () => {
     expect(migrate(undefined)).toEqual(defaultSave())
     expect(migrate(null)).toEqual(defaultSave())
     expect(migrate({})).toEqual(defaultSave())

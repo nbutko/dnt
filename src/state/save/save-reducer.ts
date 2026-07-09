@@ -1,9 +1,8 @@
-import { ASI_LEVELS } from '../../config/leveling'
 import type { Ability, AbilityScores, Character } from '../../domain/character'
 import type { ItemId } from '../../domain/items'
 import type { SaveData } from '../../domain/save'
 import type { WeaponId } from '../../domain/weapons'
-import { ASI_POINTS_PER_LEVEL, applyAsi as applyValidatedAsi, levelForXp } from '../../engine/character/leveling'
+import { applyAsi as applyValidatedAsi, applyXpGain } from '../../engine/character/leveling'
 
 export type SaveAction =
   | { type: 'award'; coins: number; xp: number }
@@ -85,10 +84,12 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
     case 'award': {
       // Coins are always a save fact; xp only has somewhere to go once a
       // character exists (pre-creation battles can't happen in the real flow
-      // — Story 4 gates the map behind creation).
-      const character = state.character
-        ? { ...state.character, xp: state.character.xp + action.xp }
-        : state.character
+      // — Story 4 gates the map behind creation). This is the ONLY live XP
+      // path (ui/dungeon/DungeonScreen.tsx), so it must level up exactly like
+      // gainXp — hence the shared applyXpGain, which re-derives level and banks
+      // ASI points (the M5 bug: this case used to bump xp alone, freezing every
+      // character at level 1 no matter how much XP it earned).
+      const character = state.character ? applyXpGain(state.character, action.xp) : state.character
       return { ...state, coins: state.coins + action.coins, character }
     }
 
@@ -97,26 +98,11 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
 
     case 'gainXp': {
       if (!state.character) return state
-      const xp = state.character.xp + action.amount
-      const oldLevel = levelForXp(state.character.xp)
-      const level = levelForXp(xp)
-      // Every ASI level strictly between the old and new level banks
-      // ASI_POINTS_PER_LEVEL points — a multi-level jump (a big boss/chest
-      // payout) can cross more than one at once, each its own 2-point grant
-      // (bug fix: this used to bank one raw unit per level crossed instead of
-      // per-level points, so a character could never actually spend a full
-      // ASI — engine/character/leveling.ts's applyAsi and domain/character.ts's
-      // pendingAsi both already assumed points).
-      const asiLevelsGained = ASI_LEVELS.filter((asiLevel) => asiLevel > oldLevel && asiLevel <= level).length
-      return {
-        ...state,
-        character: {
-          ...state.character,
-          xp,
-          level,
-          pendingAsi: state.character.pendingAsi + asiLevelsGained * ASI_POINTS_PER_LEVEL,
-        },
-      }
+      // Shares award's level-up logic (engine/character/leveling.ts's
+      // applyXpGain): re-derives level and banks a full 2-point ASI grant per
+      // ASI level crossed, so a multi-level jump (a big boss/chest payout)
+      // banks each level's points separately.
+      return { ...state, character: applyXpGain(state.character, action.amount) }
     }
 
     case 'applyAsi': {

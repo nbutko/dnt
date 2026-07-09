@@ -13,7 +13,7 @@
 
 import { getClass, type ClassFeature } from '../../config/classes'
 import { ASI_LEVELS, EARLY_LEVEL_HP_BONUS, HP_SCALE, PROFICIENCY_BY_LEVEL, XP_THRESHOLDS } from '../../config/leveling'
-import { abilityMod, type AbilityScores, type CharacterClass } from '../../domain/character'
+import { abilityMod, type AbilityScores, type Character, type CharacterClass } from '../../domain/character'
 
 // The knobs every function below reads, bundled so a caller (or a test) can
 // swap in a different curve without this module importing config/leveling.ts
@@ -124,6 +124,43 @@ export const grantsForLevel = (
 // claim at once (so a character sitting on two unspent ASIs still spends them
 // as two separate 2-point decisions, matching how 5e actually plays it).
 export const ASI_POINTS_PER_LEVEL = 2
+
+// The one place XP actually becomes a level-up. Adds `amount` to the
+// character's XP, re-derives its level from the threshold table, and banks a
+// full ASI grant (ASI_POINTS_PER_LEVEL) for every ASI level newly crossed — a
+// multi-level jump (a boss/chest payout) can cross more than one at once, each
+// its own grant. state/save/save-reducer.ts's `award` and `gainXp` are the
+// only callers; centralizing it here is what makes every XP source level
+// identically (the bug it fixes: `award`, the ONLY live XP path, used to bump
+// xp without ever touching level or pendingAsi).
+export const applyXpGain = (
+  character: Character,
+  amount: number,
+  cfg: LevelingConfig = DEFAULT_LEVELING_CONFIG,
+): Character => {
+  const xp = character.xp + amount
+  const oldLevel = levelForXp(character.xp, cfg)
+  const level = levelForXp(xp, cfg)
+  const asiLevelsCrossed = cfg.asiLevels.filter((asiLevel) => asiLevel > oldLevel && asiLevel <= level).length
+  return { ...character, xp, level, pendingAsi: character.pendingAsi + asiLevelsCrossed * ASI_POINTS_PER_LEVEL }
+}
+
+// Idempotently re-derives a character's stored `level` from its XP total — the
+// derive-don't-store rule applied on load (domain/save.ts's migrate), so a
+// level frozen by an older bug (or shifted by an XP-curve retune) heals the
+// next time the save is read, no version bump required.
+export const reconcileLevel = (character: Character, cfg: LevelingConfig = DEFAULT_LEVELING_CONFIG): Character => {
+  const level = levelForXp(character.xp, cfg)
+  return level === character.level ? character : { ...character, level }
+}
+
+// Total ASI points a character has *earned* by reaching `level` — every ASI
+// level at or below it grants ASI_POINTS_PER_LEVEL. Used once, by the v3->v4
+// save migration, to bank the points the old dead plumbing never granted;
+// because pendingAsi was unreachable before v4, nothing was ever spent, so
+// earned == owed there.
+export const earnedAsiPoints = (level: number, cfg: LevelingConfig = DEFAULT_LEVELING_CONFIG): number =>
+  cfg.asiLevels.filter((asiLevel) => asiLevel <= level).length * ASI_POINTS_PER_LEVEL
 
 // Validates the spend is <= ASI_POINTS_PER_LEVEL total and returns a NEW
 // ability-scores object; never mutates the one it's given. Throws on an

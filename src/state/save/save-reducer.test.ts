@@ -38,6 +38,14 @@ describe('saveReducer', () => {
     expect(s2.character?.xp).toBe(7)
   })
 
+  it('award levels up and banks ASI just like gainXp (the M5 fix: it is the only live XP path)', () => {
+    const start = { ...defaultSave(), character: makeCharacter({ xp: 2600, level: 3 }) }
+    const next = saveReducer(start, award(5, 200)) // 2800 XP crosses the 2700 threshold into level 4 (an ASI level)
+    expect(next.coins).toBe(5)
+    expect(next.character?.level).toBe(4)
+    expect(next.character?.pendingAsi).toBe(2)
+  })
+
   it('createCharacter sets the character from null', () => {
     const hero = makeCharacter()
     const next = saveReducer(defaultSave(), createCharacter(hero))

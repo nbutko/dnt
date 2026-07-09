@@ -1,0 +1,13 @@
+{
+  "name": "Dungeons & Typing",
+  "short_name": "D&T",
+  "description": "A monster-battle typing trainer — race the monster's clock, land the hit.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#140b07",
+  "theme_color": "#140b07",
+  "icons": [
+    { "src": "favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" }
+  ]
+}

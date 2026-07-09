@@ -23,7 +23,9 @@ module.exports = {
   },
   // content-pipeline/ is a standalone offline content-generation toolchain (tsx
   // scripts, not app code) — outside the app/node tsconfigs, so it's not typed-linted here.
-  ignorePatterns: ['dist', 'node_modules', '*.cjs', 'vite.config.ts', 'content-pipeline'],
+  // public/sw.js is a hand-written service worker (browser SW-globals, not in any
+  // tsconfig) — likewise outside the typed app graph.
+  ignorePatterns: ['dist', 'node_modules', '*.cjs', 'vite.config.ts', 'content-pipeline', 'public/sw.js'],
   rules: {
     // No `function` keyword: arrow functions only (object method shorthand is unaffected).
     'no-restricted-syntax': [

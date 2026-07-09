@@ -8,3 +8,12 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Register the service worker (public/sw.js) for offline play + installability
+// (M4). Production only — no SW in dev, so `npm run dev` keeps hot-reloading
+// cleanly. BASE_URL is `/dnt/` in the build, so the worker's scope is the app.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
+  })
+}

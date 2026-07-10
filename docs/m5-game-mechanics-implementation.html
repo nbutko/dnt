@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M5 Game-Mechanics Implementation Plan — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M5 Game-Mechanics Implementation Plan</h1>
+  <p class="tagline">The story-by-story build for everything the
+  <a href="m5-game-mechanics-audit.html">game-mechanics audit</a> found — bugs first, then balance, then
+  the fun.</p>
+</header>
+<main>
+
+<h2>How to read this</h2>
+<p>
+  Every story below traces back to a specific audit item (the <strong>B#</strong> bugs from the audit's
+  Part IV ledger, or its Part V recommendation numbers). Same working rules as every other implementation
+  plan: <strong>one story = one commit, check-in between, never batch stories</strong>; <code>npm run
+  presubmit</code> clean before any code commit; engine/data changes proven headlessly (tests +
+  <code>engine/sim/</code>) before the UI that consumes them; UI verified visually against
+  <code>docs/design/</code>, not just by tests. Stories are ordered so each phase leaves the game strictly
+  better and shippable — stop anywhere.
+</p>
+<table>
+  <tr><th>Phase</th><th>Stories</th><th>What the player gets</th></tr>
+  <tr><td>A — Live bug fixes</td><td>1–8</td><td>The two reported bugs dead, plus every other ledger item; nothing new, everything solid</td></tr>
+  <tr><td>B — Balance &amp; the first hour</td><td>9–12</td><td>Kinder start, honest d20, no "one right ASI," less grind</td></tr>
+  <tr><td>C — Reasons to come back</td><td>13–16</td><td>Bestiary, hall of records, quest board, a paid inn rest</td></tr>
+  <tr><td>D — The D&amp;D deepening</td><td>17–19</td><td>Story served in order, chunked boss passages, Wizard spells + saving throws</td></tr>
+</table>
+<div class="callout decision">
+  The audit's recommendation #9 (length-as-dice-count damage rework) is deliberately <strong>not</strong>
+  scheduled. It's the deepest change on the list and both cheaper alternatives land first — Story 10 fixes
+  the band inversion and Story 12's parity pass retunes magnitudes. Decide whether #9 is still wanted after
+  playing with those; if yes, it gets its own scope doc.
+</div>
+
+<h2>Phase A — Live bug fixes (ledger B1–B15)</h2>
+
+<div class="milestone">
+  <h3>Story 1 — The typing surface never goes dead <span class="tag flag">B2 + B3 · reported</span></h3>
+  <p>Focus loss is the "keys stop working" bug; the unclamped <code>dt</code> is its cousin (a
+  backgrounded tab returns to a pair of instantly-expired clocks, which also reads as "the game broke").</p>
+  <ul>
+    <li><code>ui/battle/PlayerPrompt.tsx</code>: wrap the prompt area's container with
+    <code>onMouseDown={(e) =&gt; { e.preventDefault(); inputRef.current?.focus() }}</code> — any click inside
+    the battle panel re-arms typing instead of stealing focus. Add an <code>onBlur</code> on the hidden input
+    that refocuses (via <code>requestAnimationFrame</code>, so the loss-screen Continue and modals can still
+    take focus when the fight is over/paused: only refocus while <code>!disabled &amp;&amp; !paused</code>).</li>
+    <li>Give the whole <em>battle screen</em> the same courtesy: a click on the monster panel or the on-screen
+    keyboard (the biggest accidental click target) must also route focus back — one handler on the Frame,
+    not one per panel.</li>
+    <li><code>ui/hooks/useGameLoop.ts</code>: clamp the computed frame delta —
+    <code>const dt = Math.min(time - last, MAX_FRAME_DT_MS)</code> with <code>MAX_FRAME_DT_MS = 250</code>.
+    A backgrounded tab then resumes having "lost" at most a quarter-second of clock instead of the whole
+    absence. (The battle deliberately does not simulate while hidden — hearts/HP must not drain unattended.)</li>
+    <li>Tests: jsdom — blur the input mid-battle, assert focus returns; unit — a 60,000ms frame ticks the
+    engine 250ms.</li>
+  </ul>
+  <p><strong>Done when:</strong> mid-fight, click every visible element then type — input lands; switch tabs
+  10s and return — both countdowns resume where they left off. Verify on the real Chromebook.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 2 — Wrapped lines never start with a space <span class="tag flag">B1 · reported</span></h3>
+  <ul>
+    <li><code>ui/battle/TypedProgress.tsx</code> (<code>wrapPrompt</code>): when a <em>whitespace</em> token
+    doesn't fit the current line, append it to the just-flushed line's tail instead of seeding the next line
+    with it — the trailing space is invisible (each line renders <code>whiteSpace: 'pre'</code> inside an
+    <code>overflow-hidden</code> box), and the 1:1 char↔glyph index map is untouched. Word tokens keep the
+    existing flush-then-place behavior.</li>
+    <li>Check the caret-at-boundary rule still reads right: after the player types the (now line-tail) space,
+    the caret should appear at the start of the next line, before its first visible letter — adjust the
+    "caret belongs to the later line" test to the new split.</li>
+    <li>Unit tests on <code>wrapPrompt</code>: no line but the first may begin with whitespace, for a corpus
+    sample across tiers 5–14 and a range of <code>cols</code>; total concatenation is always exactly the
+    prompt.</li>
+  </ul>
+  <p><strong>Done when:</strong> a tier-12 passage at a narrow window shows every wrapped line flush-left,
+  and typing straight through a wrap never paints a phantom error. Visual check against
+  <code>docs/design/visual-spec.html</code>'s prompt styling.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 3 — A chest is not a fight <span class="tag flag">B8 + B10</span></h3>
+  <ul>
+    <li><code>state/dungeon-run/dungeon-run-reducer.ts</code>: split the real-chest resolution out of
+    <code>resolveFight</code> — a new <code>resolveChest(nodeId)</code> action clears the node <em>without</em>
+    running <code>expireNextFightBuffs</code>. <code>DungeonScreen</code>'s real-chest path dispatches it;
+    every actual fight keeps the existing action (buffs burning on a lost fight stays intended behavior).</li>
+    <li><code>ui/dungeon/Bag.tsx</code>: disable the Use button on <code>restore-hearts</code> items while
+    <code>heartsRemaining === maxHearts</code> (tooltip-style hint text: "Hearts are full"), so a mis-tap
+    can't vaporize a potion.</li>
+    <li>Reducer tests: next-fight buff survives a chest claim; Oil of Sharpness keeps all 3 charges through
+    a chest; healing at full hearts is unreachable from the UI (and the reducer still clamps if reached).</li>
+  </ul>
+  <p><strong>Done when:</strong> buy Bull's Strength, open the real chest, then fight — the flash shows the
+  buffed hit. </p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 4 — Retrying a fight re-rolls the d20 <span class="tag flag">B5</span></h3>
+  <ul>
+    <li><code>state/dungeon-run/dungeon-run-reducer.ts</code>: track <code>attemptsByNode:
+    Record&lt;nodeId, number&gt;</code>, incremented by <code>resolveFight('lose', …)</code> (ephemeral run
+    state — dies with the run, like everything else there).</li>
+    <li><code>ui/dungeon/DungeonScreen.tsx</code>: fold the attempt count into the encounter seed —
+    <code>seedFromString(run.graph.seed, revealId, ENCOUNTER_ROLL_SEED_SALT + attempts)</code> — so each
+    <em>commit</em> is a fresh, still-deterministic roll (m3-scope: "rolled the moment you commit"), while
+    within one reveal the roll stays frozen exactly as today.</li>
+    <li>Test: same node, lose, re-select → different rng stream; same attempt re-rendered → identical roll.</li>
+  </ul>
+  <p><strong>Done when:</strong> at 2+ hearts, fumbling a node and retrying can roll anything — a nat-1 is a
+  bad roll, not a cursed node.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 5 — Gear drops the player can actually use <span class="tag flag">B12</span></h3>
+  <ul>
+    <li><code>engine/progression/rewards.ts</code>: <code>rewardForBossGear(tier, rng, ownedWeaponIds)</code>
+    — filter the top bracket to unowned; if empty, widen to any unowned weapon ≤ tier; if <em>everything</em>
+    is owned, return a coin hoard instead (reuse <code>rewardForChest</code>'s coin math × a "gear value"
+    multiplier so the payout doesn't feel like a snub). Same treatment for <code>rollChestLoot</code>'s
+    weapon branch — re-roll the branch into coins when the pool is exhausted.</li>
+    <li>Optional, same story since it's the same function: bias the boss pool toward the character's
+    governing ability line (a Fighter shouldn't pull the wand when a STR weapon is available at the
+    bracket) — one <code>weapon.ability</code> preference filter with fallback, not a hard rule.</li>
+    <li><code>ui/dungeon/RewardModal.tsx</code>: the coin-fallback shows as coins ("The hoard!"), never as a
+    phantom weapon line.</li>
+    <li>Tests: dedup, fallback ladder, and the deterministic single-weapon brackets (tier 4 → Wand +1) now
+    respecting ownership.</li>
+  </ul>
+  <p><strong>Done when:</strong> re-clearing a boss with a full armory pays coins, and a Fighter's tier-4
+  boss drop is no longer always a wand.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 6 — Time budgets stop buying damage <span class="tag flag">B13</span></h3>
+  <p>WIS, Potion of Speed, and the Greataxe tax should move the <em>clock</em>, never the <em>hit</em> —
+  every doc frames them as tempo levers, and <code>speedBonus</code> currently leaks them into offense.</p>
+  <ul>
+    <li><code>engine/battle.ts</code>: keep two numbers per prompt — <code>expireLimitMs</code> (base +
+    <code>timeBudgetBonusMs</code>, drives the countdown and expiry, unchanged) and
+    <code>scoringLimitMs</code> (the un-bonused base), passed as <code>computeDamage</code>'s
+    <code>timeLimitMs</code>. <code>speedBonus</code> then measures the same typing against the same
+    yardstick for everyone. Clamp <code>usedFraction</code> at 1 already handles the "used more than the
+    scoring limit" case (a slow-but-in-budget WIS build just gets 1×, never a penalty).</li>
+    <li><code>engine/sim/</code>: re-run the retune sweep; expected shift is small (speedBonus was near its
+    2× cap for fast typists anyway) but the <em>behind</em> corner must stay at its Story-2-retune win
+    rates — that corner leans on WIS. If it regresses, compensate in <code>wisTimeBudgetMsPerMod</code>
+    (a values edit), not by reverting the decoupling.</li>
+    <li>Tests: same input trace with and without <code>timeBudgetBonusMs</code> deals identical damage;
+    Greataxe's tax shortens the clock but not the hit.</li>
+  </ul>
+  <p><strong>Done when:</strong> sweep results are within tolerance of the committed baseline everywhere
+  except the intended stat semantics.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 7 — Nothing lost, nothing doubled <span class="tag flag">B4 + B11 + B6</span></h3>
+  <ul>
+    <li><code>state/save/save-storage.ts</code>: flush the debounced write on
+    <code>visibilitychange → hidden</code> and <code>pagehide</code> (register once at module init;
+    <code>flushPendingSave()</code> is already safe to call with nothing pending). Lid-slams stop eating the
+    last kill.</li>
+    <li><code>ui/battle/BattleScreen.tsx</code>: guard the loss path with the same once-only ref the win path
+    already has; <code>ui/dungeon/DungeonScreen.tsx</code>'s <code>handleRewardConfirm</code> null-checks and
+    clears <code>reward</code> before dispatching, so a double-click can't resolve twice (two hearts for one
+    defeat).</li>
+    <li><code>ui/dungeon/DungeonScreen.tsx</code>: the hearts HUD reads <code>run.maxHearts</code> (the cap
+    that actually clamps) instead of live <code>modifiers.maxHearts</code>; a mid-run level-up's new heart
+    arrives at the next Inn visit, which is also the fiction that makes sense.</li>
+    <li>Tests: reducer double-dispatch guard; storage flush on a simulated <code>pagehide</code>.</li>
+  </ul>
+  <p><strong>Done when:</strong> mashing Continue on a loss costs exactly one heart; killing the tab right
+  after a kill keeps the reward.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 8 — Ledger sweep-up: Shift, clamps, comment rot <span class="tag flag">B9 + B14 + B15 + doc rot</span></h3>
+  <ul>
+    <li><code>ui/battle/keyboard-highlights.ts</code>: when the next char's lookup has
+    <code>shift: true</code>, also highlight <code>ShiftLeft</code>/<code>ShiftRight</code> (both — teaching
+    opposite-hand Shift is a later refinement, noted not built). The M0 stub finally lights up; tiers 6+
+    serve capitals today.</li>
+    <li><code>state/battle-store.ts</code> (<code>intimidatedMonster</code>): cap the negative-CHA wpm
+    inflation symmetrically with the accuracy clamp (e.g. <code>Math.min(1.25, 1 - cut)</code>… ceiling as a
+    named constant) — the signed penalty stays, unbounded growth goes.</li>
+    <li><code>engine/character/modifiers.ts</code>: <code>Math.round</code> → <code>Math.floor</code> on the
+    INT encounter nudge (dormant today, wrong the day the magnitude goes fractional).</li>
+    <li>Comment/doc rot: fix <code>engine/damage.ts</code>'s crit comment (reasons from 5% while config
+    ships 0.1); fix <code>game-design.html</code>'s INT row + tierGatePenalty prose (still describes the
+    retired hard tier cap); note <code>reconcileLevel</code>'s ASI limitation (B7) in its doc comment as a
+    known, accepted gap — banking owed ASIs on threshold retunes is a migration-time decision, not silent
+    code.</li>
+  </ul>
+  <p><strong>Done when:</strong> typing <code>T</code> lights Shift + <code>t</code>; presubmit green;
+  the two stale docs read true.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<h2>Phase B — Balance &amp; the first hour</h2>
+
+<div class="milestone">
+  <h3>Story 9 — A survivable first session <span class="tag core">audit rec 1</span></h3>
+  <ul>
+    <li><code>config/leveling.ts</code> (new) <code>HEART_MILESTONES</code> table replacing
+    <code>modifiers.ts</code>'s hard-coded <code>1 + floor(level/5)</code>: start at <strong>2</strong>
+    hearts, +1 at levels 3, 6, 10, 15 (cap 6 — one above today's L20 cap, since parents will live at the
+    top). <code>heartsForLevel</code> reads the table; the placeholder comment finally pays off.</li>
+    <li><code>domain/save.ts</code> <code>defaultSave()</code>: one starter Potion of Healing in
+    <code>inventory.consumables</code> (and the v4→v5 migration grants it to existing saves… or skip the
+    grant and only seed fresh saves — decide at review; fresh-only avoids a version bump via the
+    tolerate-unknown path if the shape allows).</li>
+    <li><code>engine/character/pricing.ts</code> or the Shop path: consumable prices scale by the
+    <em>highest unlocked tier</em> via the existing <code>coinsForTier</code> growth (weapons already have
+    tiered prices) — the 15-coin heart refill stops being free at D9. Keep tier-1 prices exactly as today so
+    the early game doesn't get more expensive.</li>
+    <li>Sim: re-run the D1–D3 corner checks — on-track win rates should rise modestly (more attempts per
+    run), htk untouched (hearts don't change per-battle math).</li>
+  </ul>
+  <p><strong>Done when:</strong> a fresh character can lose twice in D1 without a wipe; the sweep's D1
+  anchors hold or improve.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 10 — Rolling high always hits harder <span class="tag core">audit finding 3 (band inversion)</span></h3>
+  <ul>
+    <li><code>config/combat.ts</code> (or a sibling <code>config/text-tiers.ts</code>): an authored,
+    monotonically increasing <code>damageFactorByTier: number[14]</code> — seeded from today's measured
+    per-tier average lengthFactors, then hand-raised at the inverted rungs (tiers 4 and 6) so the ladder
+    strictly climbs.</li>
+    <li><code>engine/damage.ts</code>: <code>lengthFactor(charCount, servedTier, combat)</code> becomes
+    tier-anchored — the tier factor is the center, and raw char count only wobbles ±10% around it within the
+    tier (so a long tier-7 line still beats a short one, but no tier ever undercuts the tier below).
+    <code>battle-store.ts</code> already knows the served tier; thread it through
+    <code>BattleConfig</code>.</li>
+    <li>Invariant test: for every dungeon's [low, mid, high] band, expected damage factor is non-decreasing
+    in the roll — the test that would have caught this.</li>
+    <li>Sim: full retune sweep. Monster HP was authored against the old hit distribution; expect small
+    drifts, re-nudge <code>damageFactorByTier</code> (values) rather than HP (content) where possible.
+    <strong>This is the pass's keystone re-measure — budget real time for it.</strong></li>
+  </ul>
+  <p><strong>Done when:</strong> in D2, a high-band fight out-damages a mid-band fight out-damages a fumble,
+  measurably, and the sweep's corner win rates hold.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 11 — Less treadmill in the XP curve <span class="tag core">audit finding 1</span></h3>
+  <ul>
+    <li><code>config/rewards.ts</code>: re-derive <code>normalPerDungeon</code> at ~65 normal-equivalents
+    per dungeon (≈1.4 full clears) instead of ~100, hand-nudged monotonic exactly as the M5 retune did.
+    Boss/mimic/chest multipliers unchanged.</li>
+    <li>Keep the leveling.test.ts monotonicity assertions; add one asserting the implied on-track level per
+    dungeon still lands within ±0.5 of the tuning doc's 1.3-levels-per-dungeon anchors (the anchors move
+    with the reward, not the thresholds — 5e's table stays sacred).</li>
+    <li>Note in the config header that the elite re-clear idea (audit finding 1's alternative) was
+    considered and deferred — revisit only if the kid still reports grind after this lands.</li>
+  </ul>
+  <p><strong>Done when:</strong> spreadsheet + sim agree a player who full-clears each dungeon ~1.5× stays
+  on-track.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 12 — No "one right ASI": the ability-parity pass <span class="tag core">audit finding 5</span></h3>
+  <ul>
+    <li><code>engine/sim/</code>: a new <code>asi-parity</code> sweep — for each ability, measure the
+    win-rate delta of +2 (one ASI) over the class baseline, per dungeon band (early/mid/late), for all four
+    classes. Report as a table; the target is every ability's delta within ~2× of the median, no ability
+    ever ≤ 0.</li>
+    <li>Tune <code>config/abilities.ts</code> against it. Expected moves (verify, don't assume):
+    diminishing-return or cap the CHA charm accuracy cut (it collapses high-accuracy late monsters);
+    revisit <code>strDamagePctPerMod</code>'s base — additive dice or post-scale flat damage so STR stops
+    being diluted by the big multipliers; check WIS post-Story-6 (decoupling already trims its hidden
+    offense).</li>
+    <li>Wizard: <em>do not</em> fix the class here with more numbers — Story 19 gives it spells. Record the
+    Wizard's parity numbers as the "before" baseline for that story.</li>
+    <li>Freeze the results into the config with the same "committed baseline, no drive-bys" header the
+    combat config carries.</li>
+  </ul>
+  <p><strong>Done when:</strong> the parity table is in the story's report, every ability pays, and the
+  audit's "+5 WIS/+5 CHA wins everywhere" smoking gun no longer reproduces.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<h2>Phase C — Reasons to come back</h2>
+
+<div class="milestone">
+  <h3>Story 13 — The Bestiary <span class="tag playable">audit rec 3 · biggest fun-per-line</span></h3>
+  <ul>
+    <li><code>save.monstersDefeated</code> already records first kills — render it. A new Inn tab (or map
+    hub card) listing every monster in ladder order: defeated ones show name, habitat, CR (from
+    <code>docs/monster-manual.json</code>'s canonical data, shipped into <code>content/</code>), flavor
+    line, and its typing stats reframed as a stat block ("Speed 25 wpm · Care 70% · Wits 1.0s"); undefeated
+    ones show a silhouette row ("???  — Forest").</li>
+    <li>Completion counter per habitat + overall ("Grassland 4/5 · 23/70 discovered") — the meter that moves
+    every session.</li>
+    <li>Optional polish, same story: a "New page!" toast on a first kill (the reward modal already knows).</li>
+    <li>Tests: derivation from <code>monstersDefeated</code>; no monster leaks its name before first
+    defeat (mimic/boss reveal rules already set this precedent).</li>
+  </ul>
+  <p><strong>Done when:</strong> he can open the book and count what's left; visual check against the design
+  tokens (it's a new screen — match <code>docs/design/</code>).</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 14 — Hall of records <span class="tag playable">audit rec 6 (parents-as-endgame)</span></h3>
+  <ul>
+    <li>Wire the dead stat first: <code>stats.battlesLost</code> written by the loss path (the ledger's
+    perennial CLAUDE.md gotcha finally closes).</li>
+    <li>Extend <code>SaveData.stats</code> (migration: additive, defaulted) with the cheap counters the
+    records panel wants: <code>flawlessWins</code> (no miss, no expire — battle.ts already knows),
+    <code>bossesFelled</code>, <code>dungeonsCleared100</code> (all nodes cleared at run end — the run
+    reducer knows), per-dungeon best WPM.</li>
+    <li>The panel itself: an Inn tab — best WPM (overall + per dungeon), battles won/lost, flawless count,
+    dungeons cleared / 100%-ed, bosses felled. Big legible numbers; this is the screen a family reads out
+    loud across the room (each player is on their own machine/browser — no profiles needed, decided
+    2026-07-10).</li>
+    <li>Tier cards (<code>ui/map/TierCard.tsx</code>): the one-line audience signal for D9–11 ("for
+    grown-up typists") per the audit's Part II decision.</li>
+  </ul>
+  <p><strong>Done when:</strong> two machines side by side can settle "who's ahead" in one glance.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 15 — Quest board + a real long rest <span class="tag playable">audit rec 7</span></h3>
+  <ul>
+    <li>Three daily-ish quests generated from a seeded template pool ("Defeat 3 Forest monsters," "Win a
+    fight without a single miss," "Open the real chest," "Land a crit on a boss") — stored on the save with
+    their progress counters; refresh on completion-of-all or a real-world day rollover (a stored date
+    string; no clock trickery needed).</li>
+    <li>Payouts: coins <em>and</em> XP (quest XP is the one sanctioned off-ladder XP trickle — small, so it
+    softens a plateau without breaking the dungeon-indexed pacing).</li>
+    <li>The Inn's "Take a long rest" stops being a no-op (<code>save-reducer.ts</code>'s documented dangling
+    hook): it costs a token, tier-scaled coin fee and becomes the quest board's refresh point + where the
+    mid-run-earned heart (Story 7) arrives. Flavor: paying for your room at the inn is the most D&amp;D
+    transaction there is.</li>
+    <li>Accuracy quests give the "flawless" counter from Story 14 its second consumer — the axis the damage
+    formula ignores gets its reward loop here.</li>
+  </ul>
+  <p><strong>Done when:</strong> a session has a shape: check the board, pick a dungeon, cash in at the
+  Inn.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 16 — Top-shelf coin sinks <span class="tag playable">audit finding 9</span></h3>
+  <ul>
+    <li>Three permanents priced for parent-tier income (config data, no new systems): a <strong>+3 weapon
+    line</strong> capstone per ability line (D10–11 prices, ~1,500–2,500 coins); a <strong>Bag of
+    Holding</strong> (+1 simultaneous active-buff capacity — the buff strip already renders a list); a
+    <strong>Cloak of Vitality</strong> (+1 max heart, stacking with milestones under the Story 9 cap).</li>
+    <li>Permanents live on the save as owned flags read by <code>resolveModifiers</code> — the seam grows,
+    nothing routes around it.</li>
+    <li>No new catalog breadth beyond these — the audit's explicit "resist inventing a bigger catalog."</li>
+  </ul>
+  <p><strong>Done when:</strong> a maxed-armory parent still has a purchase worth saving for.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<h2>Phase D — The D&amp;D deepening</h2>
+
+<div class="milestone">
+  <h3>Story 17 — The campaign reads in order <span class="tag core">audit finding 7</span></h3>
+  <ul>
+    <li>Ship-time: stop collapsing sections — <code>content-pipeline/ship.ts</code> keys the library
+    dungeon → <em>section</em> → tier → lines (the pipeline authored 5-section campaigns; the collapse is
+    where the story got shredded). Bundle size is unchanged, it's the same lines re-grouped.</li>
+    <li>Run-time: map graph position → section (early paths §1–2, waypoint §2, late paths §3–4, approach §4,
+    boss §5 — the generator already knows each node's segment). <code>FightEncounter</code> carries
+    <code>{dungeon, section}</code> (the plumbing gap the tuning doc flagged);
+    <code>makePromptSource</code> becomes <em>sequential per section</em> (ordered lines, no repeats,
+    wrap-around) instead of random-sampled.</li>
+    <li>Fallback rules unchanged (off-theme/global pools stay random — order only matters inside a themed
+    section).</li>
+    <li>Tests: a full simulated run's served lines, concatenated, read §1→§5 in authored order.</li>
+  </ul>
+  <p><strong>Done when:</strong> playing a dungeon start-to-boss and reading only what you typed tells the
+  section story in order, finale at the boss.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 18 — Boss passages become set pieces <span class="tag core">audit finding 6</span></h3>
+  <ul>
+    <li>Tiers ≥ 10 (the passage tiers): serve the passage as a <em>script</em> of sentence-chunks — split at
+    sentence boundaries at ship time (hand-checked for the tier-13/14 monsters of the moment), each chunk one
+    attack with its own clock, served in order (Story 17's sequential source makes this natural). The
+    all-or-nothing rule survives at the chunk level — exact match per sentence — but one typo costs a
+    sentence, not twelve minutes.</li>
+    <li>Damage: each chunk rolls with its own tier factor (Story 10) — net damage over the passage lands
+    where the sim's HP authoring expects; re-run the boss rows of the sweep to confirm the 6/5/4/3-prompt
+    boss curve translates.</li>
+    <li>UI: TypedProgress already handles the display; the between-chunk beat is the existing next-prompt
+    flow. No new component.</li>
+    <li>The monster's own passage chunks the same way (its time limits are per-prompt already).</li>
+  </ul>
+  <p><strong>Done when:</strong> a T12+ boss fight is a multi-round epic a parent finishes tired-but-fairly,
+  and one slip near the end costs one sentence.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<div class="milestone">
+  <h3>Story 19 — Spells &amp; saving throws <span class="tag core">audit finding 8 · fixes the Wizard</span></h3>
+  <p>The biggest story here — treat its first task as a mini-scope to review before building.</p>
+  <ul>
+    <li><strong>Scope note first</strong> (half a page in this doc or its own file): the spell list (3–4 to
+    start — Magic Missile: auto-damage; Shield: negate the next monster hit; Fireball: next hit rolls extra
+    dice; Guidance-as-cantrip is already an item), slots-per-dungeon by level, and the exact typed-incantation
+    flow: pick the spell in the <em>encounter modal</em> (window ②, no mid-typing input), its verbal
+    component is prepended to the fight's first prompt; type the whole line clean → the spell fires with the
+    hit. A miss fizzles the slot — dramatic, fair, very D&amp;D.</li>
+    <li>Wizard gets slots natively (this is the class fix — Story 12's parity table is the before/after
+    evidence); other classes can find single-use scrolls in chests (consumable machinery reused).</li>
+    <li><strong>Saving throws</strong>: each boss (bosses only, to start) gets one signature move keyed to an
+    existing stat window — when it fires (first time boss HP crosses 50%, say), an auto-rolled CON or DEX
+    save shows in a flash + brief banner (advantage/items apply); success halves the effect (Medusa: lose
+    3s of time budget this prompt; Kraken: next player hit −25%). Resolution is window ③ — automatic,
+    a flash, never input.</li>
+    <li>Engine first, headless: slot accounting, incantation-prefix prompt source, save-roll resolution —
+    all pure; UI after.</li>
+  </ul>
+  <p><strong>Done when:</strong> the Wizard's parity delta (Story 12 baseline) closes to the pack, and the
+  kid can explain what a saving throw is because he's watched himself make one.</p>
+  <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
+</div>
+
+<h2>Explicitly deferred (decided, not forgotten)</h2>
+<ul>
+  <li><strong>Length-as-dice-count damage rework</strong> (audit rec 9) — revisit after Stories 10 + 18; if
+  the multiplied math still feels illegible to the kid, scope it properly then.</li>
+  <li><strong>Elite re-clears / hard mode</strong> (audit finding 1 alternative) — only if grind reports
+  survive Story 11.</li>
+  <li><strong>Save-slot profiles</strong> — non-issue by decision (2026-07-10): each player uses their own
+  machine or browser profile.</li>
+  <li><strong>D3–D6 content stretch</strong> (more rosters/variants for the kid's home tiers) — a content
+  pipeline batch, schedule alongside whichever Phase C/D story lands first; it has no code
+  dependencies.</li>
+  <li><strong>Party/companions, conditions beyond boss moves, opposite-hand Shift teaching, rare
+  mimic false-positives</strong> — all noted in the audit; none scheduled.</li>
+</ul>
+
+<div class="callout open">
+  Standing rule from the audit, worth repeating at the top of every phase: the sim is the regression
+  harness, the kid is the judge. Every "Done when" above that cites the sweep still ends with watching him
+  (or a parent, for D9–11 stories) actually play it.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a> · Plan drafted 2026-07-10 against the
+<a href="m5-game-mechanics-audit.html">M5 game-mechanics audit</a>.</footer>
+</body>
+</html>

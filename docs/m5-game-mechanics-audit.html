@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M5 Game-Mechanics Audit — Dungeons & Typing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>M5 Game-Mechanics Audit</h1>
+  <p class="tagline">An honest structural review: where the game delivers on "accidentally learn D&amp;D while
+  learning to type," and where it will hit a wall.</p>
+</header>
+<main>
+
+<h2>What this is</h2>
+<p>
+  A no-punches-pulled audit of the game's mechanics as they exist after the M5 playtest-fix batch
+  (2026-07-09), written against the design docs (<a href="game-design.html">game design</a>,
+  <a href="content-plan-v2.html">content plan v2</a>, <a href="content-plan-v2-tuning.html">the tuning
+  pass</a>, the M2/M3 scope and implementation docs including their playtest logs) and the shipped numbers in
+  <code>src/config/</code>, <code>src/engine/</code>, and <code>src/content/</code>. Every claim below cites
+  a file or a doc; the computed numbers use the committed config values as of this writing.
+</p>
+<p>
+  The brief it audits against is the project's own double promise: <strong>(a)</strong> be a typing trainer
+  that stays fun for one specific 10-year-old over a long horizon, and <strong>(b)</strong> be true enough to
+  D&amp;D — in lore <em>and</em> mechanics — that playing it quietly teaches the real game. Those two goals
+  mostly reinforce each other here, but where they fight, this doc says so plainly.
+</p>
+
+<h2>The verdict in three sentences</h2>
+<p>
+  The core invention — two typists racing independent clocks, with a visible, fallible monster typist — is
+  genuinely excellent and better than anything in commercial typing tutors; the D&amp;D skeleton grafted onto
+  it (abilities, the encounter d20, real 5e leveling, 4d6-drop-lowest creation, real Monster Manual names and
+  CRs) is the right skeleton. The structural risk is that <strong>every single progression system — XP,
+  coins, gear, content, story — is chained to one ladder (dungeon tier), and that ladder is chained to raw
+  WPM, which for a real 10-year-old grows on a timescale of months-to-years with long plateaus</strong>; when
+  his WPM plateaus, every meter in the game stops moving at once, and the only thing the game offers during a
+  plateau is replaying the same dungeon. The second-order problem is legibility: the D&amp;D-visible numbers
+  (the d8, the +3) are dwarfed by hidden multipliers (length ×17, speed ×2), so the dice he's supposed to be
+  learning from are, today, decoration on a formula he can't see.
+</p>
+
+<h2>Part I — What's genuinely working. Keep these.</h2>
+<table>
+  <tr><th>System</th><th>Why it's right</th></tr>
+  <tr><td><strong>Independent attack cycles</strong> (no shared rounds)</td><td>The single best design decision in the game. No dead time, pace emerges from real skill, and "the monster is racing you" is visceral. (<a href="game-design.html">game-design</a>)</td></tr>
+  <tr><td><strong>The monster typing simulation</strong> (wpm / accuracy / attention, visible typos and corrections)</td><td>Unique, characterful, and it makes monster difficulty <em>watchable</em> instead of a hidden stat block. The time-based attention stat is a subtle, smart piece of design. (<code>engine/monster-typing.ts</code>)</td></tr>
+  <tr><td><strong>The encounter d20</strong> (proficiency, advantage, fumble/inspired on naturals only)</td><td>Converted M2's hidden prompt randomness into a visible, buffable table moment — "come on, twenty!" is exactly the D&amp;D reflex the game should be training. Naturals-only for fumble/crit is correct 5e teaching. (<code>engine/dice/</code>)</td></tr>
+  <tr><td><strong>Character creation</strong> (4d6-drop-lowest with limited rerolls, not point-buy)</td><td>Table-authentic chaos with one guard rail. Correct call, correctly argued in the M3 scope.</td></tr>
+  <tr><td><strong>Real 5e furniture</strong>: XP thresholds (300/900/2700…), ASI at 4/8/12/16/19, proficiency +2→+6, crits roll the dice again, hit dice per class, real MM names/CRs/habitats</td><td>These are the "accidentally learning D&amp;D" payload. He will sit down at a real table someday and already know what an ASI is. Keeping the <em>real</em> threshold numbers (and tuning rewards to them, not the reverse — <code>config/rewards.ts</code>) was the right direction of fit.</td></tr>
+  <tr><td><strong>The no-mid-typing rule</strong> (everything resolves at the map, the encounter modal, or as a passive flash)</td><td>The governing constraint that keeps the game a typing game. Never compromise it.</td></tr>
+  <tr><td><strong>Mimic-sense trust design</strong> (a warning is always true; silence is ambiguous)</td><td>Exactly right for a kid. Also the game's only skill <em>check</em> — a seed worth growing (see Part IV).</td></tr>
+  <tr><td><strong>Per-kill reward banking</strong> (a wiped run keeps its XP/coins)</td><td>Respects a learner's time. The M2 "finding C" call was correct.</td></tr>
+  <tr><td><strong>The v2 text curriculum</strong> (one new demand per tier; home→left→right; complexity ceiling at T9, pure stamina after)</td><td>Pedagogically sound and better sequenced than most commercial tutors. The "right hand comes second so it can own Backspace" detail is lovely.</td></tr>
+  <tr><td><strong>The offline content pipeline</strong> (hidden per-dungeon campaign, cast of voiced characters, pre-rolled dice, no runtime generation)</td><td>The right way to get "real writing" at scale. Underexploited today — see Finding 7.</td></tr>
+  <tr><td><strong>The architecture seams</strong> (<code>resolveModifiers()</code>, config-corralled magnitudes, sim harnesses)</td><td>Every recommendation in this doc is a values-or-content change or one small mechanic <em>because</em> of this discipline. It's the reason an audit like this is even actionable.</td></tr>
+</table>
+
+<h2>Part II — The wall: three timescales pretending to be one</h2>
+<p>The game runs three progression clocks and currently welds them together:</p>
+<ul>
+  <li><strong>Typing skill</strong> (the real thing being trained) grows on a <em>calendar</em> timescale —
+  months per 10 WPM for a child, with long visible plateaus. It cannot be ground.</li>
+  <li><strong>Character progression</strong> (XP → levels → ASIs, coins → gear) grows on a <em>play-time</em>
+  timescale — kills per level. It can be ground.</li>
+  <li><strong>Content progression</strong> (dungeons, monsters, story, text tiers) is a fixed 11-rung ladder
+  consumed once.</li>
+</ul>
+<p>
+  The tuning pass deliberately pegged clock 2 to clock 3 (XP per kill is indexed by dungeon,
+  <code>config/rewards.ts</code>'s <code>normalPerDungeon</code> — farming D1 at 5 XP/kill can never
+  meaningfully out-level a D5 wall that wants 14,000+ XP), and clock 3 is pegged to clock 1 (each dungeon's
+  WPM band, <code>config/dungeon-tiers.ts</code>). That pegging was done for a good reason — it's what fixed
+  the "over-leveled slow typist beats everything" inversion — but its side effect is the wall:
+  <strong>when WPM plateaus, XP, gear, content, and story all freeze together.</strong> A D&amp;D campaign
+  survives a rough patch because the DM adapts and the story moves anyway; this game currently answers a
+  plateau with "replay the Desert again."
+</p>
+<div class="callout why">
+  Concrete math on the ladder's far end: the on-track anchors (content-plan-v2-tuning §4) put D8 at 54–65
+  WPM, D11 at 85–100 WPM, and the "ahead" corner at 118 WPM. 100 WPM is a top-percentile <em>adult</em>
+  typist. A motivated 10-year-old practicing for a year typically lands around 25–35 WPM; 60 WPM would make
+  him a standout <em>teen</em>. On any realistic horizon, dungeons 8–11 — text tiers 12–14, the Kraken, the
+  Tarrasque — are out of a kid's reach for years, while the tier range he'll actually live in
+  (D3–D6, 19–49 WPM) holds only four dungeons of content.
+</div>
+<div class="callout decision">
+  <strong>2026-07-10 — the top of the ladder belongs to the parents, on purpose.</strong> This audit
+  originally recommended compressing the WPM ladder so D11 was kid-reachable. The project owner's intent is
+  better: the game should be fun and genuinely hard <em>for parents too</em> — a kid who watches his dad
+  stall on the Frost Giant learns that struggling at his own tier is normal, and parents racing each other to
+  100% a dungeon is its own game. D9–11's adult-grade calibration stops being a bug the moment the game says
+  out loud who it's for. The recommendation below is rewritten to serve that intent instead.
+</div>
+<p><strong>Recommendations (this is the most important section of the doc):</strong></p>
+<ol>
+  <li><strong>Make the family the meta-game, explicitly.</strong> Each player brings their own machine or
+  browser profile (decided 2026-07-10 — no in-game save slots needed), so the competition is social and
+  over-the-shoulder; what the game must supply is something <em>worth comparing</em>. A
+  <strong>hall of records</strong> panel at the Inn — this save's best WPM, dungeons cleared, dungeons
+  100%-ed, bosses felled, flawless fights — gives every player a scoreboard to read out loud across the
+  room. That's the "compete to 100% it" loop for the adults and the "even dad has room to improve" display
+  for the kid — and it makes D9–11's brutal anchors a feature with an audience instead of dead content.
+  What still needs fixing for adults: the marathon prompt <em>structure</em> at tiers 12–14 (Finding 6's
+  all-or-nothing 1,800-char passages punish adults too — chunking keeps the difficulty in sustained speed,
+  not in one-typo-loses-twelve-minutes), and an in-game signal of intended audience per dungeon (even one
+  line on the tier card: "for grown-up typists").</li>
+  <li><strong>Stretch the middle.</strong> The kid will live at D3–D6 for a long time. That's where content
+  breadth (more monsters per roster, dungeon variants, story) pays off most — not at D10.</li>
+  <li><strong>Add progression that moves during a WPM plateau.</strong> Cheap, high-leverage options, all
+  D&amp;D-flavored:
+    <ul>
+      <li><strong>A bestiary.</strong> <code>save.monstersDefeated</code> already exists and is barely
+      surfaced. Render it as Monster Manual pages that unlock on first kill (name, CR, habitat, flavor,
+      typing stats revealed) — a collection meter that moves every session, and it teaches the actual Monster
+      Manual. Probably the highest motivation-per-line-of-code available.</li>
+      <li><strong>A quest board at the Inn.</strong> Three rotating micro-goals ("defeat 3 Forest monsters,"
+      "win a fight without a miss," "open the real chest") paying coins/XP. Gives a session a shape besides
+      "grind the ladder," and no-miss/accuracy quests reward the <em>quality</em> axis that damage math
+      currently ignores.</li>
+      <li><strong>Visible typing progress.</strong> The game trains WPM but never shows it improving —
+      <code>stats.bestWpm</code> is stored and near-invisible, per-battle WPM is computed and dropped, and
+      <code>stats.battlesLost</code> is still dead (CLAUDE.md gotcha). A one-panel "training record" at the
+      Inn (best WPM, recent trend, per-key trouble spots — the keyboard component already knows the keys)
+      would let him <em>see</em> the plateau bending, which is the actual antidote to plateau discouragement.</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>Part III — Findings</h2>
+
+<h3>Finding 1 — The on-track pace assumes ~2–3 full clears of every dungeon</h3>
+<p>
+  <code>config/rewards.ts</code> tunes a dungeon's normal kill so that <em>~100 of them</em> bridge to the
+  next dungeon's target level. A full clear is ~30 regulars (<code>config/dungeon-generation.ts</code>
+  targets 26–34) plus boss (10 normals of XP) and a mimic — ~45 normal-equivalents. So staying on-track means
+  full-clearing every dungeon roughly two-and-a-quarter times, or grinding well past "cleared" before the
+  next tier is survivable. Concretely: a fresh character needs 300 XP for level 2; a complete D1 clear pays
+  ~215 XP. <strong>The pacing model's answer to "what do I do next?" is usually "the same dungeon again,"
+  and dungeon regeneration reshuffles the graph but not the monsters, the text, or the stakes.</strong>
+</p>
+<p>
+  <strong>Verdict: revisit.</strong> Either cut the kills-per-dungeon unit to ~1.3–1.5 clears (a values edit
+  in <code>normalPerDungeon</code>, re-simmed), or make second clears different: a "hard mode" re-clear
+  (elite modifiers on regulars, +1 band on text, better payouts) would make the grind a choice with teeth
+  instead of a treadmill. The quest board (Part II) also converts repeat visits into goal-shaped sessions.
+</p>
+
+<h3>Finding 2 — The first hours are the game at its most punishing, and the last hours at its most trivial</h3>
+<p>Both ends of the difficulty curve are inverted from where a kid's tolerance actually is:</p>
+<ul>
+  <li><strong>Early:</strong> hearts come from level milestones — <code>1 + floor(level/5)</code>
+  (<code>engine/character/modifiers.ts</code>) — so levels 1–4, i.e. the entire first two-to-three dungeons
+  at on-track pace, run on <strong>one heart</strong>: a 7–10-fight gauntlet where a single loss wipes the
+  run. Meanwhile 3–5 chests per dungeon hold exactly one real chest, so the natural kid move (open
+  everything) is usually a surprise fight, and one mimic loss <em>is</em> the run. A fresh save has zero
+  coins, so the Potion-of-Healing escape hatch doesn't exist yet. This was flagged as a watch-item in the M2
+  implementation log ("1-heart fresh-save start") and never resolved — M3 moved hearts from Endurance nodes
+  to level milestones and reproduced the identical problem.</li>
+  <li><strong>Late:</strong> a Potion of Healing costs a flat 15 coins (<code>config/items.ts</code>) while
+  kill income scales with tier (<code>rewards.ts</code>: ~12/kill at D5, ~19 at D9) — by mid-game one kill
+  refunds a heart, hearts themselves have grown to 3–4, and the attrition/wipe threat that defines the early
+  game evaporates exactly when the player could finally enjoy pushing against it.</li>
+</ul>
+<p>
+  <strong>Verdict: revisit, with priority.</strong> Front-load the heart curve (e.g. 2 at level 1, +1 at 3,
+  6, 10, 15 — same cap, different shape; one array in <code>modifiers.ts</code>), start a new character with
+  one free Potion of Healing, and keep D1's mimic count at the generator floor. Price consumables by tier
+  (the <code>coinsForTier</code> helper already exists) so late-game hearts stay a real resource. D&amp;D
+  fidelity note: 5e is <em>most</em> lethal at level 1 and the M3 scope explicitly rejected that lethality
+  for per-battle HP — the hearts system should follow the same reasoning it used.
+</p>
+
+<h3>Finding 3 — Rolling high on the encounter d20 can be a damage <em>penalty</em>: the band/length inversion</h3>
+<p>
+  Damage scales with raw character count (<code>engine/damage.ts</code>'s <code>lengthFactor</code>), but the
+  v2 curriculum deliberately makes tiers 4 and 6 <em>shorter</em> than their neighbors (tier 4 = whole
+  keyboard in 3–5-word bursts; tier 6 = first caps/punctuation, short lines). Measured over the shipped
+  corpus (<code>content/text/library.json</code>), average length by tier is <strong>17, 27, 27, 19, 47, 42,
+  52…</strong> — non-monotonic at exactly the rungs a beginner plays. With the committed config
+  (<code>referenceLength</code> 12, cap 20) the per-tier average lengthFactor is:
+</p>
+<table>
+  <tr><th>Text tier</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>12</th><th>14</th></tr>
+  <tr><td>Avg chars</td><td>17</td><td>27</td><td>27</td><td>19</td><td>47</td><td>42</td><td>52</td><td>59</td><td>69</td><td>189</td><td>673</td><td>1790</td></tr>
+  <tr><td>Avg lengthFactor</td><td>1.41</td><td>2.17</td><td>2.17</td><td><strong>1.57</strong></td><td>3.53</td><td><strong>3.21</strong></td><td>3.84</td><td>4.25</td><td>4.80</td><td>9.30</td><td>15.13</td><td>17.84</td></tr>
+</table>
+<p>
+  In the Forest dungeon (D2, band tiers 2/3/4) the consequences are exactly backwards: the <em>high</em>
+  band serves tier-4 text at lengthFactor ≈ 1.57 — harder to type <em>and</em> ~28% less damage than the mid
+  band's 2.17. A natural-1 <em>fumble</em> (low band, tier 2, ×0.75 cap) computes to 2.17 × 0.75 ≈ 1.63 —
+  <strong>a fumble out-damages a high roll in D2.</strong> In D1, high band (tier 3) pays zero damage premium
+  over mid for strictly harder text. Tier 5→6 inverts again in D4/D5's bands. Proficiency growth
+  auto-pushes every character toward the high band, so leveling up walks the player into the anti-reward.
+  The sim's win-rate corners never caught this because it washes out over whole battles — but the kid
+  <em>feels</em> per-fight "I rolled great and hit like a noodle," and it quietly teaches "high rolls are
+  bad," the exact opposite of the d20 lesson the game wants to teach.
+</p>
+<p>
+  <strong>Verdict: fix now; this is the closest thing to a bug in this list.</strong> Cleanest fix: stop
+  deriving the tier reward from raw char count and give each text tier an authored
+  <code>damageFactor</code> in config (monotonic by construction, tuned once by the sim); keep raw length
+  only as a small within-tier wobble. Alternatively pad tiers 4 and 6 to their neighbors' lengths in the
+  content pipeline — but that fights the curriculum, which is right to keep new-key tiers short.
+</p>
+
+<h3>Finding 4 — The dice are decorative: the D&amp;D-visible math is ~5% of the damage</h3>
+<p>
+  The kid sees a d8 roll a 6, plus a +3 STR mod. The engine then multiplies by
+  <code>damageScale</code> 1.6 × lengthFactor (1.4–17.8) × speedBonus (1–2) — so the "9" he can reason about
+  becomes 53 damage in D1 and 227 at tier 10, driven by numbers he never sees
+  (<code>engine/damage.ts</code>). In real D&amp;D, <code>1d8+3</code> <em>is</em> the damage — that
+  legibility is the entire pedagogical point of dice. Here the roll is a mood, not a mechanic he can learn
+  from; it also means weapon choice (the most tangible D&amp;D decision the Shop offers) moves damage far
+  less than which text band he rolled into.
+</p>
+<p>
+  <strong>Verdict: revisit — the deepest, most transformative change in this doc.</strong> Fold length into
+  <strong>dice count</strong> instead of a hidden multiplier: a tier-2 line rolls 2d8+3, a tier-9 passage
+  rolls 8d8+3, a boss passage is a fistful of dice — "bigger text = more dice" is instantly legible, reads
+  like a fireball (8d6!), and makes every number on screen a real D&amp;D number. Mechanically it's the same
+  scaling (dice count ≈ lengthFactor, already capped), the crit rule ("roll them all again") becomes
+  spectacular on big passages, and monster HP is already authored against the hit distribution by the sim, so
+  re-authoring is a re-run. If that's too big a bite, the minimum fix is presentational: show the
+  multiplication (<code>[6+3] × 5 = 45</code>) so the formula is at least visible — but the dice-count
+  version is the one that serves both promises at once.
+</p>
+
+<h3>Finding 5 — Per-point ability value is wildly unequal; ASIs have a "correct answer"</h3>
+<p>
+  Post-Story-2 magnitudes (<code>config/abilities.ts</code>): +5 STR is +25% base-hit damage — before the
+  length/speed multipliers dilute it. +5 CHA cuts monster WPM 20% <em>and</em> monster accuracy 25%
+  <em>and</em> discounts the shop 15%. A Kraken at 0.98 accuracy charmed to ~0.73 goes from one typo per 50
+  characters to one per four — with 0.3s attention and 1.08 slack, its attack cycle collapses. WIS at
+  1200ms/mod buys +6s per prompt at +5. The tuning doc's own behind-corner check (+5 WIS/+5 CHA → 98–100%
+  win everywhere it measured) is the smoking gun: <strong>the linear tempo levers were buffed until they
+  dominate, and a kid who asks "what should I raise?" now has one right answer that isn't any of the classic
+  fantasy stats.</strong> Meanwhile the acknowledged open finding that the Wizard is the weakest class
+  (D1 on-track 8%!) still stands. Rolled-stats creation makes this worse: a character who rolls high CHA/WIS
+  is simply better than one who rolls high STR/DEX, and the kid can't know that when he picks.
+</p>
+<p>
+  <strong>Verdict: revisit via the sim, with an explicit parity target.</strong> Add a sweep that measures
+  <em>win-rate delta per +2 ASI in each ability, per dungeon band</em>, and tune magnitudes until every
+  ability's delta lands in one loose band (say, within 2× of each other). Likely moves: cap or
+  diminishing-return the charm accuracy cut, make STR's bonus additive dice or flat damage <em>after</em>
+  scaling (so it doesn't dilute), and give the Wizard its identity fix (Finding 8) rather than more encounter
+  bonus. Build variety is a fidelity issue, not just a balance one — "there are many viable builds" is a core
+  D&amp;D truth the game currently contradicts.
+</p>
+
+<h3>Finding 6 — All-or-nothing submits don't scale to stamina tiers, and 15-minute bosses don't scale to 10-year-olds</h3>
+<p>
+  Exact-match-or-miss is the right rule at 20–100 characters: legible, honest, skill-expressive. At tier
+  12–14 (700–2000 characters), one un-noticed slip means several <em>minutes</em> of typing pays zero damage
+  and a 2-second "miss" pause — variance a learner experiences as theft. The tuning pass's own boss targets
+  (6/10/12/15-minute battles, three flawless ~1800-char passages for the final boss) passed the sim because a
+  simulated 0.92-accuracy typist doesn't have feelings, an attention span, or a bedtime. This is the
+  clearest case in the codebase of <strong>the sim tuning precision onto a target no one has validated as
+  fun</strong>.
+</p>
+<p>
+  <strong>Verdict: revisit before any player reaches tier 10+.</strong> Chunk long passages at sentence
+  boundaries: the passage is the fight's <em>script</em>, each sentence is one attack with its own clock and
+  its own dice. A boss becomes a multi-round set piece (very D&amp;D — a boss is many rounds, not one
+  save-or-die), variance drops to sentence-size, mid-fight progress is real, and battle length stops needing
+  flawless marathon prompts. This also single-handedly fixes Finding 7. Ladder compression (Part II) makes
+  the residual time targets humane.
+</p>
+
+<h3>Finding 7 — The campaign story is written, then shredded</h3>
+<p>
+  The v2 content pipeline authors a real hidden campaign per dungeon — five story sections, a voiced cast
+  (Mab the GM, Bront, Quill, Sable, Fife), pre-rolled dice with bad rolls written into the narrative. Then
+  the game serves those lines <em>randomly sampled from tier pools</em>, so the kid types chapter fragments
+  in shuffled order and the story is unreadable as story. The single richest lore asset the project owns —
+  and the thing that could make him <em>want</em> to fight the next node ("what happens to Bront?") — is
+  currently white noise. The plumbing gap was even flagged in the tuning doc (<code>FightEncounter</code>
+  needs dungeon id + section) and left unproven.
+</p>
+<p>
+  <strong>Verdict: revisit — likely the best fun-per-effort in this doc after the bestiary.</strong> Serve
+  section text <em>in order</em> within a node's fight (and sections in order along the path), with the boss
+  serving the finale passage. Combined with Finding 6's sentence-chunking, a battle literally becomes reading
+  the next scene of the campaign aloud through your fingers — which is the game's whole premise achieved.
+</p>
+
+<h3>Finding 8 — D&amp;D concepts the game teaches, and the cheap ones it's leaving on the table</h3>
+<p>Currently taught by playing: ability scores and modifiers, d20 + proficiency + advantage, naturals vs
+totals, crits as extra dice, ASIs, classes and hit dice, XP thresholds, real monster names/CRs/habitats,
+one skill check (mimic-sense). Genuinely impressive coverage. The big absences, ranked by how cheaply a
+typing-native mapping exists <em>within the no-mid-typing rule</em>:</p>
+<table>
+  <tr><th>Missing concept</th><th>Typing-native mapping</th><th>Cost</th></tr>
+  <tr><td><strong>Spellcasting</strong></td><td>The Wizard's whole 5e identity is spells; here it's a wand and a crit quirk — which is <em>why</em> the class has no identity and the worst numbers. Fix both at once: spells as typed incantations — pick a spell at the encounter modal (Magic Missile, Shield, Fireball…), its verbal component is <em>prepended to the next prompt</em>; type it clean and the spell fires (auto-damage, a shield vs the next hit, a bigger dice pool). Spell slots per dungeon = a real 5e resource, spent at the map. Typing <em>is</em> the casting.</td><td>Medium — one modal choice + a buff, all existing machinery</td></tr>
+  <tr><td><strong>Saving throws</strong></td><td>When a monster's signature move fires (Medusa's gaze, Kraken's pull), auto-roll a visible CON/DEX save in the encounter window — success halves the effect, exactly like the table. Teaches "the d20 defends too" for free; monsters get signature moves, which they currently lack (every monster is stats + flavor text).</td><td>Low-medium</td></tr>
+  <tr><td><strong>Conditions</strong></td><td>Poisoned (small time-budget tax next fight), Frightened (monster types faster this fight) — one-fight debuffs through the existing buff pipe, named with the real 5e condition names.</td><td>Low</td></tr>
+  <tr><td><strong>The party</strong></td><td>The deepest gap — D&amp;D is a team game, this is a duel — but the cast already exists in the text. A hireling/companion (Bront joins the run, auto-chips small damage on a timer, faints when you lose a heart) would put a party on screen without touching the typing loop. Genuinely optional; noted for honesty, not urgency.</td><td>High</td></tr>
+  <tr><td><strong>Long rests that mean something</strong></td><td>The Inn's "Take a long rest" is a no-op button (<code>save-reducer.ts</code>) because hearts refill automatically between runs. Either cut the button or make it real: charge a few coins for the room (the most D&amp;D transaction there is, and a gentle coin sink), and hang the quest board on the same screen.</td><td>Trivial</td></tr>
+</table>
+
+<h3>Finding 9 — Smaller ledger items</h3>
+<ul>
+  <li><strong>Coins overflow at endgame — and the fix is sink shape, not more items.</strong> The catalog's
+  <em>variety</em> is fine: 11 consumables already cover every axis the game has (damage, tempo, luck,
+  defense, healing, hearts), and more SKUs would just dilute the kid's ability to know what things do. The
+  gaps are structural: (a) weapons are one-time purchases and a single build only ever wants its own ability
+  line (~1,000–1,500 of the ~3,270 catalog), (b) consumable prices are flat while kill income scales ~10×
+  across the ladder, so the only <em>recurring</em> sink becomes free by mid-game, and (c) nothing is
+  aspirational. Fixes in order of value: price consumables by dungeon tier (the <code>coinsForTier</code>
+  helper exists); add a short top shelf of expensive permanents priced for the parent tiers — a +3 weapon
+  line, a Bag of Holding (+1 active-buff capacity), a Cloak of Vitality (+1 heart cap) — a few
+  thousand-coin purchases that give D9–11 income something to chase; and charge a token inn-rest fee
+  (Finding 8). That's enough — resist inventing a bigger catalog.</li>
+  <li><strong>Levels 16–20 are theoretical for a kid.</strong> L15→16 is ~570 D11 kills; the ASIs at 16 and
+  19 effectively don't exist on a child's horizon. With D9–11 owned as the parents' game (Part II), the top
+  of the XP table becomes their chase content and can stand as-is — but it should be visible on the hall of
+  records, not silent.</li>
+  <li><strong>speedBonus saturates early</strong> (acknowledged in <code>combat.ts</code>'s comments): past
+  ~2× baseline the per-hit bonus barely moves; the real speed reward is attack <em>rate</em>. That's actually
+  good design — but it means the damage formula's speed term is mostly vestigial and could be simplified when
+  Finding 4 is addressed.</li>
+  <li><strong>Accuracy is invisible.</strong> The game's damage math rewards speed and punishes error only
+  via time; nothing anywhere celebrates a clean streak. A per-fight "flawless!" flag (zero misses) feeding
+  the quest board / bestiary is nearly free and trains the habit that actually matters at his stage.</li>
+  <li><strong><code>stats.battlesLost</code> is still dead</strong> (CLAUDE.md gotcha) — wire it or drop it;
+  a training-record panel (Part II) wants it.</li>
+</ul>
+
+<h2>Part IV — Bug ledger: where the code disagrees with its own intent</h2>
+<p>
+  Added 2026-07-10 after playtest reports of two live bugs ("sometimes I can't type anymore," "lines start
+  with a space"). Both are found and explained below, along with everything else a full source sweep turned
+  up — every entry was traced through the actual code path before being listed; things that <em>looked</em>
+  like bugs but turned out to be documented intent (the signed negative-CHA monster buff, additive crit
+  ranges, buffs burning on a lost fight, the 5e table values) were verified and excluded.
+</p>
+
+<h3>The two reported symptoms, explained</h3>
+<ul>
+  <li><strong>"Pressing keys stops affecting the prompt" = lost focus, never recovered.</strong> The only
+  real input is a visually-hidden <code>sr-only</code> <code>&lt;input&gt;</code>
+  (<code>ui/battle/PlayerPrompt.tsx:73-84</code>) that is focused exactly once, via <code>autoFocus</code> on
+  mount. Nothing anywhere refocuses it: one click on the monster panel, the on-screen keyboard (an
+  irresistible click target for a kid), or empty space blurs it, and every keystroke after that goes nowhere.
+  Because the input is invisible, there is also nothing to click to get it back. Fix: a click anywhere in the
+  battle screen refocuses the input (<code>onMouseDown</code> + <code>preventDefault</code> on the panel),
+  and the input's <code>onBlur</code> refocuses itself while the battle is ongoing.</li>
+  <li><strong>"Lines start with a space" = the word-wrap carries the boundary space onto the next
+  line.</strong> <code>wrapPrompt</code> (<code>ui/battle/TypedProgress.tsx:52-85</code>) preserves every
+  character 1:1 (correct — indices must map to glyphs), but when a line fills up, the <em>inter-word space
+  token</em> that didn't fit becomes the first character of the next line. The kid sees a wrapped line that
+  visually starts one column in, and — worse — must type an invisible leading space before the first visible
+  letter; typing the letter he sees paints a red error glyph. Fix: a whitespace token that overflows the line
+  appends to the <em>previous</em> line's tail (a trailing space is invisible under
+  <code>overflow:hidden</code>; the 1:1 index map is preserved), so a wrapped line always starts on a visible
+  character.</li>
+</ul>
+
+<h3>The full ledger</h3>
+<table>
+  <tr><th>#</th><th>Bug</th><th>Where</th><th>How it shows up in play</th><th>Severity</th></tr>
+  <tr><td>B1</td><td>Wrapped lines begin with the inter-word space</td><td><code>ui/battle/TypedProgress.tsx</code> (<code>wrapPrompt</code>)</td><td>Reported: must type an invisible space at line start; typing the visible letter reads as an error</td><td>breaks-play · certain</td></tr>
+  <tr><td>B2</td><td>Typing dies after any stray click; nothing restores focus</td><td><code>ui/battle/PlayerPrompt.tsx</code></td><td>Reported: keys stop affecting the prompt mid-fight; no visible way to recover</td><td>breaks-play · certain</td></tr>
+  <tr><td>B3</td><td>Backgrounded tab delivers one giant <code>dt</code> on return</td><td><code>ui/hooks/useGameLoop.ts</code></td><td>Switch tabs / close the lid mid-fight → both clocks instantly expire; a free miss the player never made. Clamp <code>dt</code> (~250ms)</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B4</td><td>Debounced save never flushed on page hide</td><td><code>state/save/save-storage.ts</code></td><td>Slamming the Chromebook lid within ~250ms of a kill silently drops that kill's XP/coins. Flush on <code>visibilitychange</code>/<code>pagehide</code></td><td>wrong-numbers · certain, rare</td></tr>
+  <tr><td>B5</td><td>Encounter d20 is seeded per node — a retried fight re-rolls the <em>identical</em> roll</td><td><code>ui/dungeon/DungeonScreen.tsx</code> (<code>encounterDice</code> seed)</td><td>At 2+ hearts, losing and retrying a node reproduces the same band forever; a fumbled node is fumbled on every retry. Contradicts "rolled the moment you commit" (m3-scope) and quietly devalues the Bard's reroll. Salt the seed with a per-node attempt counter</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B6</td><td>Hearts HUD shows the live level-derived cap, but the run clamps to the cap frozen at entry</td><td><code>ui/dungeon/DungeonScreen.tsx</code> vs <code>run.maxHearts</code></td><td>Level up past a heart milestone mid-run → HUD reads ♥ 1/2 while healing can never fill the second heart</td><td>cosmetic · likely</td></tr>
+  <tr><td>B7</td><td><code>reconcileLevel</code> heals level but never banks the ASIs a healed level owes</td><td><code>domain/save.ts</code> + <code>engine/character/leveling.ts</code></td><td>Latent: only fires if a future XP-threshold retune raises an existing save across an ASI level — HP appears, the ASI doesn't</td><td>wrong-numbers · latent</td></tr>
+  <tr><td>B8</td><td>Opening the <em>real</em> (no-fight) chest expires next-fight buffs</td><td><code>state/dungeon-run/dungeon-run-reducer.ts</code> (<code>resolveFight</code> expires buffs unconditionally; the real chest resolves through it)</td><td>Drink Bull's Strength, grab the chest spur on the way → the buff is burned on a chest that isn't a fight; Oil of Sharpness loses a charge</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B9</td><td>Shift is never highlighted for capitals/shifted symbols</td><td><code>ui/battle/keyboard-highlights.ts</code></td><td>The lookup computes <code>shift</code> and discards it; tiers 6+ serve capitals and shifted punctuation today, so the touch-typing aid teaches half the keystroke. (An M0 "stub for later tiers" that no milestone ever lit)</td><td>pedagogy · certain</td></tr>
+  <tr><td>B10</td><td>Healing potions usable (and consumed) at full hearts</td><td><code>ui/dungeon/Bag.tsx</code></td><td>One mis-tap wastes a potion for zero effect; no guard, no confirm</td><td>minor · certain</td></tr>
+  <tr><td>B11</td><td>Loss-screen / reward-modal Continue aren't click-idempotent</td><td><code>ui/battle/BattleScreen.tsx</code>, <code>ui/dungeon/DungeonScreen.tsx</code></td><td>A fast double-click can dispatch <code>resolveFight</code> twice — two hearts for one defeat (the win path is guarded; the loss path isn't)</td><td>wrong-numbers · needs-repro</td></tr>
+  <tr><td>B12</td><td>Boss "guaranteed gear" and chest weapons ignore what's owned</td><td><code>engine/progression/rewards.ts</code> + <code>buyWeapon</code> dedup</td><td>Several tier brackets hold ONE weapon, so the drop is deterministic: a tier-4 boss always drops Wand +1 — a Fighter gets a wand he'll never use, and every re-clear's "guaranteed gear" silently evaporates (dedup drops it, price 0 refunds nothing)</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B13</td><td>WIS / Potion of Speed / Greataxe time-budget changes leak into damage via <code>speedBonus</code></td><td><code>engine/battle.ts</code> (<code>playerTimeLimitFor</code> feeds <code>computeDamage</code>'s <code>timeLimitMs</code>)</td><td>Two players typing the same prompt in the same wall-clock time deal different damage because one has WIS — a stat every doc frames as time-only quietly buys offense, and the Greataxe's time tax is a hidden second damage tax. Compute <code>speedBonus</code> against the un-bonused base limit</td><td>wrong-numbers · likely</td></tr>
+  <tr><td>B14</td><td>Negative-CHA monster speed-up is uncapped (accuracy is clamped, wpm isn't)</td><td><code>state/battle-store.ts</code> (<code>intimidatedMonster</code>)</td><td>The signed buff itself is documented intent, but the two clamps are asymmetric; add a wpm ceiling for symmetry</td><td>latent · certain</td></tr>
+  <tr><td>B15</td><td><code>Math.round</code> on the INT encounter nudge is asymmetric for negatives</td><td><code>engine/character/modifiers.ts</code></td><td>Dormant at the shipped integer magnitude; breaks silently the day <code>intEncounterBonusPerMod</code> goes fractional (it's an M5 tuning knob). Use <code>Math.floor</code></td><td>latent · certain</td></tr>
+</table>
+<p>
+  <strong>Doc/comment rot found along the way</strong> (fix with the ledger): <code>engine/damage.ts</code>'s
+  crit-range comment reasons from a 5% baseline while config ships <code>criticalChance: 0.1</code>;
+  <code>game-design.html</code> still describes INT as a hard tier <em>cap</em>, retired by the tuning pass in
+  favor of the d20 nudge.
+</p>
+<div class="callout why">
+  What was checked and is <em>not</em> broken, for the record: buff lifecycle (next-fight / 3-fight /
+  rest-of-dungeon expiry), heart accounting (no double-loss, clamped restore), reward banking (once per
+  kill, exactly), multi-level XP jumps and ASI banking, seed-stream independence, the additive crit model
+  (matches CLAUDE.md's documented formula), the 5e tables (XP, proficiency, ASI levels — all exact), the
+  band thresholds, price math including negative CHA, and the monster textTier remap. The state layer is in
+  genuinely good shape; the bugs cluster in the UI shell and the reward/encounter glue.
+</div>
+
+<h2>Part V — Recommendations, prioritized</h2>
+<table>
+  <tr><th>#</th><th>Do</th><th>Type</th><th>Fixes</th></tr>
+  <tr><td>1</td><td>Front-load the heart curve + starter potion + tier-priced healing</td><td>Values edit</td><td>Finding 2 — the first-session sour spot flagged since M2</td></tr>
+  <tr><td>2</td><td>Authored per-tier <code>damageFactor</code> (replace raw-char-count tier reward)</td><td>Small mechanic + sim re-run</td><td>Finding 3 — the band inversion (near-bug)</td></tr>
+  <tr><td>3</td><td>Bestiary from <code>monstersDefeated</code></td><td>UI over existing data</td><td>Part II — plateau-proof progression, MM literacy</td></tr>
+  <tr><td>4</td><td>Ability-parity sim sweep, then re-land magnitudes (tame CHA charm, fix STR dilution)</td><td>Sim + values edit</td><td>Finding 5 — the "one right ASI answer"</td></tr>
+  <tr><td>5</td><td>Serve story sections in order; sentence-chunk long passages</td><td>Mechanic (plumbing flagged in tuning doc)</td><td>Findings 6 + 7 — story delivery, stamina-tier variance, boss length</td></tr>
+  <tr><td>6</td><td>Hall of records at the Inn (own D9–11 as the parents' game), stretch D3–D6 content</td><td>Feature, small + content</td><td>Part II — the wall; gives the top third of the game its intended audience</td></tr>
+  <tr><td>7</td><td>Quest board + real (paid) inn rest + training record panel</td><td>Feature, small</td><td>Part II, Findings 8/9 — session shape, coin sink, visible improvement</td></tr>
+  <tr><td>8</td><td>Wizard = spells as typed incantations (+ saving throws for monster signature moves)</td><td>Feature, medium</td><td>Findings 5 + 8 — worst class gets the best identity; teaches casting and saves</td></tr>
+  <tr><td>9</td><td>Length-as-dice-count damage rework (make every number a D&amp;D number)</td><td>Feature, deep</td><td>Finding 4 — the decorative-dice problem, permanently</td></tr>
+  <tr><td>10</td><td>Reduce kills-per-dungeon or add elite re-clears</td><td>Values edit / small feature</td><td>Finding 1 — the 2–3-full-clears treadmill</td></tr>
+</table>
+<div class="callout decision">
+  The bug ledger (Part IV) comes before all of this — B1–B3 are live, reported, and small. After those: if
+  only three things happen, make them #1, #2, and #3 — they fix the hours he is playing <em>right now</em>
+  (the brutal start, the backwards d20 reward, and a reason to come back tomorrow), and all three are small.
+  #5 and #8 are the ones that most advance the "accidentally learning D&amp;D" promise; #6 is the one that
+  decides whether the game's second year exists. The story-by-story build order for everything on this page
+  is the <a href="m5-game-mechanics-implementation.html">M5 game-mechanics implementation plan</a>.
+</div>
+<div class="callout open">
+  Standing caution for all of the above: the tuning sim measures win rates for a tireless 0.92-accuracy
+  robot. It's an excellent regression harness and a poor judge of fun — every recommendation here that says
+  "sim re-run" still ends with the same step the roadmap has always ended with: watch the actual kid play,
+  and believe him over the sweep.
+</div>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a> · Audit written against commit <code>f1f7f4f</code>, 2026-07-09; bug ledger, parents-as-endgame decision, and sink notes added 2026-07-10.</footer>
+</body>
+</html>

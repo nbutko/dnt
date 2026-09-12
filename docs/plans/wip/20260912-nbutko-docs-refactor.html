@@ -535,18 +535,21 @@ canvas and all three wireframe pages open; no Markdown under <code>docs/</code>.
 
 <h3 id="s8">Story 8 — M5 game mechanics (the active feature)</h3>
 <ul class="tasks">
-  <li>☐ <code>git mv m5-game-mechanics-audit.html prds/wip/20260710-nbutko-m5-game-mechanics.html</code>;
+  <li>☑ <code>git mv m5-game-mechanics-audit.html prds/wip/20260710-nbutko-m5-game-mechanics.html</code>;
   relink; wip banner (opened 2026-07-10; plan link).</li>
-  <li>☐ <code>git mv m5-game-mechanics-implementation.html plans/wip/20260710-nbutko-m5-game-mechanics.html</code>;
+  <li>☑ <code>git mv m5-game-mechanics-implementation.html plans/wip/20260710-nbutko-m5-game-mechanics.html</code>;
   relink; audit hrefs → <code>../../prds/wip/…</code>. Append Part IV's ledger table as an appendix "Bug ledger
   B1–B15 — copied from the PRD".</li>
-  <li>☐ Reconcile against <code>ad47bb7</code>, <code>6ac5cf5</code>, <code>f1f7f4f</code>: read each commit's
+  <li>☑ Reconcile against <code>ad47bb7</code>, <code>6ac5cf5</code>, <code>f1f7f4f</code>: read each commit's
   message and file list (<code>git show --stat</code>) against Stories 1–19's "done when"; tick "code merged"
   only for full coverage, otherwise add a "partly done by …" line. Write the mapping into a dated
-  "Status as of 2026-09-12" banner.</li>
-  <li>☐ Repoint: <code>docs/index.html</code> two cards; grep for others (including the M3 PRD's and the retune
-  plan's forward links from Stories 5 and 7, written against the old path per §2.2).</li>
-  <li>☐ Index rows under wip. Audit; commit: <code>docs-refactor: M5 audit/plan → prds,plans/wip, reconciled</code>.</li>
+  "Status as of 2026-09-12" banner. (All three commits predate the plan and cover none of the nineteen
+  stories — see the plan's own reconciliation callout; no ticks or "partly done" lines were warranted.)</li>
+  <li>☑ Repoint: <code>docs/index.html</code> two cards; grep for others (including the M3 PRD's and the retune
+  plan's forward links from Stories 5 and 7, written against the old path per §2.2). (Grep found no other
+  inbound links to repoint in this worktree; Stories 5/7 run in parallel worktrees and add their own forward
+  links there.)</li>
+  <li>☑ Index rows under wip. Audit; commit: <code>docs-refactor: M5 audit/plan → prds,plans/wip, reconciled</code>.</li>
 </ul>
 
 <h3 id="s9">Story 9 — Seed the notes, reconstruct M4, prune memory</h3>

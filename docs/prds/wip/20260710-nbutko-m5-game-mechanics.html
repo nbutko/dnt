@@ -3,23 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>M5 Game-Mechanics Audit — Dungeons & Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>PRD: M5 Game-Mechanics — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>m5-game-mechanics</code></nav>
 <header class="page-head">
   <h1>M5 Game-Mechanics Audit</h1>
   <p class="tagline">An honest structural review: where the game delivers on "accidentally learn D&amp;D while
   learning to type," and where it will hit a wall.</p>
+  <span class="status">feature: <code>m5-game-mechanics</code> · author: nbutko · opened: 2026-07-10 · status: <strong>wip</strong></span>
 </header>
+<div class="banner wip">
+  <p><strong>Opened 2026-07-10.</strong> This is the M5 PRD — the audit below is its requirements: what's
+  working, where the game will hit a wall, and the bug ledger. The story-by-story build against it is the
+  <a href="../../plans/wip/20260710-nbutko-m5-game-mechanics.html">M5 implementation plan</a>.</p>
+  <p class="banner-date">Opened 2026-07-10.</p>
+</div>
 <main>
 
 <h2>What this is</h2>
 <p>
   A no-punches-pulled audit of the game's mechanics as they exist after the M5 playtest-fix batch
-  (2026-07-09), written against the design docs (<a href="game-design.html">game design</a>,
-  <a href="content-plan-v2.html">content plan v2</a>, <a href="content-plan-v2-tuning.html">the tuning
+  (2026-07-09), written against the design docs (<a href="../../game-design.html">game design</a>,
+  <a href="../done/20260707-nbutko-content-v2-tiers.html">content plan v2</a>, <a href="../done/20260708-nbutko-combat-retune.html">the tuning
   pass</a>, the M2/M3 scope and implementation docs including their playtest logs) and the shipped numbers in
   <code>src/config/</code>, <code>src/engine/</code>, and <code>src/content/</code>. Every claim below cites
   a file or a doc; the computed numbers use the committed config values as of this writing.
@@ -48,7 +55,7 @@
 <h2>Part I — What's genuinely working. Keep these.</h2>
 <table>
   <tr><th>System</th><th>Why it's right</th></tr>
-  <tr><td><strong>Independent attack cycles</strong> (no shared rounds)</td><td>The single best design decision in the game. No dead time, pace emerges from real skill, and "the monster is racing you" is visceral. (<a href="game-design.html">game-design</a>)</td></tr>
+  <tr><td><strong>Independent attack cycles</strong> (no shared rounds)</td><td>The single best design decision in the game. No dead time, pace emerges from real skill, and "the monster is racing you" is visceral. (<a href="../../game-design.html">game-design</a>)</td></tr>
   <tr><td><strong>The monster typing simulation</strong> (wpm / accuracy / attention, visible typos and corrections)</td><td>Unique, characterful, and it makes monster difficulty <em>watchable</em> instead of a hidden stat block. The time-based attention stat is a subtle, smart piece of design. (<code>engine/monster-typing.ts</code>)</td></tr>
   <tr><td><strong>The encounter d20</strong> (proficiency, advantage, fumble/inspired on naturals only)</td><td>Converted M2's hidden prompt randomness into a visible, buffable table moment — "come on, twenty!" is exactly the D&amp;D reflex the game should be training. Naturals-only for fumble/crit is correct 5e teaching. (<code>engine/dice/</code>)</td></tr>
   <tr><td><strong>Character creation</strong> (4d6-drop-lowest with limited rerolls, not point-buy)</td><td>Table-authentic chaos with one guard rail. Correct call, correctly argued in the M3 scope.</td></tr>
@@ -416,7 +423,7 @@ typing-native mapping exists <em>within the no-mid-typing rule</em>:</p>
   (the brutal start, the backwards d20 reward, and a reason to come back tomorrow), and all three are small.
   #5 and #8 are the ones that most advance the "accidentally learning D&amp;D" promise; #6 is the one that
   decides whether the game's second year exists. The story-by-story build order for everything on this page
-  is the <a href="m5-game-mechanics-implementation.html">M5 game-mechanics implementation plan</a>.
+  is the <a href="../../plans/wip/20260710-nbutko-m5-game-mechanics.html">M5 game-mechanics implementation plan</a>.
 </div>
 <div class="callout open">
   Standing caution for all of the above: the tuning sim measures win rates for a tireless 0.92-accuracy
@@ -426,6 +433,6 @@ typing-native mapping exists <em>within the no-mid-typing rule</em>:</p>
 </div>
 
 </main>
-<footer class="page-foot"><a href="index.html">← Back to overview</a> · Audit written against commit <code>f1f7f4f</code>, 2026-07-09; bug ledger, parents-as-endgame decision, and sink notes added 2026-07-10.</footer>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · <a href="../index.html">PRDs</a> · the implementation plan is at <code>docs/plans/wip/20260710-nbutko-m5-game-mechanics.html</code> · Audit written against commit <code>f1f7f4f</code>, 2026-07-09; bug ledger, parents-as-endgame decision, and sink notes added 2026-07-10.</footer>
 </body>
 </html>

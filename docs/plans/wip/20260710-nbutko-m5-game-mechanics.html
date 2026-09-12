@@ -3,17 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>M5 Game-Mechanics Implementation Plan — Dungeons & Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>Plan: M5 Game-Mechanics — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>m5-game-mechanics</code></nav>
 <header class="page-head">
   <h1>M5 Game-Mechanics Implementation Plan</h1>
   <p class="tagline">The story-by-story build for everything the
-  <a href="m5-game-mechanics-audit.html">game-mechanics audit</a> found — bugs first, then balance, then
+  <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">game-mechanics audit</a> found — bugs first, then balance, then
   the fun.</p>
+  <span class="status">feature: <code>m5-game-mechanics</code> · author: nbutko · opened: 2026-07-10 · status: <strong>wip</strong>
+  · PRD: <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">yes</a> · wireframes: no (no new screens in Phase A/B; Phase C/D screens get their own when built)</span>
 </header>
+<div class="banner wip">
+  <p><strong>Opened 2026-07-10.</strong> Nineteen stories in four phases against the
+  <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 audit</a>'s findings and bug ledger. None
+  of the nineteen stories have shipped as of this writing (2026-09-12) — see the reconciliation below.</p>
+  <p class="banner-date">Opened 2026-07-10.</p>
+</div>
+<div class="callout decision">
+  <strong>Status as of 2026-09-12 — reconciliation against the pre-plan commits.</strong> Three commits
+  landed <em>before</em> this plan was drafted: <code>ad47bb7</code> (leveling fix + v3&rarr;v4 save
+  reconcile, 2026-07-08), <code>6ac5cf5</code> (XP-reward retune, 2026-07-08), and <code>f1f7f4f</code>
+  (multiline typing — deterministic wrap + 4-line scroll, 2026-07-09). The audit itself was written
+  <em>against</em> <code>f1f7f4f</code> (see its footer) and the M5 plan against all three, so all three are
+  the baseline the nineteen stories react to, not progress toward any of them. Checked each commit's summary
+  and file list against every story's "done when" below; <strong>no story earns a "code merged" tick</strong>:
+  <ul>
+    <li><code>ad47bb7</code> — touches <code>domain/save.ts</code> and adds
+    <code>engine/character/leveling.ts</code>'s <code>reconcileLevel</code>, which is exactly the function
+    Story 8's ledger item B7 says never banks the ASIs a healed level owes. The commit is what <em>created</em>
+    that gap (the audit found it two days later); it does not do Story 8's task of noting B7 as an accepted
+    gap in the doc comment, and touches none of Story 8's other tasks (Shift highlighting, the CHA clamp, the
+    <code>Math.floor</code> fix). No story credited.</li>
+    <li><code>6ac5cf5</code> — sets <code>config/rewards.ts</code>'s <code>normalPerDungeon</code> to the
+    ~100-kills-per-dungeon baseline that Finding 1 / Story 11 explicitly wants <em>reduced</em> to ~65; it's
+    the starting point Story 11 revises, not a step toward it. Its <code>DungeonScreen.tsx</code> and
+    <code>content/monsters.ts</code> changes (an XP difficulty band by monster WPM rank) are unrelated to any
+    of Story 4's, 5's, or 10's tasks. No story credited.</li>
+    <li><code>f1f7f4f</code> — introduces the deterministic <code>wrapPrompt</code> in
+    <code>ui/battle/TypedProgress.tsx</code> that Story 2 fixes; the audit (written the day after, against
+    this exact commit) found B1 — a wrapped line can start with the inter-word space — still live in it. The
+    commit is the function's origin, not Story 2's fix. Its one-line <code>PlayerPrompt.tsx</code> change
+    (<code>maxVisibleLines={4}</code>) is unrelated to Story 1's focus-recovery fix. No story credited.</li>
+  </ul>
+  <p>In short: the three commits are the "M5 playtest-fix batch" the project's memory records as shipping
+  2026-07-09, one day before this audit and plan were drafted against the result. They explain <em>why</em>
+  several findings exist; they are not the plan's own progress.</p>
+</div>
 <main>
 
 <h2>How to read this</h2>
@@ -463,8 +501,33 @@
   (or a parent, for D9–11 stories) actually play it.
 </div>
 
+<h2>Appendix — Bug ledger B1&ndash;B15 (copied from the PRD)</h2>
+<p>
+  Verbatim from <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">the PRD</a>'s Part IV, so
+  Phase A's eight stories can be read against the full ledger without leaving this document. The PRD is the
+  source of truth if the two ever drift.
+</p>
+<table>
+  <tr><th>#</th><th>Bug</th><th>Where</th><th>How it shows up in play</th><th>Severity</th></tr>
+  <tr><td>B1</td><td>Wrapped lines begin with the inter-word space</td><td><code>ui/battle/TypedProgress.tsx</code> (<code>wrapPrompt</code>)</td><td>Reported: must type an invisible space at line start; typing the visible letter reads as an error</td><td>breaks-play · certain</td></tr>
+  <tr><td>B2</td><td>Typing dies after any stray click; nothing restores focus</td><td><code>ui/battle/PlayerPrompt.tsx</code></td><td>Reported: keys stop affecting the prompt mid-fight; no visible way to recover</td><td>breaks-play · certain</td></tr>
+  <tr><td>B3</td><td>Backgrounded tab delivers one giant <code>dt</code> on return</td><td><code>ui/hooks/useGameLoop.ts</code></td><td>Switch tabs / close the lid mid-fight → both clocks instantly expire; a free miss the player never made. Clamp <code>dt</code> (~250ms)</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B4</td><td>Debounced save never flushed on page hide</td><td><code>state/save/save-storage.ts</code></td><td>Slamming the Chromebook lid within ~250ms of a kill silently drops that kill's XP/coins. Flush on <code>visibilitychange</code>/<code>pagehide</code></td><td>wrong-numbers · certain, rare</td></tr>
+  <tr><td>B5</td><td>Encounter d20 is seeded per node — a retried fight re-rolls the <em>identical</em> roll</td><td><code>ui/dungeon/DungeonScreen.tsx</code> (<code>encounterDice</code> seed)</td><td>At 2+ hearts, losing and retrying a node reproduces the same band forever; a fumbled node is fumbled on every retry. Contradicts "rolled the moment you commit" (m3-scope) and quietly devalues the Bard's reroll. Salt the seed with a per-node attempt counter</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B6</td><td>Hearts HUD shows the live level-derived cap, but the run clamps to the cap frozen at entry</td><td><code>ui/dungeon/DungeonScreen.tsx</code> vs <code>run.maxHearts</code></td><td>Level up past a heart milestone mid-run → HUD reads ♥ 1/2 while healing can never fill the second heart</td><td>cosmetic · likely</td></tr>
+  <tr><td>B7</td><td><code>reconcileLevel</code> heals level but never banks the ASIs a healed level owes</td><td><code>domain/save.ts</code> + <code>engine/character/leveling.ts</code></td><td>Latent: only fires if a future XP-threshold retune raises an existing save across an ASI level — HP appears, the ASI doesn't</td><td>wrong-numbers · latent</td></tr>
+  <tr><td>B8</td><td>Opening the <em>real</em> (no-fight) chest expires next-fight buffs</td><td><code>state/dungeon-run/dungeon-run-reducer.ts</code> (<code>resolveFight</code> expires buffs unconditionally; the real chest resolves through it)</td><td>Drink Bull's Strength, grab the chest spur on the way → the buff is burned on a chest that isn't a fight; Oil of Sharpness loses a charge</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B9</td><td>Shift is never highlighted for capitals/shifted symbols</td><td><code>ui/battle/keyboard-highlights.ts</code></td><td>The lookup computes <code>shift</code> and discards it; tiers 6+ serve capitals and shifted punctuation today, so the touch-typing aid teaches half the keystroke. (An M0 "stub for later tiers" that no milestone ever lit)</td><td>pedagogy · certain</td></tr>
+  <tr><td>B10</td><td>Healing potions usable (and consumed) at full hearts</td><td><code>ui/dungeon/Bag.tsx</code></td><td>One mis-tap wastes a potion for zero effect; no guard, no confirm</td><td>minor · certain</td></tr>
+  <tr><td>B11</td><td>Loss-screen / reward-modal Continue aren't click-idempotent</td><td><code>ui/battle/BattleScreen.tsx</code>, <code>ui/dungeon/DungeonScreen.tsx</code></td><td>A fast double-click can dispatch <code>resolveFight</code> twice — two hearts for one defeat (the win path is guarded; the loss path isn't)</td><td>wrong-numbers · needs-repro</td></tr>
+  <tr><td>B12</td><td>Boss "guaranteed gear" and chest weapons ignore what's owned</td><td><code>engine/progression/rewards.ts</code> + <code>buyWeapon</code> dedup</td><td>Several tier brackets hold ONE weapon, so the drop is deterministic: a tier-4 boss always drops Wand +1 — a Fighter gets a wand he'll never use, and every re-clear's "guaranteed gear" silently evaporates (dedup drops it, price 0 refunds nothing)</td><td>wrong-numbers · certain</td></tr>
+  <tr><td>B13</td><td>WIS / Potion of Speed / Greataxe time-budget changes leak into damage via <code>speedBonus</code></td><td><code>engine/battle.ts</code> (<code>playerTimeLimitFor</code> feeds <code>computeDamage</code>'s <code>timeLimitMs</code>)</td><td>Two players typing the same prompt in the same wall-clock time deal different damage because one has WIS — a stat every doc frames as time-only quietly buys offense, and the Greataxe's time tax is a hidden second damage tax. Compute <code>speedBonus</code> against the un-bonused base limit</td><td>wrong-numbers · likely</td></tr>
+  <tr><td>B14</td><td>Negative-CHA monster speed-up is uncapped (accuracy is clamped, wpm isn't)</td><td><code>state/battle-store.ts</code> (<code>intimidatedMonster</code>)</td><td>The signed buff itself is documented intent, but the two clamps are asymmetric; add a wpm ceiling for symmetry</td><td>latent · certain</td></tr>
+  <tr><td>B15</td><td><code>Math.round</code> on the INT encounter nudge is asymmetric for negatives</td><td><code>engine/character/modifiers.ts</code></td><td>Dormant at the shipped integer magnitude; breaks silently the day <code>intEncounterBonusPerMod</code> goes fractional (it's an M5 tuning knob). Use <code>Math.floor</code></td><td>latent · certain</td></tr>
+</table>
+
 </main>
-<footer class="page-foot"><a href="index.html">← Back to overview</a> · Plan drafted 2026-07-10 against the
-<a href="m5-game-mechanics-audit.html">M5 game-mechanics audit</a>.</footer>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · <a href="../index.html">plans</a> · Plan drafted 2026-07-10 against the
+<a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 game-mechanics audit</a>.</footer>
 </body>
 </html>

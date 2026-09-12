@@ -12,14 +12,25 @@
   <h1>Plan: Docs Refactor</h1>
   <p class="tagline">Move, split, and scrub every document in <code>docs/</code> into the evergreen / artifact /
   note layout, one source document at a time, with the links clean after every commit.</p>
-  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>wip</strong>
-  · PRD: <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">yes</a> · wireframes: no (no screens change)</span>
+  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>done</strong>
+  · PRD: <a href="../../prds/done/20260912-nbutko-docs-refactor.html">yes</a> · wireframes: no (no screens change)</span>
 </header>
+<div class="banner done">
+  <p><strong>Closed 2026-09-12.</strong> All twelve stories shipped: <code>docs/</code> is now evergreen docs
+  at the top, dated PRD/wireframes/plan artifacts under <code>prds/</code>, <code>wireframes/</code>,
+  <code>plans/</code> (each <code>wip/</code> + <code>done/</code>), notes under <code>notes/</code>, and one
+  shared stylesheet + four templates under <code>style/</code>. The one open item is the maintainer's own
+  <code>file://</code> render check flagged in Story 11 — an agent's browser tools can't do it (see
+  <a href="../../notes/20260912-nbutko-agent-browser-no-file-urls.html">the note</a>). See "What actually
+  happened" below for every deviation from §5's original destination map. Evergreen home:
+  <a href="../../conventions.html">conventions.html</a>.</p>
+  <p class="banner-date">Closed 2026-09-12.</p>
+</div>
 <main>
 
 <p>
   This is the implementation plan for <code>docs-refactor</code>. The
-  <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">PRD</a> says what the layout must be and why
+  <a href="../../prds/done/20260912-nbutko-docs-refactor.html">PRD</a> says what the layout must be and why
   (requirements R1–R12); the <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> is
   the raw material — what every current file contains and who links to it. This document makes the calls the
   note left open, fixes every file's destination, and breaks the work into stories that each end in one
@@ -362,7 +373,11 @@ its current location; audit clean.</p>
   "relevant when" line, the stale-banner rule); where templates live; memory holds preferences only. Include
   the close-out checklist as a copy-pasteable list.</li>
   <li>☑ Write <code>style/templates/prd.html</code>, <code>wireframes.html</code>, <code>plan.html</code>,
-  <code>note.html</code>. Each renders on its own (stylesheet at <code>../style.css</code>), has the status
+  <code>note.html</code>. <s>Each renders on its own (stylesheet at <code>../style.css</code>)</s> (revised in
+  Story 12: the dogfood test found <code>../style.css</code> only resolves from <code>style/templates/</code>
+  itself, not from a template's copy destination — templates now carry the <em>destination</em> path
+  (<code>../../style/style.css</code> for prd/wireframes/plan, <code>../style/style.css</code> for note) and
+  render unstyled in place, styled once copied to <code>wip/</code> or <code>notes/</code>). Has the status
   line in the header, and carries short bracketed prompts in each section. The plan template's skeleton is
   this document's: Scope, Approach, Decisions, Stories with <code>ul.tasks</code>, Verification, Out of scope.
   The PRD template's skeleton is the docs-refactor PRD's. The note template opens with the
@@ -642,27 +657,71 @@ milestone narration; every "why" survived.</p>
 
 <h3 id="s12">Story 12 — Close-out (the dogfood test)</h3>
 <ul class="tasks">
-  <li>☐ Fresh-session test: start a new agent session and ask it, using only <code>CLAUDE.md</code>,
-  <code>conventions.html</code>, and the templates, to open a hypothetical feature (PRD + plan under
-  <code>wip/</code> with index rows) and then close it. Fix whatever it got wrong in the conventions doc or
-  templates; discard its files.</li>
-  <li>☐ Reconcile this plan: tick every task, record deviations from §5 in a short "What actually happened"
-  section, add the done banner.</li>
-  <li>☐ Reconcile the PRD: status line to done, banner, and a line per requirement R1–R12 saying where it was
-  met.</li>
-  <li>☐ <code>git mv</code> the PRD and this plan to <code>done/</code>; move their index rows.</li>
-  <li>☐ Inventory note: add a dated banner ("The refactor is complete; this note is the pre-refactor snapshot
-  and stays useful for looking up where an old path went") and update its index sentence.</li>
-  <li>☐ Audit; commit: <code>docs-refactor: close out</code>. Then merge <code>docs-refactor</code> into
-  <code>main</code> as the maintainer prefers.</li>
+  <li>☑ Fresh-session test: a fresh agent, given only <code>CLAUDE.md</code>, <code>conventions.html</code>, and
+  the templates, opened and closed a hypothetical feature; its files were discarded. Findings and the fixes
+  applied here: (1) the PRD/wireframes/plan/note templates' stylesheet <code>href</code> only resolved from
+  <code>style/templates/</code> itself, not from a copy under <code>wip/</code> or <code>notes/</code> — fixed
+  by pointing every template at its destination path instead, with a comment saying so; (2)
+  <code>wireframes/index.html</code>'s done table used <code>Feature | File | Description</code> while every
+  other index used <code>Opened | Document | Summary</code> — standardized; (3) the close-out checklist's "run
+  the link audit" named no script — it now links this heading (<a href="#audit">§7.1</a>); (4) nothing said
+  whether a small, non-milestone feature gets a roadmap line — conventions §5 now says the roadmap lists
+  milestones only, everything else is tracked by its plan's index row; (5) the wireframes and PRD templates had
+  no commented-out banner block, unlike plan/note — added, and conventions §9 now says "PRD, wireframes, plan,
+  or note".</li>
+  <li>☑ Reconcile this plan: every task ticked; deviations from §5 recorded in "What actually happened" below;
+  done banner added.</li>
+  <li>☑ Reconcile the PRD: status line to done, banner, and "Where each requirement was met" (R1–R12) added.</li>
+  <li>☑ <code>git mv</code> the PRD and this plan to <code>done/</code>; index rows moved in
+  <code>prds/index.html</code> and <code>plans/index.html</code>.</li>
+  <li>☑ Inventory note: dated <code>banner outdated</code> added ("The refactor is complete; this note is the
+  pre-refactor snapshot and stays useful for looking up where an old path went") and its
+  <code>notes/index.html</code> "relevant when" cell updated to match.</li>
+  <li>☑ Audit; commit: <code>docs-refactor: close out</code>. Merge into <code>main</code> is left to the
+  maintainer/arbiter, per the ground rules this story ran under.</li>
+</ul>
+
+<h2 id="what-happened">6.1 What actually happened</h2>
+<p>Thirteen stories (0–12), thirteen commits, no story reverted. Every deviation accepted along the way, one line each
+(full reasoning is in each story's own section or commit):</p>
+<ul>
+  <li><strong>Story 2</strong> assigned each source-comment repoint by what the comment actually describes
+  rather than the blanket list §6 proposed (<code>Tabs.tsx</code>/<code>Die.tsx</code> → the M3 wireframes,
+  not the README; node-state/dungeon/map comments split across three <code>screens.html</code> anchors), and
+  wrote the Shop as unconditionally available and the habitat count as a link to the content plan rather than
+  restating the README's stale "Coming soon" / count.</li>
+  <li><strong>Story 5</strong> split its repoints by fragment rather than blanket-repointing to the top of the
+  moved M3 plan, and added <code>id="story-6"</code> to the plan's Story 6 <code>&lt;div&gt;</code> so a
+  reference that meant that one story could land on it instead of the whole document.</li>
+  <li><strong>Story 8</strong>'s reconciliation against the three pre-plan M5 commits found none of them
+  covers any of the plan's nineteen stories (they predate the plan and are its baseline, not progress against
+  it) — no "code merged" ticks or "partly done" lines were warranted.</li>
+  <li><strong>Story 10</strong> corrected <code>game-design.html</code> against <code>src/config/</code> rather
+  than just verifying it: baseline typing speed is 8 WPM, the INT tier cap was retired in favor of an
+  encounter-d20 bonus, <code>tierGatePenalty</code> is dormant now that the full tier window is always
+  reachable, and the weapon/item counts are 15 weapons and 11 consumable items. It also scrubbed
+  <code>architecture.html</code>'s ESLint section of milestone narration.</li>
+  <li><strong>Story 11</strong> reworded the save↔combat invariant's history pointer to name the M3 plan
+  instead of narrating "as of M3" in place.</li>
+  <li><strong>Stories 3–8</strong> ran in parallel worktrees once Story 2 landed, exactly as §2.3 allowed;
+  each wrote forward links using the target's final (§3) path rather than today's, so no story had to come
+  back and repoint another's output.</li>
+  <li><strong>This story (12)</strong> applied the dogfood test's five findings (template stylesheet paths,
+  wireframes index columns, the unlinked audit script, the roadmap/non-milestone rule, missing banner
+  comments) — see its own task list above — plus one more it found on the way: the note template's crumb
+  links assumed a two-deep destination like the other three templates, but <code>notes/</code> is one deep;
+  fixed to match the real notes under <code>docs/notes/</code>.</li>
 </ul>
 
 <h2>7. Verification toolkit</h2>
 
-<h3>7.1 Link audit (filesystem, not HTTP)</h3>
+<h3 id="audit">7.1 Link audit (filesystem, not HTTP)</h3>
 <p>The dev server's SPA fallback returns 200 for anything, so links are checked on disk. Run from the repo
 root after every story; exit code 0 and no output means clean. (Until Story 2 removes it, the canvas's
-<code>./support.js</code> line is the one expected hit — Stories 0 and 1 are clean apart from that.)</p>
+<code>./support.js</code> line is the one expected hit — Stories 0 and 1 are clean apart from that.) The script
+skips every file under <code>style/templates/</code>: each template's links are written for its
+<em>destination</em> directory (per the dogfood decision in §6's Story 12), not for where it actually sits in
+<code>style/templates/</code>, so checking them in place would flag correct links as broken.</p>
 <pre><code>python3 - &lt;&lt;'PY'
 import re, sys, pathlib, urllib.parse
 root = pathlib.Path('.')
@@ -670,6 +729,7 @@ bad = []
 strip = lambda s: re.sub(r'&lt;(pre|code)&gt;.*?&lt;/\1&gt;', '', s, flags=re.S)  # quoted markup isn't a link
 # 1. every href/src inside docs/
 for f in root.glob('docs/**/*.html'):
+    if 'templates' in f.parts: continue  # templates carry destination-relative paths
     text = strip(f.read_text(errors='ignore'))
     for m in re.finditer(r'(?:href|src)="([^"#]+)(#[^"]*)?"', text):
         target = urllib.parse.unquote(m.group(1))
@@ -721,6 +781,6 @@ browser tool, confirming the dark theme applied. Maintainer: open the same file 
 </ul>
 
 </main>
-<footer class="page-foot"><a href="../index.html">← plans index</a> · <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">PRD</a> · <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> · plan for <code>docs-refactor</code></footer>
+<footer class="page-foot"><a href="../index.html">← plans index</a> · <a href="../../prds/done/20260912-nbutko-docs-refactor.html">PRD</a> · <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> · plan for <code>docs-refactor</code></footer>
 </body>
 </html>

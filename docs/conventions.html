@@ -79,22 +79,30 @@ evergreen doc says, that doc gets updated in the same close-out, not "later."</p
   <li><strong>Open:</strong> copy the right template (§7) into <code>wip/</code> under the naming rule (§3);
   add a row to that type's index.</li>
   <li><strong>Work:</strong> tick <code>ul.tasks</code> checkboxes as stories complete. One story, one commit.</li>
-  <li><strong>Close</strong> — see the checklist in §9.</li>
+  <li><strong>Close</strong> — see the checklist in §11.</li>
 </ol>
+<p><code>roadmap.html</code> lists milestones only — a feature that isn't a milestone (a bug batch, a retune, this
+refactor) is tracked by its plan's row in <code>plans/index.html</code>, nothing on the roadmap.</p>
 
 <h2>6. Index upkeep</h2>
 <p>
   Each of <code>prds/index.html</code>, <code>wireframes/index.html</code>, <code>plans/index.html</code> lists
-  every file of that type, one row per file, grouped into a <em>wip</em> table and a <em>done</em> table.
-  <code>notes/index.html</code> keeps one table (notes don't move). <strong>A file is never unlisted</strong> —
-  opening or closing a document means adding or moving its row in the same commit.
+  every file of that type, one row per file, grouped into a <em>wip</em> table and a <em>done</em> table, and
+  every such table shares the same three columns: Opened | Document | Summary ("Opened" is the date in the
+  filename). <code>notes/index.html</code> keeps one table (notes don't move), columns Date | Note | Relevant
+  when. <strong>A file is never unlisted</strong> — opening or closing a document means adding or moving its
+  row in the same commit.
 </p>
 
 <h2>7. Templates</h2>
 <p>
   One skeleton per document type lives in <code>style/templates/</code>: <code>prd.html</code>,
-  <code>wireframes.html</code>, <code>plan.html</code>, <code>note.html</code>. Each renders on its own and
-  carries bracketed <code>[…]</code> prompts telling you what goes in each section. To start a document, copy the
+  <code>wireframes.html</code>, <code>plan.html</code>, <code>note.html</code>. Each carries bracketed
+  <code>[…]</code> prompts telling you what goes in each section, and each template's <code>&lt;link
+  rel="stylesheet"&gt;</code> already points at its <em>destination</em> directory (<code>../../style/style.css</code>
+  for a PRD/wireframes/plan landing in <code>wip/</code>, <code>../style/style.css</code> for a note landing in
+  <code>notes/</code>) — so it renders unstyled if you open it in place under <code>style/templates/</code>, and
+  styled once copied to <code>wip/</code>. To start a document, copy the
   template into the right <code>wip/</code> directory, rename it to the convention (§3), and fill in the
   prompts — don't write one from scratch.
 </p>
@@ -114,7 +122,8 @@ workflow feedback across sessions — repo knowledge (gotchas, traps, "why is th
 <code>notes/</code> where every author's agents can see it, not in one person's private memory.</p>
 
 <h2>9. Banners</h2>
-<p>A <code>&lt;div class="banner VARIANT"&gt;</code> sits directly under the header. Four variants:</p>
+<p>A <code>&lt;div class="banner VARIANT"&gt;</code> sits directly under the header of any dated artifact —
+PRD, wireframes, plan, or note. Four variants:</p>
 <table>
   <tr><th>Variant</th><th>Means</th></tr>
   <tr><td><code>done</code></td><td>The work shipped. What landed, what didn't, where the evergreen description
@@ -142,7 +151,8 @@ workflow feedback across sessions — repo knowledge (gotchas, traps, "why is th
   <li>☐ Move each moved file's row from the <em>wip</em> table to the <em>done</em> table in its index.</li>
   <li>☐ Update every evergreen doc the feature touched so nothing it says is false.</li>
   <li>☐ Write a note (with index row) if the feature surfaced a gotcha worth not re-learning.</li>
-  <li>☐ Run the link audit; commit.</li>
+  <li>☐ Run <a href="plans/done/20260912-nbutko-docs-refactor.html#audit">the link audit</a> (the script the
+  docs-refactor plan wrote in its §7.1 — it checks every href on disk); commit.</li>
 </ul>
 
 </main>

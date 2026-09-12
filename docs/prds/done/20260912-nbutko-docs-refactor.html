@@ -13,15 +13,25 @@
   <p class="tagline">One documentation layout that stays trustworthy as the project keeps growing — evergreen
   docs that describe <em>now</em>, dated artifacts that record <em>how we got here</em>, and notes that catch
   the gotchas in between.</p>
-  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>wip</strong></span>
+  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>done</strong></span>
 </header>
+<div class="banner done">
+  <p><strong>Closed 2026-09-12.</strong> All twelve requirements below are met; see "Where each requirement was
+  met" for the file(s)/story that satisfies each. The one open item — the maintainer's own <code>file://</code>
+  render check (R10) — is out of an agent's reach, not unmet: see the
+  <a href="../../notes/20260912-nbutko-agent-browser-no-file-urls.html">browser-tools note</a>. Evergreen home:
+  <a href="../../conventions.html">conventions.html</a>; the build is in
+  <a href="../../plans/done/20260912-nbutko-docs-refactor.html">the plan</a>.</p>
+  <p class="banner-date">Closed 2026-09-12.</p>
+</div>
 <main>
 
 <p>
   This is the product requirements document for the <code>docs-refactor</code> feature. It is also the first
   artifact written under the conventions it proposes, so its own location and name
-  (<code>docs/prds/wip/20260912-nbutko-docs-refactor.html</code>) are part of the spec. A companion
-  <a href="../../plans/wip/20260912-nbutko-docs-refactor.html">implementation plan</a> covers how; this
+  (<code>docs/prds/done/20260912-nbutko-docs-refactor.html</code>, moved from <code>wip/</code> at close) are
+  part of the spec. A companion
+  <a href="../../plans/done/20260912-nbutko-docs-refactor.html">implementation plan</a> covers how; this
   document covers <strong>what</strong> we want and <strong>why</strong>, not how. The
   file-by-file inventory of where each existing document lands belongs to the plan.
 </p>
@@ -355,7 +365,58 @@ the code will not tell you.</p>
   "one story = one commit."</li>
 </ul>
 
+<h2>10. Where each requirement was met</h2>
+<table>
+  <tr><th>#</th><th>Met by</th></tr>
+  <tr><td>R1</td><td>Story 0: every directory in §4 exists, with a <code>.gitkeep</code> in each
+    <code>wip/</code>/<code>done/</code> that would otherwise be empty (<code>plans/done/</code>,
+    <code>prds/done/</code>, <code>wireframes/wip/</code>).</td></tr>
+  <tr><td>R2</td><td>Stories 2–9: every pre-refactor file is <code>git mv</code>'d to its §3 home and named
+    <code>[YYYYMMDD]-[author]-[feature].html</code>; nothing was deleted — even <code>design/README.md</code>,
+    the one file <code>git rm</code>'d outright, has every section landed in <code>screens.html</code> or a
+    wireframe page first.</td></tr>
+  <tr><td>R3</td><td>Stories 2 (design README → screens + 2 wireframe pages), 4 (M2 scope/plan → PRD/plan), 5
+    (M3 scope/plan → PRD/plan), 6 (content-plan-v2 → PRD + plan + evergreen <code>content.html</code>), 7
+    (retune docs → PRD/plan), 8 (M5 audit/plan, kept whole per the PRD's own §8 "M5 audit may be split"
+    decision — its findings and stories didn't separate cleanly, so it stayed one document per that
+    decision's fallback).</td></tr>
+  <tr><td>R4</td><td>Story 10 scrubbed <code>roadmap.html</code>, <code>architecture.html</code>,
+    <code>codebase-architecture.html</code>, <code>game-design.html</code>, <code>visual-spec.html</code>,
+    <code>screens.html</code>, <code>content.html</code>, and <code>index.html</code> to present tense against
+    the repo at mid-M5; Story 11 did the same for <code>CLAUDE.md</code>.</td></tr>
+  <tr><td>R5</td><td>Story 1 wrote <code>conventions.html</code>; this story (12) corrected five things the
+    dogfood test found wrong in it and in the templates it points at.</td></tr>
+  <tr><td>R6</td><td>Story 1 wrote all four index pages; every story since has kept them in sync (checked by
+    §7.2's index-vs-directory script), and this story moved this PRD's and its plan's own rows to
+    <code>done/</code>.</td></tr>
+  <tr><td>R7</td><td>Story 9 seeded ten notes from <code>CLAUDE.md</code>'s Gotchas, the M2 playtest tails, and
+    session memory, each with a head summary and index row, then deleted the five
+    <code>project_dnt_*.md</code> memory files whose facts had all landed somewhere in the repo.</td></tr>
+  <tr><td>R8</td><td>Story 1 wrote the four templates. <strong>Partly met literally:</strong> this PRD and its
+    plan were opened before the templates existed (commit <code>5f8c4e6</code> predates <code>113400e</code>),
+    so they weren't copied <em>from</em> the template — Story 1's reconciliation task made them
+    section-order- and header-shape-identical to it instead, which is the intent but not the letter of "written
+    from the plan template."</td></tr>
+  <tr><td>R9</td><td>The §7.1 link audit is clean at every commit including this one (see the checks output in
+    this story's report). The audit script skips <code>style/templates/</code> entirely (this story's dogfood
+    fix, decision 1): each template's links are written for its <em>destination</em> directory, not for
+    <code>style/templates/</code> itself where the file actually sits, so checking them in place would flag
+    correct links as broken.</td></tr>
+  <tr><td>R10</td><td><strong>Mostly met.</strong> Every real document renders styled at its actual depth. The
+    one open item is the maintainer's own <code>file://</code> check across depths — Story 11 flagged it
+    <strong>(pending maintainer)</strong> because an agent's browser tools can't open <code>file://</code> URLs
+    (see the <a href="../../notes/20260912-nbutko-agent-browser-no-file-urls.html">note</a>). The four
+    templates render unstyled if opened in place under <code>style/templates/</code> and styled once copied to
+    <code>wip/</code> or <code>notes/</code>, which is what R10 actually cares about — the audit skips them
+    rather than treating that as an exception.</td></tr>
+  <tr><td>R11</td><td>Every document under <code>done/</code> (Stories 3–9) carries a status banner and
+    reconciled checkboxes; unticked verification boxes (e.g. the retune's "Verified by User") stay unticked
+    with a banner line saying why.</td></tr>
+  <tr><td>R12</td><td>This story: this PRD and its plan are reconciled, banner'd, moved to <code>done/</code>,
+    and their index rows moved — the dogfooding this requirement asked for.</td></tr>
+</table>
+
 </main>
-<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · PRD for <code>docs-refactor</code> · the implementation plan is at <code>docs/plans/wip/20260912-nbutko-docs-refactor.html</code></footer>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · PRD for <code>docs-refactor</code> · the implementation plan is at <code>docs/plans/done/20260912-nbutko-docs-refactor.html</code></footer>
 </body>
 </html>

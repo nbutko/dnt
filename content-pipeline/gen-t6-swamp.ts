@@ -7,7 +7,8 @@
  *
  * Slot vocab is lifted straight from the Section-1 transcript + Swamp brief, so
  * the output stays on-theme instead of generic. Kept as a REJECTED baseline —
- * naive templates read mechanical (see content-plan-v2.html §3.2); the shipping
+ * naive templates read mechanical (see
+ * docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.2); the shipping
  * path is seed-and-compose. This exists to reproduce the volume/quality numbers.
  */
 

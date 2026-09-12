@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<header class="page-head">
+  <h1>Content</h1>
+  <p class="tagline">What he actually types, what he's fighting, and how both get generated — the 14-tier
+  ladder, the dungeon roster, and the pipeline that fills them, as they run today.</p>
+</header>
+<main>
+
+<p>
+  The player's typing prompts and the monster roster are both plain data, not hardcoded in a component —
+  adding a monster or a hundred more lines at a tier is a content change, never a code change. This document
+  restates that data as it exists now; how it was designed is in
+  <a href="prds/done/20260707-nbutko-content-v2-tiers.html">the content-v2-tiers PRD</a> and how the pipeline
+  was built is in <a href="plans/done/20260707-nbutko-content-v2-tiers.html">its plan</a>. The earlier,
+  superseded 10-tier design is <a href="prds/done/20260704-nbutko-content-v1.html">content-v1</a>.
+</p>
+
+<h2 id="ladder">The 14-tier ladder</h2>
+<p>
+  Each tier adds exactly one new typing demand — new keys, more length, or one new character class. Tiers 1–9
+  are the character-set ramp; the ceiling is reached at T9, so tiers 10–14 add nothing new to the character
+  set and are a pure length/stamina ramp instead (passages, not lines).
+</p>
+<table>
+  <tr><th>Tier</th><th>The one new thing</th><th>Character set</th><th>~len</th><th>Example</th></tr>
+  <tr><td>1</td><td>Home row only</td><td><code>asdfg hjkl;</code> + space</td><td>15–40</td><td><code>a lass has a flask</code></td></tr>
+  <tr><td>2</td><td>Left hand</td><td><code>qwert asdfg zxcvb</code>, lowercase</td><td>~40</td><td><code>a brave bear ate red crabs at a cave</code></td></tr>
+  <tr><td>3</td><td>Right hand</td><td><code>yuiop hjkl nm</code>, lowercase</td><td>~40</td><td><code>you look up my pink pony on my hill</code></td></tr>
+  <tr><td>4</td><td>Whole keyboard (short)</td><td>full kbd, lowercase, 3–5 word phrases</td><td>15–30</td><td><code>grab the loot</code></td></tr>
+  <tr><td>5</td><td>Sentence length</td><td>full kbd, lowercase, no caps/punct</td><td>40–55</td><td><code>the dragon hides deep in the old dark cave</code></td></tr>
+  <tr><td>6</td><td>Capital + <code>,</code> <code>.</code></td><td>one leading capital; <code>,</code> <code>.</code> only</td><td>~40</td><td><code>The goblin ran, and the knight gave chase.</code></td></tr>
+  <tr><td>7</td><td>Unshifted punctuation</td><td>adds <code>'</code> <code>-</code> <code>;</code> <code>/</code>, mid-caps</td><td>~50</td><td><code>Don't open that chest - it's a mimic.</code></td></tr>
+  <tr><td>8</td><td>Plain digits</td><td>adds <code>0-9</code>; no shifted symbols</td><td>~75</td><td><code>The dragon has 250 hp and 3 nasty attacks.</code></td></tr>
+  <tr><td>9</td><td>Shifted symbols</td><td>adds <code>! ? : + &amp; % ( )</code> — full complexity</td><td>~100</td><td><code>Roll 2d6+3 vs AC 15!</code></td></tr>
+  <tr><td>10</td><td>3–4 sentences</td><td>full complexity</td><td>~200</td><td>short scene</td></tr>
+  <tr><td>11</td><td>Paragraph</td><td>full complexity</td><td>~300</td><td>paragraph</td></tr>
+  <tr><td>12</td><td>Stamina (~2 min @ 70 wpm)</td><td>full complexity</td><td>~700</td><td>passage</td></tr>
+  <tr><td>13</td><td>Stamina (~3 min @ 85 wpm)</td><td>full complexity</td><td>~1275</td><td>long passage</td></tr>
+  <tr><td>14</td><td>Stamina (~4 min @ 100 wpm)</td><td>full complexity</td><td>~2000</td><td>boss set-piece</td></tr>
+</table>
+<p>The full design rationale (why right-hand comes after left, why the ceiling sits at T9) is in
+<a href="prds/done/20260707-nbutko-content-v2-tiers.html#ladder">the PRD's §1</a>.</p>
+
+<h2 id="mapping">Dungeon → tier mapping</h2>
+<p>
+  11 dungeons, 14 tiers, one habitat per dungeon. Dungeon N serves regular text tiers <code>[N, N+1, N+2]</code>
+  (the encounter d20's low/mid/high band picks within that range); its boss serves <code>N+3</code>. This is
+  <code>src/config/dungeon-tiers.ts</code> today — the source of truth code reads:
+</p>
+<table>
+  <tr><th>Dungeon</th><th>Habitat</th><th>Regular text tiers</th><th>Boss tier</th><th>WPM range</th></tr>
+  <tr><td>1</td><td>Grassland</td><td>1–3</td><td>4</td><td>10–30</td></tr>
+  <tr><td>2</td><td>Forest</td><td>2–4</td><td>5</td><td>14–20</td></tr>
+  <tr><td>3</td><td>Hill</td><td>3–5</td><td>6</td><td>19–26</td></tr>
+  <tr><td>4</td><td>Coastal</td><td>4–6</td><td>7</td><td>25–33</td></tr>
+  <tr><td>5</td><td>Desert</td><td>5–7</td><td>8</td><td>32–41</td></tr>
+  <tr><td>6</td><td>Swamp</td><td>6–8</td><td>9</td><td>39–49</td></tr>
+  <tr><td>7</td><td>Mountain</td><td>7–9</td><td>10</td><td>46–57</td></tr>
+  <tr><td>8</td><td>Arctic</td><td>8–10</td><td>11</td><td>54–65</td></tr>
+  <tr><td>9</td><td>Underdark</td><td>9–11</td><td>12</td><td>62–74</td></tr>
+  <tr><td>10</td><td>Underwater</td><td>10–12</td><td>13</td><td>72–86</td></tr>
+  <tr><td>11</td><td>Urban</td><td>11–13</td><td>14</td><td>85–100</td></tr>
+</table>
+<p>
+  That's <strong>11 habitats</strong>, not the ten or eleven-ish figures earlier drafts hedged on — this table
+  is copied verbatim from <code>DUNGEON_TIERS</code> in <code>src/config/dungeon-tiers.ts</code>, which is what
+  the world map, dungeon generator, and content loader all key off.
+</p>
+
+<h2 id="roster">The cast and the monster roster</h2>
+<p>
+  A standing ensemble of five voices — <strong>Mab</strong> (GM/narrator), <strong>Bront</strong> (Fighter,
+  terse declaratives), <strong>Quill</strong> (Wizard, precise and numeric), <strong>Sable</strong> (Rogue,
+  sly asides), <strong>Fife</strong> (Bard, florid and exclamation-heavy) — runs a hidden 5-part campaign per
+  dungeon, seeded from that dungeon's habitat and monster roster. Different voices feed different tier bands
+  (Bront's short declaratives are the T6 goldmine; Quill's stat blocks feed T8/T9's numbers and symbols). Full
+  character sketches are in <a href="prds/done/20260707-nbutko-content-v2-tiers.html#cast">the PRD's §4</a>.
+</p>
+<p>
+  The <em>monster roster</em> the game actually fights (<code>src/content/monsters.json</code>, read by
+  <code>src/content/monsters.ts</code>) is a curated, hand-picked subset — not the full manual. The full
+  candidate pool the pipeline drew each dungeon's cast from is
+  <code><a href="../content-pipeline/monster-manual.json">content-pipeline/monster-manual.json</a></code>: 501
+  monsters, each tagged with a real D&amp;D 5e challenge rating and one or more habitats, used only at
+  authoring time by <code>content-pipeline/manifest-gen.ts</code> to propose a CR-banded, habitat-matched
+  candidate list per dungeon. It is pipeline input data, not shipped code or documentation — nothing at
+  runtime reads it.
+</p>
+
+<h2 id="pipeline">How the pipeline runs today</h2>
+<p>
+  All eleven dungeons' content is generated, offline, by <code>content-pipeline/</code> and shipped as static
+  JSON — no LLM and no generator runs on the kid's Chromebook. The stages, in order, as the scripts in
+  <code>content-pipeline/</code> actually run:
+</p>
+<ol>
+  <li><strong><code>manifest-gen.ts</code></strong> — deterministic. Reads
+  <code>monster-manual.json</code> and <code>dice.json</code>, emits <code>generated/manifest.json</code>: per
+  dungeon, a CR-banded candidate roster, a dice slice, and the section→tier→mode map (drill / compose-short /
+  compose-long) derived from the tier mapping above.</li>
+  <li><strong>Showrunner (agent, per dungeon)</strong> — writes that dungeon's 5-section campaign transcript
+  (<code>content-pipeline/&lt;habitat&gt;/campaign.md</code>) from the manifest's brief, cast, and roster.</li>
+  <li><strong><code>draw.ts</code></strong> — deterministic. Reads a dungeon's transcript once, emits
+  pre-drawn <code>(seed word + line window)</code> bundles per section and tier — the only thing the compose
+  step below ever sees, so no compose agent reads a whole transcript.</li>
+  <li><strong>Compose (agent, one per section or per long tier)</strong> — writes fresh, tier-legal sentences
+  or passages from a handful of seed bundles ("seed-and-compose": corpus flavor in, LLM grammar and coherence
+  out).</li>
+  <li><strong><code>drill-gen.ts</code></strong> — deterministic, independent of the above. Generates tiers
+  1–4's keyboard-constrained word/phrase drills from hand-curated legal-key-set word banks; emits
+  <code>generated/drills/tier-01.json</code>–<code>tier-04.json</code>.</li>
+  <li><strong><code>assemble.ts</code></strong> — deterministic. Folds a compose run's output cells into that
+  dungeon's <code>generated/pools/&lt;habitat&gt;.json</code>, idempotently (a later pass or top-up replaces
+  only the cells it covers).</li>
+  <li><strong><code>lint.ts</code></strong> — deterministic. Checks tier-legality, dedup, and per-cell coverage
+  (target count, required character classes, letter diversity) on a dungeon's pool; emits the linted
+  <code>generated/pools/&lt;habitat&gt;.clean.json</code> and flags any shortfall for a targeted top-up.</li>
+  <li><strong><code>merge.ts</code></strong> — deterministic. Folds each dungeon's drilled tiers (≤4) and
+  linted prose (≥5) into one uniform <code>generated/pools/&lt;habitat&gt;.merged.json</code> — a full
+  section×tier grid, every dungeon the same shape.</li>
+  <li><strong><code>ship.ts</code></strong> — deterministic. Reads every dungeon's <code>.merged.json</code>
+  and emits the single bundled <strong><code>src/content/text/library.json</code></strong> the game imports at
+  build time, keyed <code>dungeon → tier → lines</code> (sections collapse away — a regular fight at a served
+  tier draws the union of all regular sections at that tier; the boss draws its own).</li>
+</ol>
+<p>
+  <code>src/content/text-banks.ts</code> loads that library at runtime: a dungeon's own lines at the exact
+  tier if present, else every dungeon's lines at that tier, else the nearest easier tier globally — content
+  never runs out, it degrades down. All eleven dungeons' pools exist and every tier 1–14 has content;
+  <code>src/content/text-banks.test.ts</code> covers the loader.
+</p>
+<div class="callout why">
+  Deterministic scripts do all the reading (corpus draws, legality/dedup/coverage checks, the T1–4 drills) at
+  zero token cost; LLM calls are spent only on the two compose steps, and each compose call sees a tiny slice
+  of seed bundles, never a whole transcript or the codebase. That split is why generating the whole game's
+  content library was a roughly one-time, ~1M-token job rather than tens of millions — the full reasoning and
+  the agent-tree shape are in <a href="plans/done/20260707-nbutko-content-v2-tiers.html#cost">the plan's
+  §7</a>.
+</div>
+
+<h2>Visual identity</h2>
+<p>
+  No image assets. The game is presented as text and typography throughout — a monster description, its HP,
+  its own live-typed line (typos and self-corrections rendered character by character), the player's prompt,
+  and an on-screen keyboard highlighting the next few keys. Hits and misses read through color flash, a CSS
+  shake, and damage numbers, not art. The full visual system (palette, type, layout, keyboard) is
+  <a href="visual-spec.html">visual-spec.html</a>; how each screen actually looks and behaves is
+  <a href="screens.html">screens.html</a>.
+</p>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a> · <a href="prds/index.html">PRDs</a> ·
+<a href="plans/index.html">plans</a></footer>
+</body>
+</html>

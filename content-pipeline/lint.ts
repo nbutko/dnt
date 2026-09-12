@@ -1,7 +1,8 @@
 /**
  * Lint script (free, deterministic). Run: `npx tsx lint.ts <dungeon>`
  *
- * Stage 4 of the pipeline (content-plan-v2.html §3.4 / §7.5): legality + dedup
+ * Stage 4 of the pipeline (docs/plans/done/20260707-nbutko-content-v2-tiers.html
+ * §3.4 / §7.5): legality + dedup
  * + coverage on a composed pool. Zero LLM cost. Emits a per-cell verdict and,
  * crucially, the exact shortfall per (section × tier) cell so the orchestrator
  * dispatches a *targeted* top-up rather than recomposing a passing cell.
@@ -11,7 +12,8 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 
-// Volume targets shrink as tiers lengthen (content-plan-v2 §3.5): T6-10 ~50,
+// Volume targets shrink as tiers lengthen
+// (docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.5): T6-10 ~50,
 // T11-12 ~30, T13-14 ~20. A cell passes at ~90% of target.
 const targetFor = (tier: number): number => (tier <= 10 ? 50 : tier <= 12 ? 30 : 20)
 const floorFor = (tier: number): number => (tier <= 10 ? 45 : tier <= 12 ? 26 : 17)

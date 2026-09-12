@@ -122,7 +122,7 @@
   <tr><td>Player max HP</td><td>class hit die × 4 (e.g. 40 for a d10 Fighter, 24 for a d6 Wizard)</td><td>Level + CON modifier, derived at read time — never stored (see <a href="#leveling">Leveling</a>)</td></tr>
   <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>WIS modifier (flat ms bonus) + a Potion of Speed; the Greataxe taxes it instead</td></tr>
   <tr><td>Max text tier the player can be given</td><td>Tier 3 baseline before any INT investment</td><td>INT modifier (+3 tiers per point) caps the <a href="#encounter-d20">encounter d20</a>'s rolled band — fighting into a band above the cap is allowed but non-linearly weak, not blocked</td></tr>
-  <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content-plan.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
+  <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
 </table>
 <div class="callout why">
   Time limit is derived from text length ÷ an assumed baseline typing speed (expressed in WPM — the same unit
@@ -151,7 +151,7 @@
   character's actual interval is <em>sampled</em> from a distribution around that mean (e.g. a gamma/normal
   distribution), so the typing has natural, uneven pacing rather than a metronome. The spread of that
   distribution comes from <code>variance</code> — a single <em>shared</em> constant for v1, not tuned per
-  monster (see <a href="content-plan.html#roster">roster</a>, which has no per-monster variance column for
+  monster (see <a href="content.html#roster">roster</a>, which has no per-monster variance column for
   that reason), promotable to a per-monster stat later if some monster should feel distinctly more erratic
   than others.</li>
   <li><strong>accuracy</strong> — chance, rolled per character, that the monster types the wrong character
@@ -192,7 +192,7 @@
   per-battle tuning knob. Because attention is measured in seconds, a monster that's both fast <em>and</em> slow to notice
   (high wpm, high attention-seconds) is the worst combination — it'll type a wall of extra wrong characters
   before catching on. That's why stronger/later monsters raise wpm and attention together (see the
-  <a href="content-plan.html#roster">roster</a>): fast <em>and</em> quick to self-correct, rather than fast
+  <a href="content.html#roster">roster</a>): fast <em>and</em> quick to self-correct, rather than fast
   and sloppy. A monster with low accuracy and slow attention will visibly flub words and scramble to fix
   them — exactly the kind of race the player should be able to watch and react to (e.g. holding a power-up
   because the monster is clearly about to whiff).

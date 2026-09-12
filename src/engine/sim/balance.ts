@@ -145,7 +145,8 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
 // sane length, so the sanity sweep measures dice/HP/mods, not M6's content
 // backlog.
 // Tiers 11-14 are M3's stamina passages, far longer than the 1-10 curve
-// (content-plan-v2.html §3.5: ~300/700/1275/2000 chars). The sim only needs a
+// (docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.5: ~300/700/1275/2000
+// chars). The sim only needs a
 // representative *length* — characters drive typing time — so pad tier 10's
 // real prose up to each tier's content target rather than paste 2000-char walls
 // inline.

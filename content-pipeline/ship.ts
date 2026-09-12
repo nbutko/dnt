@@ -1,8 +1,9 @@
 /**
  * Ship script (free, deterministic). Run: `npx tsx ship.ts`
  *
- * The last hop from the content pipeline into the app (content-plan-v2.html
- * §3.6). Reads every <dungeon>.merged.json and emits a single bundled
+ * The last hop from the content pipeline into the app
+ * (docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.6). Reads every
+ * <dungeon>.merged.json and emits a single bundled
  * src/content/text/library.json the game imports at build time.
  *
  * Sections collapse away here on purpose: a dungeon's regular sections (1-4)

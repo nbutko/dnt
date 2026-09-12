@@ -1,13 +1,15 @@
 /**
  * Merge script (free, deterministic). Run: `npx tsx merge.ts`
  *
- * Final assembly (content-plan-v2.html §3.6): fold the shared drill tiers into
+ * Final assembly (docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.6):
+ * fold the shared drill tiers into
  * each dungeon's composed pool so the *app reads one uniform file per dungeon*
  * — section 1-5 × its tier band — instead of stitching drills and prose from
  * two different shapes at runtime. Also lets the whole library be audited
  * uniformly (one grid per dungeon, every cell legal + at floor).
  *
- * Per content-plan-v2 §2, dungeon N's sections 1-4 serve tiers [N, N+1, N+2]
+ * Per docs/prds/done/20260707-nbutko-content-v2-tiers.html §2, dungeon N's
+ * sections 1-4 serve tiers [N, N+1, N+2]
  * and the boss (§5) serves N+3. Cells at tier ≤4 are drills (generated fresh
  * per dungeon×section×tier — the same tier reads differently in different early
  * stages, a bit of variety for free); cells at tier ≥5 come from the composed
@@ -29,7 +31,8 @@ const DUNGEONS: { n: number; name: string }[] = [
 const DRILL_COUNT = 50 // per drill cell — matches composed cell density (~50)
 const isDrill = (tier: number): boolean => tier <= 4
 
-// content-plan-v2 §2: regular sections 1-4 → [N,N+1,N+2]; boss §5 → N+3.
+// docs/prds/done/20260707-nbutko-content-v2-tiers.html §2: regular sections
+// 1-4 → [N,N+1,N+2]; boss §5 → N+3.
 const gridTiers = (n: number, section: number): number[] =>
   section < 5 ? [n, n + 1, n + 2] : [n + 3]
 

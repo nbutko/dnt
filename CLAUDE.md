@@ -17,7 +17,7 @@ project for one kid, **not** a product for the world.
 | Build order & milestones (M0–M6) | [`docs/roadmap.html`](docs/roadmap.html) |
 | Combat math, HP/timers, damage formula | [`docs/game-design.html`](docs/game-design.html) |
 | Stack, data model, persistence, hosting | [`docs/architecture.html`](docs/architecture.html) |
-| Text tiers, monster roster, content sourcing | [`docs/content-plan.html`](docs/content-plan.html) |
+| Text tiers, monster roster, content sourcing | [`docs/content.html`](docs/content.html) |
 
 ### Milestone docs
 
@@ -83,7 +83,7 @@ plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
   `config/abilities.ts` + `config/leveling.ts`); don't treat placeholder numbers as tuned.
 - **`stats.battlesLost` is still dead** — in the save shape, never written by any reducer action (unlike
   `stats.bestWpm`, `powerUpMultiplier`, and `dungeon-tiers.ts`'s `textTierRange`, all lit up in M3).
-- `docs/monster-manual.json` is canonical monster names/CRs reference data (not shipped code).
+- `content-pipeline/monster-manual.json` is canonical monster names/CRs reference data (not shipped code).
 
 ## Memory & context
 

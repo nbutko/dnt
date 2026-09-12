@@ -6,9 +6,9 @@ export interface DungeonTier {
   wpmRange: [number, number]
   // The dungeon's three regular text tiers [N, N+2] — the encounter d20's
   // low/mid/high band reads straight off this (engine/dice/band.ts). The 14-tier
-  // content ladder (content-plan-v2.html §2) keys every dungeon N to text
-  // [N, N+2] regular; the shipped corpus (content/text/library.json) carries
-  // exactly those tiers per dungeon.
+  // content ladder (docs/prds/done/20260707-nbutko-content-v2-tiers.html §2) keys
+  // every dungeon N to text [N, N+2] regular; the shipped corpus
+  // (content/text/library.json) carries exactly those tiers per dungeon.
   textTierRange: [TextTier, TextTier]
   // The boss's single text tier, N+3 — the boss serves the dungeon's hardest,
   // longest set-piece prose (content §5), one tier above the regular ceiling.
@@ -20,9 +20,9 @@ export interface DungeonTier {
 }
 
 // The 11 dungeons, in ladder order. Each dungeon N serves regular text tiers
-// [N, N+2] and its boss N+3 (content-plan-v2.html §2) — the world map, dungeon
-// generator, and content loader all key off this ladder. WPM ranges carry over
-// from docs/prds/done/20260704-nbutko-m2-progression-loop.html's tier table.
+// [N, N+2] and its boss N+3 (docs/prds/done/20260707-nbutko-content-v2-tiers.html
+// §2) — the world map, dungeon generator, and content loader all key off this
+// ladder. WPM ranges carry over from docs/prds/done/20260704-nbutko-m2-progression-loop.html's tier table.
 export const DUNGEON_TIERS: readonly DungeonTier[] = [
   { tier: 1, habitat: 'Grassland', wpmRange: [10, 30], textTierRange: [1, 3], bossTextTier: 4, rosterPool: 'grassland' },
   { tier: 2, habitat: 'Forest', wpmRange: [14, 20], textTierRange: [2, 4], bossTextTier: 5, rosterPool: 'forest' },

@@ -480,21 +480,21 @@ canvas and all three wireframe pages open; no Markdown under <code>docs/</code>.
 
 <h3 id="s6">Story 6 — Content v1, content v2, and the evergreen content doc</h3>
 <ul class="tasks">
-  <li>☐ <code>git mv content-plan.html prds/done/20260704-nbutko-content-v1.html</code>; relink. Banner:
+  <li>☑ <code>git mv content-plan.html prds/done/20260704-nbutko-content-v1.html</code>; relink. Banner:
   superseded by <code>content-v2-tiers</code> on 2026-07-07 (link); "Visual identity" checked against
   <code>visual-spec.html</code> — if it is still true, it stays in the PRD and the evergreen home is noted.</li>
-  <li>☐ Read <code>content-plan-v2.html</code> once. <code>git mv</code> it to
+  <li>☑ Read <code>content-plan-v2.html</code> once. <code>git mv</code> it to
   <code>prds/done/20260707-nbutko-content-v2-tiers.html</code> and cut it to §1, 2, 4, 5 (section numbers
   unchanged in both outputs — source comments cite §2 and §3.x by number) plus a banner
   (shipped 2026-07-07; pipeline is <code>content-pipeline/</code>; evergreen home <code>content.html</code>).</li>
-  <li>☐ Write <code>plans/done/20260707-nbutko-content-v2-tiers.html</code> from §3 (method, drills, lint,
+  <li>☑ Write <code>plans/done/20260707-nbutko-content-v2-tiers.html</code> from §3 (method, drills, lint,
   volume, merge), §6 (status &amp; build order → stories with ☑ per what shipped), §7 (agent tree, cost, spawn
   plan). Banner: shipped; note anything §6 listed that did not ship.</li>
-  <li>☐ Write <code>content.html</code> (evergreen): the 14-tier ladder, dungeon → tier mapping, the cast, how
+  <li>☑ Write <code>content.html</code> (evergreen): the 14-tier ladder, dungeon → tier mapping, the cast, how
   the pipeline runs today (verify stage names against the files in <code>content-pipeline/</code> and where
   the generated JSON lives in <code>src/</code>), and <code>monster-manual.json</code>'s role. Present tense;
   numbers from the PRD only where the code agrees.</li>
-  <li>☐ <code>git mv docs/monster-manual.json content-pipeline/monster-manual.json</code>; change the
+  <li>☑ <code>git mv docs/monster-manual.json content-pipeline/monster-manual.json</code>; change the
   <code>readFileSync('../docs/monster-manual.json')</code> path and the header comment in
   <code>content-pipeline/manifest-gen.ts</code>; repoint the doc links (<code>codebase-architecture.html</code>,
   the M2 PRD and plan, the M5 plan's mention, <code>CLAUDE.md</code>'s gotcha line) to
@@ -502,12 +502,12 @@ canvas and all three wireframe pages open; no Markdown under <code>docs/</code>.
   file: read the head of <code>manifest-gen.ts</code> for how it is invoked, run it so that its output goes to
   a scratch path or is diffed against the committed <code>content-pipeline/generated/</code>, and confirm the
   output is unchanged.</li>
-  <li>☐ Repoint: <code>CLAUDE.md</code> content row → <code>content.html</code>; <code>docs/index.html</code>;
+  <li>☑ Repoint: <code>CLAUDE.md</code> content row → <code>content.html</code>; <code>docs/index.html</code>;
   <code>roadmap.html</code> (M6 entry links <code>content-plan.html</code>); the bare-name
   <code>content-plan-v2.html §N</code> comments in <code>src/config/</code>, <code>src/content/</code>,
   <code>src/engine/sim/balance.ts</code>, and seven <code>content-pipeline/*.ts</code> scripts (§2 → the PRD,
   §3.x → the plan); grep for others.</li>
-  <li>☐ Index rows (two PRDs, one plan). <code>npm run lint</code>; audit; commit: <code>docs-refactor: content
+  <li>☑ Index rows (two PRDs, one plan). <code>npm run lint</code>; audit; commit: <code>docs-refactor: content
   plans → prds,plans/done; evergreen content.html; monster-manual → content-pipeline</code>.</li>
 </ul>
 

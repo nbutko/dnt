@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD: Content v2 Tiers — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>content-v2-tiers</code></nav>
+<header class="page-head">
+  <h1>Content Plan v2: 14 Tiers</h1>
+  <p class="tagline">A gentler 14-tier ladder, and a pipeline to fill it.</p>
+  <span class="status">feature: <code>content-v2-tiers</code> · author: nbutko · opened: 2026-07-07 · status: <strong>done</strong></span>
+</header>
+<div class="banner done">
+  <p><strong>Shipped 2026-07-07.</strong> The pipeline this PRD specifies lives in
+  <code>content-pipeline/</code>; the generation method, build order, and cost estimate (§3, §6, §7 of the
+  original document) are in <a href="../../plans/done/20260707-nbutko-content-v2-tiers.html">the
+  implementation plan</a> — section numbers there pick up where this document's leave off, so a
+  <code>§3.x</code> citation from source comments resolves in the plan and a <code>§2</code> citation resolves
+  here. The evergreen restatement of the ladder, mapping, cast, and pipeline as they run today is
+  <a href="../../content.html">content.html</a>.</p>
+</div>
+<main>
+
+<p>
+  Supersedes the tiering &amp; sourcing sections of
+  <a href="20260704-nbutko-content-v1.html">Content Plan v1</a>. Two big
+  changes: a <strong>gentler, longer ladder</strong> (10 tiers → 14, so the early ramp introduces one new
+  thing at a time instead of jumping home-row → full sentences in two steps), and a real
+  <strong>generation method</strong> — v1 shipped a handful of hand-written lines per tier (~8 per section,
+  measured — nowhere near enough), v2 defines a repeatable pipeline that produces a large, on-theme,
+  <em>almost non-repeating</em> pool, generated <strong>offline</strong> and shipped as static JSON.
+</p>
+<div class="callout why">
+  Every number below was prototyped and <em>measured</em> on the <strong>Swamp</strong> (Dungeon 6), not
+  projected. Prototype artifacts live under <code>content-pipeline/</code>.
+</div>
+
+<h2 id="ladder">1. The 14-tier ladder</h2>
+<p>
+  Design rule: <strong>each tier adds exactly one new demand</strong> — new keys, or more length, or one new
+  character class. Character sets are cumulative from T5 upward (each tier is a superset of the one below).
+  Lengths are order-of-magnitude guidelines, not hard gates.
+</p>
+<table>
+  <tr><th>Tier</th><th>The one new thing</th><th>Character set</th><th>~len</th><th>Example</th></tr>
+  <tr><td>1</td><td>Home row only</td><td><code>asdfg hjkl;</code> + space</td><td>15–40</td><td><code>a lass has a flask</code></td></tr>
+  <tr><td>2</td><td>Left hand</td><td><code>qwert asdfg zxcvb</code>, lowercase</td><td>~40</td><td><code>a brave bear ate red crabs at a cave</code></td></tr>
+  <tr><td>3</td><td>Right hand</td><td><code>yuiop hjkl nm</code>, lowercase</td><td>~40</td><td><code>you look up my pink pony on my hill</code></td></tr>
+  <tr><td>4</td><td>Whole keyboard (short)</td><td>full kbd, lowercase, <strong>3–5 word phrases</strong></td><td>15–30</td><td><code>grab the loot</code>, <code>run for the cave door</code></td></tr>
+  <tr><td>5</td><td>Sentence length</td><td>full kbd, lowercase, no caps/punct</td><td>40–55</td><td><code>the dragon hides deep in the old dark cave</code></td></tr>
+  <tr><td>6</td><td>Capital + <code>,</code> <code>.</code></td><td>one leading capital; <code>,</code> <code>.</code> only</td><td>~40</td><td><code>The goblin ran, and the knight gave chase.</code></td></tr>
+  <tr><td>7</td><td>Unshifted punctuation</td><td>adds <code>'</code> <code>-</code> <code>;</code> <code>/</code>, mid-caps; no digits</td><td>~50</td><td><code>Don't open that chest - it's a mimic.</code></td></tr>
+  <tr><td>8</td><td>Plain digits</td><td>adds <code>0-9</code>; no shifted symbols</td><td>~75</td><td><code>The dragon has 250 hp and 3 nasty attacks.</code></td></tr>
+  <tr><td>9</td><td>Shifted symbols</td><td>adds <code>! ? : + &amp; % ( )</code> — full complexity</td><td>~100</td><td><code>Roll 2d6+3 vs AC 15! The chest holds 47 gold &amp; a +1 sword.</code></td></tr>
+  <tr><td>10</td><td>3–4 sentences</td><td>full complexity</td><td>~200</td><td>short scene</td></tr>
+  <tr><td>11</td><td>Paragraph</td><td>full complexity</td><td>~300</td><td>paragraph</td></tr>
+  <tr><td>12</td><td>Stamina (~2 min @ 70 wpm)</td><td>full complexity</td><td>~700</td><td>passage</td></tr>
+  <tr><td>13</td><td>Stamina (~3 min @ 85 wpm)</td><td>full complexity</td><td>~1275</td><td>long passage</td></tr>
+  <tr><td>14</td><td>Stamina (~4 min @ 100 wpm)</td><td>full complexity</td><td>~2000</td><td>boss set-piece</td></tr>
+</table>
+<div class="callout why">
+  <strong>Home row (1) → left hand (2) → right hand (3)</strong> is deliberate. Right comes after left because
+  with the left hand busy the right is free to reach Backspace reliably — a 10-year-old fixing mistakes needs
+  that. Only at (4) do both hands work together, in short bursts, before length arrives at (5). And the
+  <strong>complexity ceiling is reached at T9</strong>: tiers 10–14 add nothing to the character set — they
+  are a pure length/stamina ramp, which makes them a different content <em>shape</em> (passages, not lines).
+</div>
+
+<h2 id="mapping">2. Dungeon → tier mapping</h2>
+<p>
+  11 dungeons, 14 tiers. <strong>Dungeon N serves regular tiers <code>[N, N+1, N+2]</code>; its boss serves
+  <code>N+3</code>.</strong> The encounter d20's band picks within the range (low → N, mid → N+1, high →
+  N+2); the boss is forced to the top+1.
+</p>
+<table>
+  <tr><th>Dungeon</th><th>Habitat</th><th>Regular (d20 band)</th><th>Boss</th></tr>
+  <tr><td>1</td><td>Grassland</td><td>1–3</td><td>4</td></tr>
+  <tr><td>2</td><td>Forest</td><td>2–4</td><td>5</td></tr>
+  <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+  <tr><td>6</td><td>Swamp</td><td>6–8</td><td>9</td></tr>
+  <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+  <tr><td>11</td><td>Urban</td><td>11–13</td><td>14</td></tr>
+</table>
+<p>Engine wiring this implies (all additive to existing seams):</p>
+<ul>
+  <li><code>TextTier</code> widens <code>1..10</code> → <code>1..14</code> (<code>domain/types.ts</code>); add tier files <code>11–14</code>.</li>
+  <li><code>config/dungeon-tiers.ts</code> re-mapped to the <code>[N, N+2]</code> ranges above.</li>
+  <li>Boss encounters resolve to <code>rangeTop + 1</code> (today they take the range top / monster tier).</li>
+  <li><code>bandToServedTier</code> already maps low/mid/high across a range — with width-3 ranges it now yields three distinct tiers cleanly. Served tier is still <code>min(targetTier, intTierCap)</code> (Wizard's <code>+1</code> cap bonus unchanged).</li>
+</ul>
+<div class="callout open">
+  <strong>The one new plumbing need:</strong> content is indexed by <em>difficulty</em> (tier) <em>and</em>
+  <em>theme</em> (dungeon + section). To let a section draw its own themed pool, <code>FightEncounter</code>
+  (<code>state/battle-store.ts</code>) must carry the dungeon id + section alongside <code>textTierRange</code>.
+</div>
+
+<p class="tagline">§3, the content-generation method, is in
+<a href="../../plans/done/20260707-nbutko-content-v2-tiers.html#method">the implementation plan</a>.</p>
+
+<h2 id="cast">4. The cast <span style="font-weight:400">(draft — tweak freely)</span></h2>
+<p>
+  Standing ensemble reused across every dungeon. <strong>Character handles, not real-person names:</strong>
+  each name carries its own flavor and lets the group be varied without it reading as tokenism. Voices are
+  tuned so different members feed different tier bands.
+</p>
+<h3>Mab — the GM (narrator)</h3>
+<p>
+  Runs the table; warm, vivid, a little wicked — lives for a cliffhanger and a well-timed "…roll me a save."
+  Paints the scene in short sensory strokes, then drops the mechanics like a trap door.
+  <strong>Feeds:</strong> scene description → T6/T7; stat blocks &amp; calls for rolls → T8/T9. <em>Also the
+  primary source of long-form narration (T10–14).</em>
+</p>
+<h3>Bront — the Fighter <span style="font-weight:400">(STR/CON · longsword · Second Wind)</span></h3>
+<p>
+  Ex-caravan guard. Calm, immovable, allergic to drama; has survived worse and doesn't need you to know it.
+  <strong>Voice:</strong> terse deadpan, four-word sentences, understatement as a personality —
+  <em>"That's a big lizard."</em> <strong>Feeds:</strong> T6 goldmine (short plain declaratives).
+</p>
+<h3>Quill — the Wizard <span style="font-weight:400">(INT/WIS · wand · arcane mind)</span></h3>
+<p>
+  Youngest at the table, oldest soul, carries three notebooks. A rules-lawyer who wants to be <em>correct</em>
+  more than brave. <strong>Voice:</strong> precise, fussy, over-explains, cites the numbers — <em>"It has
+  resistance to bludgeoning; the club was a mistake, statistically."</em> <strong>Feeds:</strong> T8/T9
+  goldmine (HP, gold, <code>2d6+3</code>, DCs, percentages).
+</p>
+<h3>Sable — the Rogue <span style="font-weight:400">(DEX/CHA · dagger · cunning)</span></h3>
+<p>
+  Joined "for the loot," stays for the party; trusts locks more than people, already counting treasure that
+  isn't hers yet. <strong>Voice:</strong> sly, sarcastic, deflects with questions and asides — <em>"How much
+  do we think the teeth are worth?"</em> <strong>Feeds:</strong> T9 (the <code>!</code> and <code>?</code> of
+  a heist gone sideways).
+</p>
+<h3>Fife — the Bard <span style="font-weight:400">(CHA/WIS · rapier · silver tongue)</span></h3>
+<p>
+  Self-appointed chronicler of the party's legend, most of which he's inventing in real time; would rather die
+  than miss a rhyme. <strong>Voice:</strong> theatrical, florid, pun-forward, exclamation-heavy, narrates his
+  own heroics in third person — <em>"Fife the Undaunted advances — mostly!"</em> <strong>Feeds:</strong> T7/T9
+  (flourish, dashes, exclamations).
+</p>
+
+<h2 id="swamp">5. Worked example — the Swamp (Dungeon 6, serves T6–9)</h2>
+<p>Brief in <code>content-pipeline/swamp/brief.md</code>. Sections → roster:</p>
+<table>
+  <tr><th>#</th><th>Section</th><th>Beat</th><th>Monster</th></tr>
+  <tr><td>1</td><td>First branch</td><td>the too-good-to-be-true chest</td><td>Swamp Mimic</td></tr>
+  <tr><td>2</td><td>Waypoint</td><td>a sunken shrine; a bargain</td><td>Green Hag</td></tr>
+  <tr><td>3</td><td>Second branch</td><td>the dead don't stay down</td><td>Mummy, Wight</td></tr>
+  <tr><td>4</td><td>Approach</td><td>serpent-cult wards</td><td>Yuan-ti Malison</td></tr>
+  <tr><td>5</td><td>Boss</td><td>the mere rises, many heads</td><td>Hydra</td></tr>
+</table>
+<p>
+  Prototype artifacts: <code>swamp/section-1.md</code> (transcript), <code>swamp/longform-experiment.md</code>
+  (compose-long output), <code>gen-t6-swamp.ts</code> (the rejected template baseline, kept for reference).
+  <em>Prototype transcripts predate the rename — Mab/Bront/Quill/Sable/Fife appear there as
+  Priya/Kwame/Bea/Sila/Fitz.</em>
+</p>
+
+<p class="tagline">§6 (status &amp; build order) and §7 (generating it cheaply) are also in
+<a href="../../plans/done/20260707-nbutko-content-v2-tiers.html">the implementation plan</a>.</p>
+
+</main>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · <a href="../index.html">PRDs</a> · PRD for <code>content-v2-tiers</code> · the implementation plan is at <code>docs/plans/done/20260707-nbutko-content-v2-tiers.html</code></footer>
+</body>
+</html>

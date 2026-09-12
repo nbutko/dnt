@@ -13,7 +13,7 @@ import monstersData from './monsters.json'
 // ~5% end using the same technique.
 // monsters.json's `textTier` was authored on the old 10-tier ladder, where a
 // dungeon spanned only one or two text tiers. The shipped corpus is the 14-tier
-// ladder (content-plan-v2.html §2): dungeon N serves regular text [N, N+2] and
+// ladder (docs/prds/done/20260707-nbutko-content-v2-tiers.html §2): dungeon N serves regular text [N, N+2] and
 // its boss N+3. Remap each monster's text tier into that band, preserving its
 // relative difficulty within the dungeon — the boss reads the top (N+3), and a
 // regular keeps its old offset above its dungeon's easiest monster, clamped to

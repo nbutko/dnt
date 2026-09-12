@@ -254,7 +254,7 @@
   <li><strong>Monsters</strong> — <code>Monster { id, name, tier, role('regular'|'boss'|'mimic'), habitat, hp,
   textTier, wpm, accuracy, attention, slack, flavor }</code>; 70 records in <code>content/monsters.json</code>,
   queried via <code>getMonster</code>/<code>byTier</code>/<code>byRole</code>.
-  See also <a href="monster-manual.json">monster-manual.json</a> for canonical names/CRs.</li>
+  See also <a href="../content-pipeline/monster-manual.json">monster-manual.json</a> for canonical names/CRs.</li>
   <li><strong>Dungeons</strong> — <code>DungeonGraph { tier, seed, entranceId, bossId, waypointId, approachId,
   nodes }</code>; nodes are <code>{ id, kind, state, monsterId?, edges, isRealChest? }</code>.
   <code>generateDungeon()</code> builds a two-fan-out graph; <code>graph.ts</code> has the pure transitions

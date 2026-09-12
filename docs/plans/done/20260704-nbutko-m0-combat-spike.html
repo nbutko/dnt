@@ -120,7 +120,7 @@ the <em>only</em> place the two meet.</p>
 <div class="callout why">
   Why this shape scales: adding the M2 save file is a new <code>state/</code> context + a call site, not a
   combat-math change. Adding M6 sprites swaps <code>MonsterTyping.tsx</code>'s renderer, not the sim. Adding a
-  monster or a text tier stays a <a href="../../content-plan.html">content edit</a>. Every future milestone lands in
+  monster or a text tier stays a <a href="../../prds/done/20260704-nbutko-content-v1.html">content edit</a>. Every future milestone lands in
   exactly one layer.
 </div>
 
@@ -160,7 +160,7 @@ interface BattleConfig {
 
 <h2 id="text-as-data">Text content: data, not code</h2>
 <p>
-  The <a href="../../content-plan.html">content plan</a> makes expandable text banks an explicit goal — "add ten
+  The <a href="../../prds/done/20260704-nbutko-content-v1.html">content plan</a> makes expandable text banks an explicit goal — "add ten
   lines to tier 3" should be a content edit, not a code change, and the kid should eventually be able to submit
   his own lines. A <code>text-banks.ts</code> full of string literals quietly breaks that. So text is treated
   the same way the <a href="../../architecture.html#persistence"><code>SaveStore</code></a> treats save data:

@@ -3,15 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Content Plan — Dungeons & Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>PRD: Content v1 — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>content-v1</code></nav>
 <header class="page-head">
-  <h1>Content Plan</h1>
+  <h1>Content Plan (v1)</h1>
   <p class="tagline">What he actually types, and what he's fighting.</p>
+  <span class="status">feature: <code>content-v1</code> · author: nbutko · opened: 2026-07-04 · status: <strong>done</strong></span>
 </header>
+<div class="banner done">
+  <p><strong>Superseded by <code>content-v2-tiers</code> on 2026-07-07.</strong> The 10-tier ladder, the
+  hand-authored/public-domain sourcing split, and the flat 1–4 monster-tier scheme below were all replaced by
+  the 14-tier ladder and generation pipeline in
+  <a href="20260707-nbutko-content-v2-tiers.html">the content-v2-tiers PRD</a>. "Visual identity" held up —
+  no image assets is still the rule — and now lives in <a href="../../visual-spec.html">visual-spec.html</a>
+  and <a href="../../screens.html">screens.html</a>. Kept here as the original record.</p>
+</div>
 <main>
 
 <h2>Difficulty tiers</h2>
@@ -43,7 +52,7 @@
 <h2>Where the text comes from</h2>
 <h3>Tiers 1–6, for now: a small hand-authored corpus</h3>
 <ul>
-  <li><strong>Hand-authored banks</strong> for launch — a few hundred lines per tier is plenty to start and keeps quality/tone controlled (this is the recommended path for M1–M3; see <a href="roadmap.html">Roadmap</a>).</li>
+  <li><strong>Hand-authored banks</strong> for launch — a few hundred lines per tier is plenty to start and keeps quality/tone controlled (this is the recommended path for M1–M3; see <a href="../../roadmap.html">Roadmap</a>).</li>
   <li>Store banks as simple JSON/TS arrays keyed by tier, so adding content later is a data change, not a code change.</li>
   <li>Optional later idea: let him submit his own favorite lines (jokes, Minecraft trivia, whatever he's into) into a custom bank — high buy-in, near-zero engineering cost.</li>
 </ul>
@@ -64,7 +73,7 @@
   variety would.
 </div>
 <div class="callout open">
-  Not needed for the near term (see <a href="roadmap.html">Roadmap</a> M6 — tiers 7–10 are part of the later
+  Not needed for the near term (see <a href="../../roadmap.html">Roadmap</a> M6 — tiers 7–10 are part of the later
   visual/long-form content pass, not the core M0–M5 build), but worth deciding later: pick excerpt boundaries
   by hand for readability/pacing, or split
   mechanically (e.g. every N sentences)? Hand-picking is likely worth the one-time effort for tier 10 in
@@ -75,20 +84,20 @@
   Since M3, weapons (<code>config/weapons.ts</code>) and consumable items (<code>config/items.ts</code>) are
   config-catalogued content in the same spirit as the text banks and roster below — plain data tables (die/
   ability/price for weapons, effect/duration/price for items), not hardcoded in a component. See
-  <a href="game-design.html#weapons">Game Design</a> for the rules they plug into.
+  <a href="../../game-design.html#weapons">Game Design</a> for the rules they plug into.
 </div>
 
 <h2 id="roster">Monster roster</h2>
 <p>
   Monster stats are just data (JSON), so the roster grows without new code. Stats match the simulation in
-  <a href="game-design.html#monster-ai">Monster typing</a>: <code>wpm</code> (speed), <code>accuracy</code>
+  <a href="../../game-design.html#monster-ai">Monster typing</a>: <code>wpm</code> (speed), <code>accuracy</code>
   (chance per character it's typed wrong), and <code>attention</code> (mean seconds before it notices a
   mistake — not a per-character roll, since noticing is time-based). Starting sketch:
 </p>
 <div class="callout decision">
   As of M2, "tier" stops meaning a single flat 1–4 difficulty scale and starts meaning <em>dungeon</em> tier
   — one of 11, each tied to a real-world-manual habitat with its own CR/WPM/text-tier band. See the
-  <a href="prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-tiers">M2 scope doc</a> for the full 11-tier table. The roster below
+  <a href="20260704-nbutko-m2-progression-loop.html#dungeon-tiers">M2 scope doc</a> for the full 11-tier table. The roster below
   becomes the concrete Tier 1 (Grassland) content: Slime, Goblin, and Skeleton as regular fights, Slime King
   as the tier's boss. Wraith and Dragon don't fit Grassland's CR band and are reserved as placeholders,
   to be reassigned to an appropriate tier during the M5 content pass rather than kept on a flat scale.
@@ -108,27 +117,27 @@
   with a slow (high-second) attention, so they visibly flub and dawdle over fixing it; later monsters ramp
   <em>both</em> wpm and attention together, since a fast monster with slow attention would spew a huge
   correction every time it errs (attention is measured in seconds, so more wpm alone already means more
-  wrong characters typed per mistake — see <a href="game-design.html#monster-ai">Monster typing</a>).
+  wrong characters typed per mistake — see <a href="../../game-design.html#monster-ai">Monster typing</a>).
 </div>
 
 <h2>Visual identity</h2>
 <p>
   Start fully text-based — a text-adventure-style presentation, no images at all. The battle "screen" is
   just text: a description of the monster, its HP as a bar or number, its live typing rendered character by
-  character (typos and corrections included, per <a href="game-design.html#monster-ai">Monster typing</a>),
+  character (typos and corrections included, per <a href="../../game-design.html#monster-ai">Monster typing</a>),
   the player's own prompt/input box, and a simple on-screen keyboard that highlights the next few keys as a
-  touch-typing aid (see the <a href="plans/done/20260704-nbutko-m0-combat-spike.html#keyboard">M0 plan</a>). Hits and misses can still
+  touch-typing aid (see the <a href="../../plans/done/20260704-nbutko-m0-combat-spike.html#keyboard">M0 plan</a>). Hits and misses can still
   read as punchy through text alone (color
   flash, a shake via CSS transform, a damage number popping up) without a single drawn asset.
 </p>
 <div class="callout decision">
-  No image assets until a later, separate visual-upgrade pass (see <a href="roadmap.html">Roadmap</a> M6).
+  No image assets until a later, separate visual-upgrade pass (see <a href="../../roadmap.html">Roadmap</a> M6).
   Art is the single most time-consuming, hardest-to-scope part of a game like this — deferring it means the
   entire core loop (M1–M5) can be built and playtested on nothing but layout and typography, and images get
   added on top of a proven game rather than gating it.
 </div>
 
 </main>
-<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · <a href="../index.html">PRDs</a> · PRD for <code>content-v1</code></footer>
 </body>
 </html>

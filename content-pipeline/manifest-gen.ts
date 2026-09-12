@@ -3,10 +3,11 @@
  *
  * Emits generated/manifest.json — the single source of truth that drives the
  * whole remaining content run (showrunner → draw → compose → lint). Per dungeon:
- * habitat, CR-banded candidate monsters (from docs/monster-manual.json), a dice
- * slice (from dice.json, distinct per dungeon), and the section→tier→mode map
- * derived from content-plan-v2 §2 (dungeon N serves regular [N,N+1,N+2], boss N+3;
- * tiers <=5 are drills handled elsewhere, tiers >=10 are compose-long).
+ * habitat, CR-banded candidate monsters (from monster-manual.json, alongside
+ * this script), a dice slice (from dice.json, distinct per dungeon), and the
+ * section→tier→mode map derived from docs/prds/done/20260707-nbutko-content-v2-tiers.html
+ * §2 (dungeon N serves regular [N,N+1,N+2], boss N+3; tiers <=5 are drills
+ * handled elsewhere, tiers >=10 are compose-long).
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 
@@ -37,13 +38,14 @@ const ROLES = ['First Branch', 'Waypoint', 'Second Branch', 'Approach', 'Boss']
 // T9 are compose-short; T10+ are compose-long.
 const tierMode = (t: number): 'drill' | 'short' | 'long' => (t <= 4 ? 'drill' : t <= 9 ? 'short' : 'long')
 
-// content-plan-v2 §2: regular sections (1-4) serve [N,N+1,N+2]; boss (5) serves N+3.
+// docs/prds/done/20260707-nbutko-content-v2-tiers.html §2: regular sections
+// (1-4) serve [N,N+1,N+2]; boss (5) serves N+3.
 const sectionTiers = (n: number, sectionIdx: number): number[] => {
   const tiers = sectionIdx < 4 ? [n, n + 1, n + 2] : [n + 3]
   return tiers.filter((t) => tierMode(t) !== 'drill') // drills handled by drill-gen
 }
 
-const manual = JSON.parse(readFileSync('../docs/monster-manual.json', 'utf8')) as Monster[]
+const manual = JSON.parse(readFileSync('monster-manual.json', 'utf8')) as Monster[]
 // Spread up to `k` candidates evenly across the CR-sorted in-band pool so the
 // showrunner has a low→high roster to pick a boss from.
 const candidatesFor = (habitat: string, [lo, hi]: [number, number], k = 14): Monster[] => {

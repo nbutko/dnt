@@ -1,7 +1,8 @@
 /**
  * Drill-tier generator (T1–4) — reusable module + standalone builder.
  *
- * The "free" (no-LLM) half of the pipeline — content-plan-v2.html §3.3 / §7.1.
+ * The "free" (no-LLM) half of the pipeline —
+ * docs/plans/done/20260707-nbutko-content-v2-tiers.html §3.3 / §7.1.
  * T1–3 are keyboard-restricted (home row / left hand / right hand); T4 is
  * full-keyboard 3-5 word phrases. (T5 lowercase sentences moved to compose —
  * templated sentences read too formulaic.)

@@ -1,7 +1,8 @@
 /**
  * Draw script (free, deterministic). Run: `npx tsx draw.ts [dungeonName|all]`
  *
- * Stage 2 of seed-and-compose (content-plan-v2.html §3.2 / §7.5). Reads each
+ * Stage 2 of seed-and-compose (docs/plans/done/20260707-nbutko-content-v2-tiers.html
+ * §3.2 / §7.5). Reads each
  * campaign transcript ONCE and emits pre-drawn seed bundles per section — the
  * tiny slices compose agents get instead of the whole transcript. Two bundle
  * sizes, because the two compose modes seed differently:

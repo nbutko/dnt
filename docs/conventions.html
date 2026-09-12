@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conventions — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · conventions</nav>
+<header class="page-head">
+  <h1>Documentation Conventions</h1>
+  <p class="tagline">How <code>docs/</code> is laid out, how to name and place a new document, and how to open
+  and close a feature's docs — without reading a PRD to learn it. Five minutes, read straight through.</p>
+</header>
+<main>
+
+<h2>1. The layout</h2>
+<table>
+  <tr><th>Directory</th><th>What lives there</th></tr>
+  <tr><td><code>docs/</code> (top level)</td><td>Evergreen docs: the project <strong>as built today</strong>.
+    No milestone narration.</td></tr>
+  <tr><td><code>style/</code></td><td>The shared stylesheet, the document templates, any asset used by more
+    than one doc. Not documentation itself.</td></tr>
+  <tr><td><code>prds/</code></td><td>What we want to build and why (larger-scope work only) —
+    <code>index.html</code> + <code>wip/</code> + <code>done/</code>.</td></tr>
+  <tr><td><code>wireframes/</code></td><td>Screens and flows (anything visual) — same
+    <code>index.html</code> + <code>wip/</code> + <code>done/</code> shape.</td></tr>
+  <tr><td><code>plans/</code></td><td>The technical approach and the stories/tasks — required for
+    <em>every</em> piece of work. Same shape.</td></tr>
+  <tr><td><code>notes/</code></td><td>Dated gotchas that aren't evergreen truths and aren't tied to one
+    feature's lifecycle — <code>index.html</code> + flat files.</td></tr>
+</table>
+<p><code>wip/</code> and <code>done/</code> never have their own index; the type's <code>index.html</code> one
+level up is the index. An empty <code>wip/</code> or <code>done/</code> still exists in git (a <code>.gitkeep</code>)
+so the shape is visible even before it's used.</p>
+
+<h2>2. The evergreen rule</h2>
+<p>
+  Top-level docs are <strong>present tense</strong>: they describe the repo now, not how it got here. They
+  <strong>may — and should — carry the current "why"</strong> ("the engine never imports React because…"); what
+  they drop is the narrative of how a design changed ("in M2 we tried a skill tree, then…" links to the
+  <code>done/</code> plan instead of staying in the text).
+</p>
+<div class="callout why">
+  Every session starts cold. A stale sentence in an evergreen doc costs the next agent a wrong assumption or a
+  code spelunk. Trust-by-location only holds if closing a feature always includes fixing the evergreen docs it
+  touched — that's the maintenance obligation, not optional cleanup.
+</div>
+<p><strong>Maintenance obligation:</strong> a feature's last commit is a docs commit. If the work changed what an
+evergreen doc says, that doc gets updated in the same close-out, not "later."</p>
+
+<h2>3. Naming</h2>
+<p>
+  Dated artifacts (PRD, wireframes, plan, note) are named:
+</p>
+<pre><code>[YYYYMMDD]-[author]-[feature-or-topic].html</code></pre>
+<ul>
+  <li><strong>Date</strong> is the day the document was opened.</li>
+  <li><strong>Author</strong> is a context hint, not a credit — "who can tell me about this?" It doesn't change
+  when someone else picks the work up, and doesn't need to be exact. On this repo it's almost always
+  <code>nbutko</code>.</li>
+  <li><strong>Feature name</strong> is lower-case-with-dashes and <strong>shared</strong> across one feature's
+  PRD, wireframes, and plan, so the three are findable together (e.g. <code>20260912-nbutko-docs-refactor</code>
+  for all three). A note's "topic" need not match any feature name — notes are gotchas, not features.</li>
+</ul>
+
+<h2>4. When a PRD or wireframes are warranted</h2>
+<div class="callout decision">
+  A plan is required for every piece of work. A <strong>PRD</strong> is warranted when the work changes what the
+  player experiences or why a system exists — a new milestone, a retune with targets, a new screen. A bug batch
+  or refactor with no player-visible change needs only a plan. <strong>Wireframes</strong> are warranted whenever
+  a screen is added or its layout changes; a color or copy tweak inside an existing layout is not. This is a
+  judgment call made at the start of the feature and recorded in the plan's header status line.
+</div>
+
+<h2>5. Lifecycle</h2>
+<ol>
+  <li><strong>Open:</strong> copy the right template (§7) into <code>wip/</code> under the naming rule (§3);
+  add a row to that type's index.</li>
+  <li><strong>Work:</strong> tick <code>ul.tasks</code> checkboxes as stories complete. One story, one commit.</li>
+  <li><strong>Close</strong> — see the checklist in §9.</li>
+</ol>
+
+<h2>6. Index upkeep</h2>
+<p>
+  Each of <code>prds/index.html</code>, <code>wireframes/index.html</code>, <code>plans/index.html</code> lists
+  every file of that type, one row per file, grouped into a <em>wip</em> table and a <em>done</em> table.
+  <code>notes/index.html</code> keeps one table (notes don't move). <strong>A file is never unlisted</strong> —
+  opening or closing a document means adding or moving its row in the same commit.
+</p>
+
+<h2>7. Templates</h2>
+<p>
+  One skeleton per document type lives in <code>style/templates/</code>: <code>prd.html</code>,
+  <code>wireframes.html</code>, <code>plan.html</code>, <code>note.html</code>. Each renders on its own and
+  carries bracketed <code>[…]</code> prompts telling you what goes in each section. To start a document, copy the
+  template into the right <code>wip/</code> directory, rename it to the convention (§3), and fill in the
+  prompts — don't write one from scratch.
+</p>
+
+<h2>8. Notes</h2>
+<ul>
+  <li>Write one when an agent learns something non-trivial that another agent is likely to trip on. One gotcha
+  per file; the topic in the filename, not a feature name.</li>
+  <li>Opens with a <code>callout why</code> titled "When to read this" — 5–10 lines an agent can read without
+  loading the rest of the file.</li>
+  <li>Never silently corrected. A note found wrong or stale gets a dated <code>banner outdated</code> (or
+  <code>retired</code>) at the top saying what changed, plus a link to the newer note if there is one — the
+  index line updates to match. Deletion is not how a note goes stale.</li>
+</ul>
+<p><strong>Memory holds preferences only.</strong> A maintainer's session memory is for personal preferences and
+workflow feedback across sessions — repo knowledge (gotchas, traps, "why is this weird") lives in
+<code>notes/</code> where every author's agents can see it, not in one person's private memory.</p>
+
+<h2>9. Banners</h2>
+<p>A <code>&lt;div class="banner VARIANT"&gt;</code> sits directly under the header. Four variants:</p>
+<table>
+  <tr><th>Variant</th><th>Means</th></tr>
+  <tr><td><code>done</code></td><td>The work shipped. What landed, what didn't, where the evergreen description
+    now lives.</td></tr>
+  <tr><td><code>wip</code></td><td>Open and in progress — the normal state of anything under <code>wip/</code>.</td></tr>
+  <tr><td><code>outdated</code></td><td>Some content is stale but the document isn't fully superseded; says what
+    changed and, if one exists, links the replacement.</td></tr>
+  <tr><td><code>retired</code></td><td>Superseded outright — points to what replaced it.</td></tr>
+</table>
+
+<h2>10. Checkboxes</h2>
+<p>
+  Task lists use the glyphs <code>☐</code> (open) and <code>☑</code> (done) as plain text — the first character
+  of each <code>&lt;li&gt;</code> — inside a <code>&lt;ul class="tasks"&gt;</code>. Never an <code>&lt;input
+  type="checkbox"&gt;</code>: a static file can't persist its state, so a form control would silently lie.
+</p>
+
+<h2>11. Close-out checklist</h2>
+<p>Copy this into the closing commit's checklist (or just follow it):</p>
+<ul class="tasks">
+  <li>☐ Reconcile the plan: tick every task actually done; leave the rest unticked.</li>
+  <li>☐ Add (or update) the <code>banner</code> at the top of the PRD/wireframes/plan: what shipped, what
+  didn't, where the evergreen description now lives.</li>
+  <li>☐ <code>git mv</code> the PRD, wireframes, and plan into their <code>done/</code> directories.</li>
+  <li>☐ Move each moved file's row from the <em>wip</em> table to the <em>done</em> table in its index.</li>
+  <li>☐ Update every evergreen doc the feature touched so nothing it says is false.</li>
+  <li>☐ Write a note (with index row) if the feature surfaced a gotcha worth not re-learning.</li>
+  <li>☐ Run the link audit; commit.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a> · <a href="prds/index.html">PRDs</a> ·
+<a href="wireframes/index.html">wireframes</a> · <a href="plans/index.html">plans</a> ·
+<a href="notes/index.html">notes</a></footer>
+</body>
+</html>

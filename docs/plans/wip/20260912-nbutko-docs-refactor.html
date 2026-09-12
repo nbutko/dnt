@@ -23,7 +23,8 @@
   (requirements R1–R12); the <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> is
   the raw material — what every current file contains and who links to it. This document makes the calls the
   note left open, fixes every file's destination, and breaks the work into stories that each end in one
-  link-clean commit.
+  link-clean commit. The naming, lifecycle, and close-out rules this plan and its stories follow are written
+  up once in <a href="../../conventions.html">conventions.html</a>, itself one of this plan's deliverables.
 </p>
 
 <h2>1. Scope</h2>
@@ -353,28 +354,28 @@ its current location; audit clean.</p>
 
 <h3 id="s1">Story 1 — Conventions doc, templates, index pages</h3>
 <ul class="tasks">
-  <li>☐ Write <code>docs/conventions.html</code>: the layout and what each directory is for; the evergreen
+  <li>☑ Write <code>docs/conventions.html</code>: the layout and what each directory is for; the evergreen
   rule (present tense, current "why" allowed, link to <code>done/</code> for history, maintenance obligation);
   naming <code>[YYYYMMDD]-[author]-[feature].html</code>; author-as-context-hint; when a PRD / wireframes are
   warranted (the PRD's decision callout, restated); the lifecycle (open in <code>wip/</code>, index line, close
   → reconcile, banner, move, index, evergreen update, note if learned); index upkeep; notes (head summary,
   "relevant when" line, the stale-banner rule); where templates live; memory holds preferences only. Include
   the close-out checklist as a copy-pasteable list.</li>
-  <li>☐ Write <code>style/templates/prd.html</code>, <code>wireframes.html</code>, <code>plan.html</code>,
+  <li>☑ Write <code>style/templates/prd.html</code>, <code>wireframes.html</code>, <code>plan.html</code>,
   <code>note.html</code>. Each renders on its own (stylesheet at <code>../style.css</code>), has the status
   line in the header, and carries short bracketed prompts in each section. The plan template's skeleton is
   this document's: Scope, Approach, Decisions, Stories with <code>ul.tasks</code>, Verification, Out of scope.
   The PRD template's skeleton is the docs-refactor PRD's. The note template opens with the
   <code>callout why</code> "When to read this" block.</li>
-  <li>☐ Write <code>prds/index.html</code> (wip: docs-refactor; done: empty) and <code>wireframes/index.html</code>
+  <li>☑ Write <code>prds/index.html</code> (wip: docs-refactor; done: empty) and <code>wireframes/index.html</code>
   (both sections empty, a line saying so). Bring <code>plans/index.html</code> and <code>notes/index.html</code>
   to the same shape: crumbs, one-line intro linking <code>conventions.html</code>, wip table, done table (the
   notes index keeps its single table).</li>
-  <li>☐ <code>docs/index.html</code>: add a "Development artifacts" section with cards for the four indexes and
+  <li>☑ <code>docs/index.html</code>: add a "Development artifacts" section with cards for the four indexes and
   a card for <code>conventions.html</code>. Leave the old numbered cards in place for now.</li>
-  <li>☐ Reconcile this plan and the PRD with the templates (same header status line, same section order) so
+  <li>☑ Reconcile this plan and the PRD with the templates (same header status line, same section order) so
   the templates and their first two instances agree.</li>
-  <li>☐ Audit; commit: <code>docs-refactor: conventions doc, templates, index pages</code>.</li>
+  <li>☑ Audit; commit: <code>docs-refactor: conventions doc, templates, index pages</code>.</li>
 </ul>
 <p><em>Done when:</em> an agent given only <code>conventions.html</code> and <code>style/templates/</code> can
 name, place, and index a new feature's docs without reading the PRD (the real test is Story 12).</p>

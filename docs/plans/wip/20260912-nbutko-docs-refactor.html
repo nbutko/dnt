@@ -617,22 +617,27 @@ milestone narration; every "why" survived.</p>
 
 <h3 id="s11">Story 11 — <code>CLAUDE.md</code> and the full audit</h3>
 <ul class="tasks">
-  <li>☐ "Start here" table → the evergreen list plus <code>conventions.html</code> and the four indexes.</li>
-  <li>☐ "Milestone docs" section → "Active work": the wip plan is under <code>plans/index.html</code>; history
+  <li>☑ "Start here" table → the evergreen list plus <code>conventions.html</code> and the four indexes.</li>
+  <li>☑ "Milestone docs" section → "Active work": the wip plan is under <code>plans/index.html</code>; history
   in <code>done/</code>; the roadmap says which milestone is live. Drop the hard-coded "M3 is done; M4 is next".</li>
-  <li>☐ Working rules: add the close-out rule ("a feature's last commit is the docs commit: reconcile plan,
+  <li>☑ Working rules: add the close-out rule ("a feature's last commit is the docs commit: reconcile plan,
   banner, move to done, indexes, evergreen, note"); design links → <code>visual-spec.html</code>,
-  <code>screens.html</code>, <code>design-tokens.json</code>; the browser note reworded: humans open docs via
-  <code>file://</code>, agent browser tools need <code>npm run dev</code>.</li>
-  <li>☐ "Architecture invariants" section stays; "Gotchas / good-to-knows" section → a pointer to
-  <code>notes/index.html</code> in place of the itemized gotchas.</li>
-  <li>☐ Memory paragraph → memory holds preferences and workflow feedback; project gotchas live in
+  <code>screens.html</code>, <code>design-tokens.json</code>, and the wireframes index; the browser note
+  reworded: humans open docs via <code>file://</code>, agent browser tools need <code>npm run dev</code> and
+  <code>http://127.0.0.1:5173/docs/…</code> (linking the agent-browser note).</li>
+  <li>☑ "Architecture invariants" section stays, scrubbed of milestone narration ("as of M3", "retired M2's …"
+  → present tense, with the seam's history pointed at the M3 plan instead); "Gotchas / good-to-knows" section →
+  a two-line pointer to <code>notes/index.html</code> in place of the itemized gotchas.</li>
+  <li>☑ Memory paragraph → memory holds preferences and workflow feedback; project gotchas live in
   <code>docs/notes/</code>.</li>
-  <li>☐ Commit-attribution line: it names an older model. Update it to the current attribution the harness
-  provides — confirm with the maintainer at check-in.</li>
-  <li>☐ Full audit: §7.1 links, §7.2 index-vs-directory, §7.3 stragglers, one <code>file://</code> open at each
-  depth by the maintainer, <code>git status</code> clean of untracked docs.</li>
-  <li>☐ Commit: <code>docs-refactor: CLAUDE.md points at the new layout</code>.</li>
+  <li>☑ Commit-attribution line: it named an older model. Made it model-agnostic — "Commit messages end with
+  the <code>Co-Authored-By:</code> trailer the current session's harness provides (it names the model in use);
+  never hard-code a model name here" — per the maintainer's decision already taken for this story.</li>
+  <li>☑ Full audit: §7.1 links, §7.2 index-vs-directory, §7.3 stragglers all clean (see the story's check-in
+  report for verbatim output); <code>git status</code> clean of untracked docs. The "one <code>file://</code>
+  open at each depth" sub-item is <strong>(pending maintainer)</strong> — an agent cannot open <code>file://</code>
+  URLs (see the browser-tools note).</li>
+  <li>☑ Commit: <code>docs-refactor: CLAUDE.md points at the new layout</code>.</li>
 </ul>
 
 <h3 id="s12">Story 12 — Close-out (the dogfood test)</h3>

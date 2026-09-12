@@ -12,81 +12,79 @@ project for one kid, **not** a product for the world.
 
 | If you need… | Open |
 | --- | --- |
-| **The map of the code** — tree, layers, seams, "where do I change X?" | [`docs/codebase-architecture.html`](docs/codebase-architecture.html) |
 | The pitch, principles, doc index | [`docs/index.html`](docs/index.html) |
-| Build order & milestones (M0–M6) | [`docs/roadmap.html`](docs/roadmap.html) |
-| Combat math, HP/timers, damage formula | [`docs/game-design.html`](docs/game-design.html) |
+| How docs are named/organized, and how to open or close a feature's docs | [`docs/conventions.html`](docs/conventions.html) |
+| Where the project is, what's next, one-liners into every finished milestone | [`docs/roadmap.html`](docs/roadmap.html) |
+| Combat math, HP/timers, damage formula, abilities & D&D leveling | [`docs/game-design.html`](docs/game-design.html) |
+| Text tiers, monster roster, content pipeline as it runs today | [`docs/content.html`](docs/content.html) |
 | Stack, data model, persistence, hosting | [`docs/architecture.html`](docs/architecture.html) |
-| Text tiers, monster roster, content sourcing | [`docs/content.html`](docs/content.html) |
+| **The map of the code** — tree, layers, seams, "where do I change X?" | [`docs/codebase-architecture.html`](docs/codebase-architecture.html) |
+| Palette, type, layout, keyboard system every screen shares | [`docs/visual-spec.html`](docs/visual-spec.html) |
+| Every shipped screen's layout, states, interactions | [`docs/screens.html`](docs/screens.html) |
+| The visual spec's values, machine-readable | [`docs/design-tokens.json`](docs/design-tokens.json) |
+| What's being built now, or the rationale behind a past feature (PRDs) | [`docs/prds/index.html`](docs/prds/index.html) |
+| Screens/flows for a feature that added or reshaped one (wireframes) | [`docs/wireframes/index.html`](docs/wireframes/index.html) |
+| The active plan's story order, or any finished plan | [`docs/plans/index.html`](docs/plans/index.html) |
+| A gotcha someone already hit | [`docs/notes/index.html`](docs/notes/index.html) |
 
-### Milestone docs
+### Active work
 
-Each milestone has a **scope** (what) and an **implementation plan** (how) under `docs/`. The
-[roadmap](docs/roadmap.html) is the single source of truth for **which milestone is active** — check it rather
-than trusting a hard-coded "current" note here. When starting work in a milestone, follow its implementation
-plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
-
-- **M0** — combat-math spike: [m0-implementation](docs/plans/done/20260704-nbutko-m0-combat-spike.html)
-- **M2** — progression loop (map, dungeons, hearts, the Inn):
-  [m2-scope](docs/prds/done/20260704-nbutko-m2-progression-loop.html) +
-  [m2-implementation](docs/plans/done/20260704-nbutko-m2-progression-loop.html) (its tail holds the
-  post-playtest feedback logs)
-- **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop) — **shipped**:
-  [m3-scope](docs/prds/done/20260705-nbutko-m3-character-sheet.html) +
-  [m3-implementation](docs/plans/done/20260705-nbutko-m3-character-sheet.html) +
-  [wireframes](docs/wireframes/done/20260705-nbutko-m3-character-sheet.html)
+The plan that's currently open lives under [`docs/plans/index.html`](docs/plans/index.html)'s wip table; the
+[roadmap](docs/roadmap.html#where) is the single source of truth for **which milestone is live** and links
+straight to that plan (and its PRD, if it has one). When starting work, follow the active plan's story order.
+Every finished milestone's PRD, plan, and wireframes live under the matching `done/` directories, indexed the
+same way — that's where worked examples of the doc types live.
 
 ## Working rules (non-negotiable)
 
 - **One story = one commit, with a check-in between. Never batch.** Implement, verify, commit, stop, wait.
 - **Before any _code_ commit, this must be clean:** `npm run lint` + `tsc` (`npm run build`) + `npm run test`
   (all bundled as `npm run presubmit`). Docs-only commits skip this gate.
-- **Verify UI visually, not just via tests.** Match [`docs/screens.html`](docs/screens.html) exactly — the
-  [wireframes](docs/wireframes/done/20260705-nbutko-m3-character-sheet.html), [`visual-spec.html`](docs/visual-spec.html),
-  and [`design-tokens.json`](docs/design-tokens.json). Dev server:
-  `npm run dev` → `http://127.0.0.1:5173/` (also serves `/docs/...`; `file://` URLs are blocked by the browser
-  tools).
-- **Commit only when asked.** Branch first if on `main`. Commit messages end with:
-  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+- **Verify UI visually, not just via tests.** Match [`docs/visual-spec.html`](docs/visual-spec.html),
+  [`docs/screens.html`](docs/screens.html), [`docs/design-tokens.json`](docs/design-tokens.json), and the
+  relevant page in [`docs/wireframes/index.html`](docs/wireframes/index.html) exactly. Dev server:
+  `npm run dev` → `http://127.0.0.1:5173/` (also serves `/docs/...`). Humans open docs straight from disk via
+  `file://`; agent browser tools can't — they need the dev server and `http://127.0.0.1:5173/docs/...` (see
+  [the note on why](docs/notes/20260912-nbutko-agent-browser-no-file-urls.html), which also explains why an
+  HTTP-based link check proves nothing here).
+- **A feature's last commit is the docs commit.** Reconcile its plan (tick tasks actually done), add/update its
+  banner, `git mv` the PRD/wireframes/plan to `done/`, move their index rows, update any evergreen doc the
+  feature touched, and add a note if it surfaced a gotcha worth not re-learning. Full checklist:
+  [`docs/conventions.html`](docs/conventions.html) §11.
+- **Commit only when asked.** Branch first if on `main`. Commit messages end with the `Co-Authored-By:` trailer
+  the current session's harness provides (it names the model in use); never hard-code a model name here.
 - **Favor simple over scalable.** One kid, one device — "works great for him today" beats "scales to a thousand
   users." No accounts, no backend, no router library.
 
 ## Architecture invariants (breaking these is how the code rots)
 
 - **The combat `engine/` never imports React.** Pure, headless, unit-tested.
-- **The persistent save never imports combat; combat never imports the save.** They meet at exactly **one** pure
-  function, `resolveModifiers()` (`engine/character/modifiers.ts` as of M3; retired M2's `engine/progression/
-  skill-effects.ts`). It turns save data → a `PlayerModifiers` object the battle consumes. **Grow this seam; don't
-  route around it** — it's why milestones stay additive.
-- **State is classified by lifetime** (see the architecture doc): _persistent_ (save → IndexedDB), _ephemeral run_
-  (the dungeon-run store, **never** persisted — persisting it would let a player quit-to-dodge a wipe), and
-  _simulation_ (the battle store). Don't move state across homes.
+- **Combat math (`engine/battle.ts`, `damage.ts`, `monster-typing.ts`) never imports the save, and the save
+  never reaches into combat math except through `resolveModifiers()`** (`engine/character/modifiers.ts`) —
+  the one pure function that turns save data into the `PlayerModifiers` object a battle consumes. **Grow this
+  seam; don't route around it** — it's why milestones stay additive. (The save *does* call other
+  `engine/character/` functions directly — `leveling.ts`'s XP/level-up math, `create.ts`, `ability-roll.ts` —
+  but that's character-progression logic kept headless for testability, not combat math.) See
+  [`docs/codebase-architecture.html`](docs/codebase-architecture.html#seam) for the full shape, and the
+  [M3 plan](docs/plans/done/20260705-nbutko-m3-character-sheet.html) for how this seam replaced M2's
+  `engine/progression/skill-effects.ts`.
+- **State is classified by lifetime** (see [`docs/codebase-architecture.html#state`](docs/codebase-architecture.html#state)):
+  _persistent_ (save → IndexedDB), _ephemeral run_ (the dungeon-run store, **never** persisted — persisting it
+  would let a player quit-to-dodge a wipe), and _simulation_ (the battle store). Don't move state across homes.
 - **`src/config/combat.ts` stays at its committed values.** Retuning is a deliberate, reviewed change, not a
   drive-by.
 - **Prove engine/data logic headlessly (tests + `engine/sim/` harnesses) _before_ the UI that consumes it.**
 
 ## Gotchas / good-to-knows
 
-- **Save migrations are brittle:** `domain/save.ts` hard-codes the version literal (now `3`) and `isSaveData()`
-  requires an exact match; `migrate()` wipes anything unrecognized (it knows one real migration, v2 → v3, which
-  drops the retired `skillTree` and sets `character: null` so the player is routed through creation once). Bump
-  the version _and_ write a real migration when the shape changes again, or existing saves silently reset.
-- **Crit is fully wired (as of the M4 combat retune):** DEX's `critChanceBonus`, a weapon's `critRange`, and
-  Oil of Sharpness's `critDamageMult` all flow from `PlayerModifiers` (`engine/character/modifiers.ts`) into
-  `engine/damage.ts`'s crit roll and damage calc — effective crit chance is `combat.criticalChance +
-  critChanceBonus + (20 − critRange)/20`, and a crit's `critDamageMult` multiplies its `baseHit`. Raising DEX or
-  equipping a wider-crit-range weapon (or item) does move crit odds/damage now; this was a real gap through M3
-  but docs/plans/done/20260708-nbutko-combat-retune.html's Story 3 closed it.
-- **Battle is not a top-level screen** — it launches _inside_ `DungeonScreen` so the ephemeral run stays mounted,
-  and returns via an `onResult` callback.
-- **Tuning knobs are deferred to M5 on purpose.** Per-point magnitudes ship as placeholders (M3 corrals them into
-  `config/abilities.ts` + `config/leveling.ts`); don't treat placeholder numbers as tuned.
-- **`stats.battlesLost` is still dead** — in the save shape, never written by any reducer action (unlike
-  `stats.bestWpm`, `powerUpMultiplier`, and `dungeon-tiers.ts`'s `textTierRange`, all lit up in M3).
-- `content-pipeline/monster-manual.json` is canonical monster names/CRs reference data (not shipped code).
+Traps and non-obvious behavior that aren't part of the architecture above live one-per-file in
+[`docs/notes/index.html`](docs/notes/index.html), not here. Read the index's "relevant when" column before
+touching save migrations, the PWA, the deploy, IndexedDB, class balance, or anything else that sounds like it
+might already have a note — a stale itemized list here would just be one more thing to keep in sync.
 
 ## Memory & context
 
 There is a persistent auto-memory at `~/.claude/projects/-Users-nb-Documents-dnt/memory/` (indexed by
-`MEMORY.md`) capturing user context, workflow feedback, and milestone status across sessions. It's loaded
-automatically — check it for standing preferences before asking.
+`MEMORY.md`) holding the maintainer's personal preferences and workflow feedback across sessions — it's loaded
+automatically, so check it for standing preferences before asking. Repo knowledge (gotchas, traps, "why is this
+weird") lives in [`docs/notes/`](docs/notes/index.html) instead, where every author's agents can see it.

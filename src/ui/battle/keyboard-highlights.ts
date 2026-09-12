@@ -7,7 +7,7 @@ export interface KeyLookup {
 
 // Derived from the layout data itself (not hardcoded per character) so tiers
 // 4+ (capitals, punctuation, symbols) teach themselves through the same
-// lookup — see m0-implementation.html#keyboard.
+// lookup — see docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard.
 const buildKeyLookup = (): Map<string, KeyLookup> => {
   const lookup = new Map<string, KeyLookup>()
   keyboardLayout.forEach((row) => {
@@ -26,7 +26,7 @@ const keyLookup = buildKeyLookup()
 
 export const keyForChar = (char: string): KeyLookup | undefined => keyLookup.get(char)
 
-// Three cases (see m0-implementation.html#keyboard):
+// Three cases (see docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard):
 //  - off track (a wrong char anywhere, or overtyped past the prompt's end)
 //    -> only Backspace glows.
 //  - complete & correct -> only Enter glows.

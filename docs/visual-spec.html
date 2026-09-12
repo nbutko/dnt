@@ -20,12 +20,12 @@
 <nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · visual spec</nav>
 <header class="page-head">
   <h1>Visual Spec — Battle Screen</h1>
-  <p class="tagline">Implementer-ready tokens and component specs for direction 2a ("Vertical Duel"), chosen from the <a href="m0-implementation.html">M0</a> wireframe pass.</p>
+  <p class="tagline">Implementer-ready tokens and component specs for direction 2a ("Vertical Duel"), chosen from the <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0</a> wireframe pass.</p>
 </header>
 <main>
 
 <div class="callout decision">
-  Scope note: <a href="m0-implementation.html">M0's own plan</a> deliberately ships Story 5's UI unstyled
+  Scope note: <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0's own plan</a> deliberately ships Story 5's UI unstyled
   (Tailwind defaults, no art) — the point of the spike is to prove the combat math, not the look. Treat this
   spec as <strong>ready whenever you apply it</strong>: drop it in at M0 if you'd rather build styled from day
   one, or hold it for M1's "one real UI" milestone and keep M0 truly bare. Either way, these are the exact
@@ -102,7 +102,7 @@ font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</
 </ul>
 
 <h2 id="keyboard">Keyboard — all three states</h2>
-<p>Full 5-row QWERTY per <a href="m0-implementation.html#keyboard">the implementation plan</a>: number row (ends in Backspace), two letter rows (second ends in Enter), Shift row, space row. Base key: <code>34×32px</code>, <code>4px</code> radius, <code>1px solid var(--border-gold-dim)</code>, background <code>rgba(237,225,195,.06)</code>. Only three states ever apply color — everything else stays the neutral base key above.</p>
+<p>Full 5-row QWERTY per <a href="plans/done/20260704-nbutko-m0-combat-spike.html#keyboard">the implementation plan</a>: number row (ends in Backspace), two letter rows (second ends in Enter), Shift row, space row. Base key: <code>34×32px</code>, <code>4px</code> radius, <code>1px solid var(--border-gold-dim)</code>, background <code>rgba(237,225,195,.06)</code>. Only three states ever apply color — everything else stays the neutral base key above.</p>
 <table>
   <tr><th>State</th><th>Trigger</th><th>Styling</th></tr>
   <tr><td>On track</td><td><code>input === prompt.slice(0, input.length)</code></td><td>Next key: solid <code>#e8c766</code> bg, dark text, <code>box-shadow: 0 0 10px #e8c76699</code>. +1 key: <code>rgba(232,199,102,.55)</code>. +2 key: <code>rgba(232,199,102,.3)</code>. Everything else: base key.</td></tr>

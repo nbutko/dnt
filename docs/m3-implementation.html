@@ -305,7 +305,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
 <h2 id="stories">Stories &amp; tasks</h2>
 <p>
   Build order: <strong>0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14.</strong> Strictly bottom-up: the save
-  model and config data first, then the engine functions with their <a href="m0-implementation.html">Vitest</a>
+  model and config data first, then the engine functions with their <a href="plans/done/20260704-nbutko-m0-combat-spike.html">Vitest</a>
   coverage, then the screens that consume them. The one deliberate ordering choice is that
   <strong>character creation (Story 4) lands right after the modifier seam (Story 3)</strong>, so the moment a
   hero exists his derived stats are already correct and the game boots end-to-end — every later story is then a
@@ -629,7 +629,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
     M3 <em>radically</em> redefines the play parameters: flat <code>baseDamage</code> becomes a rolled weapon die
     + ability mod, crits go from a flat ×2 to rolling the dice again, and a d20 now picks the prompt band. That's
     exactly the kind of change that can quietly turn every fight into a one-shot or an unwinnable slog. This story
-    is the M3 analog of <a href="m0-implementation.html">M0's balance harness</a> — <strong>redevelop the
+    is the M3 analog of <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0's balance harness</a> — <strong>redevelop the
     sanity-check framework for the new mechanics, then rebalance the placeholders on theory alone</strong> so the
     game is provably-not-broken before the kid ever sees it. It is <em>not</em> the <a href="roadmap.html#m5">M5</a>
     feel/pacing pass (that's playtest-driven and comes later); it's the floor of numerical sanity M5 tunes on top
@@ -657,7 +657,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
     target band; the dice add <em>spice, not coin-flips</em> (bound the per-hit damage variance so a d12 greataxe is
     swingy but never trivializes or whiffs a fight). <code>config/combat.ts</code> stays at its committed values —
     all tuning lands in the M3 config files, per the <a href="#layout">layout rule</a>.</li>
-    <li><strong>Lock it in as invariant tests</strong> (the <a href="m0-implementation.html">M0</a>/M2
+    <li><strong>Lock it in as invariant tests</strong> (the <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0</a>/M2
     <code>engine/sim/</code> habit): a sweep asserting, across characters × weapons × tiers, that hits-to-kill
     stays in-band, no fight is unwinnable for a baseline typist or trivially auto-won, and the monotonicity
     sanities hold — leveling up, a bigger die, or a higher ability is never <em>strictly worse</em>, and a higher
@@ -725,7 +725,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
     of the planning record.</li>
   </ul>
   <p><strong>Leave frozen (historical — do <em>not</em> retro-edit):</strong>
-  <a href="m0-implementation.html">m0-implementation</a>, <a href="m2-scope.html">m2-scope</a>,
+  <a href="plans/done/20260704-nbutko-m0-combat-spike.html">m0-implementation</a>, <a href="m2-scope.html">m2-scope</a>,
   <a href="m2-implementation.html">m2-implementation</a> (and its post-playtest logs),
   <a href="m3-scope.html">m3-scope</a>, this plan, and the wireframes.</p>
   <p><strong>Done when:</strong> a fresh reader hitting game-design / architecture / index / the code map / CLAUDE.md

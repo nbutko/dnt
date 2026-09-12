@@ -26,7 +26,7 @@ Each milestone has a **scope** (what) and an **implementation plan** (how) under
 than trusting a hard-coded "current" note here. When starting work in a milestone, follow its implementation
 plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
 
-- **M0** — combat-math spike: [m0-implementation](docs/m0-implementation.html)
+- **M0** — combat-math spike: [m0-implementation](docs/plans/done/20260704-nbutko-m0-combat-spike.html)
 - **M2** — progression loop (map, dungeons, hearts, the Inn):
   [m2-scope](docs/m2-scope.html) + [m2-implementation](docs/m2-implementation.html) (its tail holds the
   post-playtest feedback logs)

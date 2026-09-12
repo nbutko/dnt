@@ -9,7 +9,7 @@ interface KeyboardProps {
 }
 
 // On-screen keyboard highlighting the next ~3 keys (touch-typing aid): see
-// m0-implementation.html#keyboard. Purely a function of prompt+input, no
+// docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard. Purely a function of prompt+input, no
 // state of its own. `active=false` (e.g. during the post-timeout pause in
 // PlayerPrompt) blanks out all highlights rather than lighting up Enter for
 // a stale prompt/input pair.

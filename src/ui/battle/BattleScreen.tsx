@@ -108,7 +108,7 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   const monsterInfo = getMonster(state.monster.id)
 
   // Owned here (not PlayerPrompt) because Keyboard needs it alongside
-  // `prompt` — see m0-implementation.html#keyboard.
+  // `prompt` — see docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard.
   const [input, setInput] = useState('')
   useEffect(() => {
     setInput('')

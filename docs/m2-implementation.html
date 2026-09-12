@@ -25,7 +25,7 @@
   them literally, same rule as M0/M1.
 </p>
 <div class="callout decision">
-  The load-bearing rule from <a href="m0-implementation.html">M0</a> carries straight into M2: the combat
+  The load-bearing rule from <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0</a> carries straight into M2: the combat
   <code>engine/</code> never imports React, and now a second rule joins it — <strong>the persisted save reducer
   never imports combat, and the combat engine never imports the save.</strong> They meet at exactly one seam
   (<code>resolveModifiers()</code>, see <a href="#skill-seam">below</a>), so the skill tree can feed battle
@@ -95,7 +95,7 @@
 
 <h2 id="state">State architecture: the three homes, now five stores</h2>
 <p>
-  <a href="m0-implementation.html#state">M0 established three kinds of state</a> — simulation, persistent, and
+  <a href="plans/done/20260704-nbutko-m0-combat-spike.html#state">M0 established three kinds of state</a> — simulation, persistent, and
   ephemeral-UI — and said Context arrives in M2. It arrives now, in two distinct shapes, because "persistent"
   and "ephemeral" each grew a store. The point of naming them separately is that a save file and a dungeon run
   have <em>opposite</em> lifetimes, and conflating them is exactly how the "dungeon regenerates every visit"
@@ -136,7 +136,7 @@
 
 <h2 id="layout">File &amp; component layout</h2>
 <p>
-  The M2 additions to the <a href="m0-implementation.html#layout">M0 skeleton</a>. React-free layers
+  The M2 additions to the <a href="plans/done/20260704-nbutko-m0-combat-spike.html#layout">M0 skeleton</a>. React-free layers
   (<code>engine/</code>, <code>config/</code>, <code>content/</code>, <code>domain/</code>) stay the seam between
   logic and rendering; the only new place logic meets React is the two <code>state/</code> providers.
 </p>
@@ -246,7 +246,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
   but the world map (Story 3) is pulled early so there's a visible, tappable screen to react to before the deeper
   dungeon plumbing. The all-tiers seed content (Story 7) lands before the generator (Story 8) so generation has
   real rosters to draw from and can be tested across the whole ladder, not just tier 1. Engine/data stories
-  (0, 4, 6, 7, 8, 9) land their <a href="m0-implementation.html">Vitest</a> coverage before the UI that consumes
+  (0, 4, 6, 7, 8, 9) land their <a href="plans/done/20260704-nbutko-m0-combat-spike.html">Vitest</a> coverage before the UI that consumes
   them, same "prove it headlessly" habit as M0's balance harness. Per the
   <a href="index.html">project's working style</a>, each story is one commit and gets a look before the next.
 </p>

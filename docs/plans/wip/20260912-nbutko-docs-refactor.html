@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plan: Docs Refactor — Dungeons & Typing</title>
-<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
 <nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>docs-refactor</code></nav>
@@ -332,21 +332,21 @@ check; §7 holds the scripts.</p>
 
 <h3 id="s0">Story 0 — Branch, scaffold, stylesheet into <code>style/</code></h3>
 <ul class="tasks">
-  <li>☐ <code>git checkout -b docs-refactor</code> from <code>main</code>.</li>
-  <li>☐ Create <code>prds/{wip,done}</code>, <code>wireframes/{wip,done}</code>, <code>plans/{wip,done}</code>,
+  <li>☑ <code>git checkout -b docs-refactor</code> from <code>main</code>.</li>
+  <li>☑ Create <code>prds/{wip,done}</code>, <code>wireframes/{wip,done}</code>, <code>plans/{wip,done}</code>,
   <code>notes/</code>, <code>style/templates/</code>; drop a <code>.gitkeep</code> in each directory that will be
   empty after this story (R1: the empty ones must exist in git).</li>
-  <li>☐ <code>git mv docs/style.css docs/style/style.css</code>. Append rules for <code>.banner</code>
+  <li>☑ <code>git mv docs/style.css docs/style/style.css</code>. Append rules for <code>.banner</code>
   (variants <code>.done</code>, <code>.wip</code>, <code>.outdated</code>, <code>.retired</code> — a full-width
-  strip under the header, uppercase label, dated line) and <code>ul.tasks</code> (no bullets, monospace glyph
-  column).</li>
-  <li>☐ Relink every <code>&lt;link rel="stylesheet"&gt;</code> under <code>docs/</code> by depth with
+  strip under the header, uppercase label, dated line) and <code>ul.tasks</code> (no bullets, hanging indent so the
+  glyph column lines up).</li>
+  <li>☑ Relink every <code>&lt;link rel="stylesheet"&gt;</code> under <code>docs/</code> by depth with
   <code>sed</code>: top level → <code>style/style.css</code>; <code>design/</code>, <code>notes/</code> →
   <code>../style/style.css</code>; <code>prds/wip/</code>, <code>plans/wip/</code> → <code>../../style/style.css</code>.
   (<code>m3-wireframes.html</code> and the canvas are self-styled and untouched.)</li>
-  <li>☐ Run the link audit (§7.1). Open one file at each depth via the dev server and confirm it renders
-  styled; if a human is present, also via <code>file://</code>.</li>
-  <li>☐ Commit: <code>docs-refactor: scaffold directories, move stylesheet to docs/style/</code>.</li>
+  <li>☑ Run the link audit (§7.1). Open one file at each depth via the dev server and confirm it renders
+  styled; if a human is present, also via <code>file://</code>. (render check by arbiter)</li>
+  <li>☑ Commit: <code>docs-refactor: scaffold directories, move stylesheet to docs/style/</code>.</li>
 </ul>
 <p><em>Done when:</em> tree matches §3's directory skeleton; every HTML doc renders with the shared stylesheet from
 its current location; audit clean.</p>

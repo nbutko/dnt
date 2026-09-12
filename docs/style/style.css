@@ -183,3 +183,60 @@ footer.page-foot {
   font-size: 0.85rem;
   border-top: 1px solid var(--border);
 }
+
+/* A status strip for docs/-refactor artifacts (done/wip/outdated/retired). Sits directly
+   under header.page-head as a sibling, constrained to the same column width so its edges
+   line up with the header's. The variant label is an uppercase ::before, matching .callout's
+   label treatment; the body (and an optional dated line, e.g. a trailing <p> or <time>) reads
+   underneath it. */
+.banner {
+  max-width: var(--maxw);
+  margin: 0 auto 1.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.banner p { margin: 0.3rem 0 0; }
+.banner p:first-of-type { margin-top: 0; }
+.banner::before {
+  display: block;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+.banner time, .banner .banner-date {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+.banner.done { border-left: 3px solid var(--accent-2); }
+.banner.done::before { content: "Done"; color: var(--accent-2); }
+.banner.wip { border-left: 3px solid var(--accent); }
+.banner.wip::before { content: "In progress"; color: var(--accent); }
+.banner.outdated { border-left: 3px solid var(--danger); }
+.banner.outdated::before { content: "Outdated"; color: var(--danger); }
+.banner.retired { border-left: 3px solid var(--text-dim); }
+.banner.retired::before { content: "Retired"; color: var(--text-dim); }
+
+/* ul.tasks: checkbox glyphs (☐/☑) are plain text — the first character of each <li>, not a
+   form control. True per-glyph monospacing would need a wrapping <span> around just the
+   glyph, which is out of scope for a plain checklist; instead the whole line hangs off a
+   negative text-indent so the glyphs stack in one column and wrapped continuation lines
+   align under the task text rather than under the glyph. */
+ul.tasks {
+  list-style: none;
+  padding-left: 0;
+}
+ul.tasks li {
+  list-style: none;
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+  margin: 0.35rem 0;
+}

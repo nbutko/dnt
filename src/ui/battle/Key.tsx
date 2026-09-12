@@ -6,7 +6,7 @@ interface KeyProps {
 }
 
 // Only three states ever apply color (brightness 0/1/2); everything else
-// stays the neutral base key. Values from docs/design/tokens.json#keyboard.
+// stays the neutral base key. Values from docs/design-tokens.json#keyboard.
 const BRIGHTNESS_STYLES = [
   { backgroundColor: '#e8c766', color: '#1c0f0a', boxShadow: '0 0 10px #e8c76699' },
   { backgroundColor: 'rgba(232,199,102,0.55)', color: '#1c0f0a' },

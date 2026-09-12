@@ -21,7 +21,7 @@
   build it</em> so M3–M6 stay additive: which files each piece lands in, where the new state lives, and the
   order to build stories so each one is committable and verifiable on its own. The design language and the four
   canonical screens (battle 2a, world map 3a, dungeon 3b, Inn 4a) are pinned in
-  <a href="design/README.md">design/README.md</a> and <a href="design/tokens.json">tokens.json</a> — follow
+  <a href="screens.html">screens.html</a> and <a href="design-tokens.json">design-tokens.json</a> — follow
   them literally, same rule as M0/M1.
 </p>
 <div class="callout decision">
@@ -212,8 +212,7 @@
 <div class="callout decision" id="node-language">
   <strong>The single most important anti-debt call for the frontend:</strong> the cleared / available / locked
   visual language lives in <em>exactly one file</em> — <code>ui/common/nodeState.ts</code> — consumed unchanged
-  by world-map tiles, dungeon nodes, <em>and</em> skill-tree nodes. The <a href="design/README.md">design
-  handoff</a> is explicit that all three screens reuse the same 3-state language; centralizing it means a tweak
+  by world-map tiles, dungeon nodes, <em>and</em> skill-tree nodes. The <a href="screens.html">screens.html</a> is explicit that all three screens reuse the same 3-state language; centralizing it means a tweak
   to "what locked looks like" happens once, not in three drifting copies. Same story for the double-border
   <code>Frame</code> and the <code>Legend</code> row.
 </div>
@@ -286,7 +285,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
     <li>Stub screens for map / dungeon / inn (a titled <code>Frame</code> + a "back to map" link); the real ones
     land in later stories. Battle is reachable via a temporary "Start battle" button so M1 stays playable.</li>
     <li><code>ui/common/Frame.tsx</code>: extract the double-border outer frame + radial-gradient background out
-    of <code>BattleScreen.tsx</code> (per <a href="design/README.md">README</a> §1/§2 — map and Inn reuse it
+    of <code>BattleScreen.tsx</code> (per <a href="screens.html">screens.html</a> §1/§2 — map and Inn reuse it
     verbatim).</li>
   </ul>
   <p><strong>Done when:</strong> you can navigate map ↔ inn ↔ dungeon stubs and into a battle and back, in a real
@@ -299,7 +298,7 @@ resolveModifiers(skillTree: SkillTreeState, cfg: SkillTreeConfig): PlayerModifie
   <ul>
     <li><code>ui/common/nodeState.ts</code>: the single source of truth for <strong>cleared / available /
     locked</strong> styling (border, fill, glow, opacity, the ✓ badge and padlock), straight from
-    <a href="design/tokens.json">tokens.json</a>. Pure class-map helpers, no component.</li>
+    <a href="design-tokens.json">design-tokens.json</a>. Pure class-map helpers, no component.</li>
     <li><code>ui/common/Legend.tsx</code>: the state-swatch legend row (takes which states + an optional chest
     swatch).</li>
     <li><code>ui/common/ResourcePill.tsx</code> (XP / coins) and <code>ui/common/HeartsReadout.tsx</code>

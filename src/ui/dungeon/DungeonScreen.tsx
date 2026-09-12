@@ -151,7 +151,7 @@ const rewardTitle = (node: DungeonNode): string => {
   return 'Victory!'
 }
 
-// One-line "where you are" status for the header (design/README.md §3).
+// One-line "where you are" status for the header (docs/screens.html#dungeon-graph).
 const statusLine = (graph: DungeonGraph): string => {
   if (isComplete(graph)) return 'The boss is down — dungeon cleared!'
   if (bossUnlocked(graph)) return 'The Approach is clear — the boss awaits.'

@@ -6,7 +6,7 @@ interface HealthBarProps {
 }
 
 // Player-side bars use the gold family, monster-side the danger (red)
-// family — never mixed, per docs/design/visual-spec.html#palette.
+// family — never mixed, per docs/visual-spec.html#palette.
 const FAMILY_CLASSES = {
   gold: { border: 'border-accent-gold', fill: 'from-accent-gold to-accent-gold-bright' },
   danger: { border: 'border-danger', fill: 'from-danger to-danger-bright' },

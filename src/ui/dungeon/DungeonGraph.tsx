@@ -12,7 +12,7 @@ interface DungeonGraphProps {
   scrollLeftRef?: MutableRefObject<number>
 }
 
-// Edge colours (design/README.md §3): an edge is solid gold only when its
+// Edge colours (docs/screens.html#node-states): an edge is solid gold only when its
 // SOURCE node is cleared — a road you actually walked — and dim dashed
 // otherwise (feedback #4). Keying off the source (not the target) stops a
 // cleared chokepoint like the Waypoint from lighting up every incoming edge,

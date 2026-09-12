@@ -1,4 +1,4 @@
-// The projected 3D d20 (docs/design/m3-wireframes.html turn 4's encounter-d20
+// The projected 3D d20 (docs/wireframes/done/20260705-nbutko-m3-character-sheet.html#t4's encounter-d20
 // mock) — THE one die component, shared by AbilityRoller's tumbling ability
 // rolls (Story 4) and the encounter-roll modal (Story 6). Pure presentation:
 // every face/edge/outline coordinate below is traced verbatim from the

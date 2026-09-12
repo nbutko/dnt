@@ -17,7 +17,7 @@ interface KindStyle {
   caption?: string
 }
 
-// Per-kind geometry from design/README.md §3 (node shapes/sizes). The boss uses
+// Per-kind geometry from docs/screens.html#dungeon-graph (node shapes/sizes). The boss uses
 // the danger family so it stays red-tinted even while locked; everything else
 // is the gold progress family. Chests are diamonds and — crucially — carry no
 // real/mimic distinction here, so they render identically until opened.
@@ -90,7 +90,7 @@ const DungeonNode = ({ node, x, y, onSelect }: DungeonNodeProps) => {
       >
         {/* Double ring for the two chokepoints — a sibling span whose spread
             box-shadow draws outside the node without clobbering the node's own
-            state glow (design/README.md §3). */}
+            state glow (docs/screens.html#node-states). */}
         {style.ring && (
           <span
             aria-hidden

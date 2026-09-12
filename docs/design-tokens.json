@@ -1,8 +1,7 @@
 {
   "meta": {
-    "direction": "2a — Vertical Duel",
-    "source": "M0 wireframe pass",
-    "appliesFrom": "M0 (optional, spike is unstyled by design) or M1 (recommended)"
+    "mirroredBy": "src/index.css @theme block (by hand)",
+    "spec": "visual-spec.html"
   },
   "color": {
     "bgDeep": "#140b07",
@@ -49,7 +48,7 @@
     "countdownColumnWidth": 64
   },
   "m3": {
-    "note": "Character creation, Inn Rest&Sheet/Armory, Shop, encounter-d20 modal, and Bag (see ../README.md 'M3 screens') reuse every token above as-is. Additions below are the only new tokens M3 introduced.",
+    "note": "Character creation, Inn Rest&Sheet/Armory, Shop, encounter-d20 modal, and Bag (see screens.html 'M3 screens') reuse every token above as-is. Additions below are the only new tokens M3 introduced.",
     "die": {
       "component": "ui/common/Die.tsx — shared by the ability roller and the encounter-roll modal",
       "gold": { "outline": "#e8c766", "text": "#fff4d0" },

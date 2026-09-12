@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Palette + type tokens from docs/design/tokens.json and visual-spec.html
+/* Palette + type tokens from docs/design-tokens.json and docs/visual-spec.html
    ("2a — Vertical Duel"). Player-side fills/borders use the gold family;
    monster-side uses the danger (red) family — never mix. */
 @theme {
@@ -22,7 +22,7 @@
   --color-key-base: rgba(237, 225, 195, 0.06);
   --color-coin: #c9b892;
 
-  /* cleared/available/locked node-state language (docs/design/README.md —
+  /* cleared/available/locked node-state language (docs/screens.html#node-states —
      world map tiles, dungeon nodes, and skill-tree nodes all share this
      unchanged; see ui/common/nodeState.ts). Gold family for regular nodes,
      danger family only for the boss node + the Urban tier card, which stay

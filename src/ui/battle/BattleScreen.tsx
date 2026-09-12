@@ -99,7 +99,7 @@ interface ReadyBattleScreenProps {
   onResult: (result: BattleResultKind, wpm?: number) => void
 }
 
-// "Vertical Duel" layout (docs/design/visual-spec.html#layout): title, then
+// "Vertical Duel" layout (docs/visual-spec.html#layout): title, then
 // monster panel (top), a VS divider, then the player's own panel (bottom) —
 // HP, prompt, live input, countdown, and the keyboard.
 const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {

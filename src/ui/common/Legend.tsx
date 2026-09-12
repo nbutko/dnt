@@ -1,12 +1,12 @@
 interface LegendProps {
   // Node shape matches the swatch to its context: square tier cards (world
-  // map) vs. round graph nodes (dungeon) — see design/README.md §2/§3.
+  // map) vs. round graph nodes (dungeon) — see docs/screens.html#node-states.
   shape?: 'square' | 'circle'
   showChest?: boolean
 }
 
 // The 3-state legend row — reused verbatim by the world map and the dungeon
-// graph (docs/design/README.md). Swatch fills mirror ui/common/nodeState.ts.
+// graph (docs/screens.html#node-states). Swatch fills mirror ui/common/nodeState.ts.
 const Legend = ({ shape = 'square', showChest = false }: LegendProps) => {
   const shapeClass = shape === 'circle' ? 'rounded-full' : 'rounded-[3px]'
   const clearedFill =

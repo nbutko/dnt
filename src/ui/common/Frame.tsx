@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // The double-border outer frame + radial-gradient background shared by all
-// four screens (docs/design/README.md §1/§2 — battle, map, dungeon, and Inn
+// four screens (docs/screens.html — battle, map, dungeon, and Inn
 // all reuse this verbatim). Extracted from BattleScreen.tsx in Story 1.
 const outerFrameStyle = {
   background: 'radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)',

@@ -3,7 +3,7 @@ interface HeartsReadoutProps {
   max: number
 }
 
-// ♥/♡ row (design/README.md §3 — dungeon header). Filled hearts use the
+// ♥/♡ row (docs/screens.html#dungeon-graph — dungeon header). Filled hearts use the
 // danger-bright red; empty ones dim to opacity .35 per the spec.
 const HeartsReadout = ({ current, max }: HeartsReadoutProps) => (
   <div

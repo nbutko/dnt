@@ -1,4 +1,4 @@
-// The Inn's tab strip (docs/design/m3-wireframes.html turn 2) — Rest & Sheet
+// The Inn's tab strip (docs/wireframes/done/20260705-nbutko-m3-character-sheet.html#t2) — Rest & Sheet
 // today, joined by the Armory in Story 8. Generic over the tab id so both
 // callers get type-checked selection without this component knowing either
 // screen's tab names.

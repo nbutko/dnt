@@ -7,7 +7,7 @@ export type NodeVisualState = 'cleared' | 'available' | 'locked'
 // `family` swaps the gold (player/progress) treatment for the danger (red)
 // one — used only by the boss node and the Urban tier card, which stay
 // red-tinted even while locked so they read as "the big one" regardless of
-// state (docs/design/README.md §3).
+// state (docs/screens.html#node-states).
 export type NodeFamily = 'gold' | 'danger'
 
 // Square tier/graph nodes use a diagonal gradient when cleared; round nodes

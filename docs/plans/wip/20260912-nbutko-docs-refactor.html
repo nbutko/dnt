@@ -382,30 +382,30 @@ name, place, and index a new feature's docs without reading the PRD (the real te
 
 <h3 id="s2">Story 2 — The design folder: visual spec, screens, wireframes, tokens</h3>
 <ul class="tasks">
-  <li>☐ <code>git mv design/visual-spec.html visual-spec.html</code>; relink stylesheet; drop "(2a)" from the
+  <li>☑ <code>git mv design/visual-spec.html visual-spec.html</code>; relink stylesheet; drop "(2a)" from the
   Layout heading text (anchor <code>#layout</code> unchanged); present tense pass ("M3 screens reuse this exact
   system" → "All screens use this system").</li>
-  <li>☐ <code>git mv design/tokens.json design-tokens.json</code>; replace the <code>meta</code> block with
+  <li>☑ <code>git mv design/tokens.json design-tokens.json</code>; replace the <code>meta</code> block with
   <code>{"mirroredBy": "src/index.css @theme block (by hand)", "spec": "visual-spec.html"}</code>.</li>
-  <li>☐ Read <code>design/README.md</code> once. Write <code>screens.html</code> (evergreen): Overview; screens
+  <li>☑ Read <code>design/README.md</code> once. Write <code>screens.html</code> (evergreen): Overview; screens
   1–3 and 5–9 as shipped with the anchors listed in §4; Interactions &amp; Behavior; State Management (the
   cleared / available / locked node-state language under <code>#node-states</code>); Design Tokens (pointing at
   <code>design-tokens.json</code>); Assets; Files (pointing at the wireframe pages and canvas). No option
   letters, no "RETIRED" sections — that is history.</li>
-  <li>☐ Write <code>wireframes/done/20260704-nbutko-m0-combat-spike.html</code>: banner (shipped in M1's slice;
+  <li>☑ Write <code>wireframes/done/20260704-nbutko-m0-combat-spike.html</code>: banner (shipped in M1's slice;
   no PRD); "About the design files" and "Fidelity" from the README; screen 1 as the handoff described it
   (direction 2a chosen, 2b/2c rejected and why); link into the canvas.</li>
-  <li>☐ Write <code>wireframes/done/20260704-nbutko-m2-progression-loop.html</code>: banner; screens 2 (3a),
+  <li>☑ Write <code>wireframes/done/20260704-nbutko-m2-progression-loop.html</code>: banner; screens 2 (3a),
   3 (3b) and 4 (4a, with a <code>.retired</code> banner line: replaced by the M3 character sheet) from the
   README; the node-state legend copied from <code>screens.html#node-states</code> so the page stands alone;
   link into the canvas.</li>
-  <li>☐ <code>git mv "design/M0 Wireframes.dc.html" wireframes/done/20260704-nbutko-core-screens.dc.html</code>;
+  <li>☑ <code>git mv "design/M0 Wireframes.dc.html" wireframes/done/20260704-nbutko-core-screens.dc.html</code>;
   delete the <code>&lt;script&gt;</code> line that loads <code>./support.js</code>; confirm it still opens.</li>
-  <li>☐ <code>git mv design/m3-wireframes.html wireframes/done/20260705-nbutko-m3-character-sheet.html</code>;
+  <li>☑ <code>git mv design/m3-wireframes.html wireframes/done/20260705-nbutko-m3-character-sheet.html</code>;
   add a one-line done banner in its own inline style; <code>#t1</code>–<code>#t8</code> untouched. It links
   <code>M0%20Wireframes.dc.html</code> three times — repoint those to <code>20260704-nbutko-core-screens.dc.html</code>.</li>
-  <li>☐ <code>git rm design/README.md</code>; confirm <code>design/</code> is empty and gone.</li>
-  <li>☐ Repoint inbound links: <code>CLAUDE.md</code> (six <code>docs/design/</code> hrefs);
+  <li>☑ <code>git rm design/README.md</code>; confirm <code>design/</code> is empty and gone.</li>
+  <li>☑ Repoint inbound links: <code>CLAUDE.md</code> (six <code>docs/design/</code> hrefs);
   <code>src/index.css</code> (tokens + visual-spec line; README line → <code>screens.html#node-states</code>);
   <code>src/ui/battle/Key.tsx</code>, <code>BattleScreen.tsx</code>, <code>HealthBar.tsx</code>,
   <code>src/ui/common/Flash.tsx</code> (mentions <code>tokens.json</code> by bare name);
@@ -413,13 +413,24 @@ name, place, and index a new feature's docs without reading the PRD (the real te
   (→ <code>screens.html#node-states</code>), <code>Frame.tsx</code> (→ <code>screens.html</code>); the eight
   <code>src/ui/</code> files citing <code>design/README.md §2</code>/<code>§3</code> by bare name (grep
   <code>README.md</code>). Any doc under <code>docs/</code> linking <code>design/…</code> (grep).</li>
-  <li>☐ Fill <code>wireframes/index.html</code> done section: three pages and the canvas (described as "the
+  <li>☑ Fill <code>wireframes/index.html</code> done section: three pages and the canvas (described as "the
   design canvas both 20260704 pages link into").</li>
-  <li>☐ <code>npm run lint</code>; audit; commit: <code>docs-refactor: dissolve docs/design/ into visual-spec,
+  <li>☑ <code>npm run lint</code>; audit; commit: <code>docs-refactor: dissolve docs/design/ into visual-spec,
   screens, wireframes</code>.</li>
 </ul>
 <p><em>Done when:</em> <code>docs/design/</code> no longer exists; every former design link resolves; the
 canvas and all three wireframe pages open; no Markdown under <code>docs/</code>.</p>
+
+<div class="callout decision">
+  <strong>Story 2 deviations accepted (2026-09-12).</strong> Source-comment repoints were assigned by what
+  each comment describes rather than the blanket list above: <code>Tabs.tsx</code> and <code>Die.tsx</code>
+  cite the M3 wireframes (<code>#t2</code>, <code>#t4</code>), not the README; node-state/colour comments went
+  to <code>screens.html#node-states</code>, dungeon-geometry comments to <code>#dungeon-graph</code>, world-map
+  comments to <code>#map</code>, <code>ResourcePill.tsx</code>'s retired §4 citation to <code>#inn</code>.
+  <code>screens.html</code> states the Shop hub as unconditionally available (verified against
+  <code>src/ui/map/</code>) instead of the README's "Coming soon", and hedges the README's 11-habitat list with a
+  link to the content plan (Story 6 owns the current count).
+</div>
 
 <h3 id="s3">Story 3 — M0 combat spike</h3>
 <ul class="tasks">

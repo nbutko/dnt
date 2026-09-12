@@ -10,7 +10,7 @@
 <nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
 <header class="page-head">
   <h1>M3 Implementation Plan</h1>
-  <p class="tagline">Turning the <a href="m3-scope.html">M3 scope</a> and its <a href="design/m3-wireframes.html">wireframes</a>
+  <p class="tagline">Turning the <a href="m3-scope.html">M3 scope</a> and its <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">wireframes</a>
   into a build: where the character sheet lives, how it feeds combat through the seam M2 already left us, and a
   story-by-story order that pays down debt before it adds features.</p>
 </header>
@@ -18,13 +18,13 @@
 
 <p>
   The <a href="m3-scope.html">M3 scope doc</a> answers <em>what</em> the D&amp;D layer is (six abilities, D&amp;D
-  leveling, two dice, weapons, consumables, the Shop) and the <a href="design/m3-wireframes.html">M3 wireframes</a>
+  leveling, two dice, weapons, consumables, the Shop) and the <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframes</a>
   show <em>what every screen looks like</em> (character creation, the reworked Inn, the Shop, the encounter d20,
   premonitions, the bag, the Armory, in-battle flashes). This doc answers <em>how to build it</em> so M4–M6 stay
   additive: which files each piece lands in, how the new character state reaches the battle math, and the order to
   build stories so each one is committable and verifiable on its own. The token language, the four canonical M2
-  screens, and the eight M3 mocks are pinned in <a href="design/README.md">design/README.md</a>,
-  <a href="design/tokens.json">tokens.json</a>, and the <a href="design/m3-wireframes.html">wireframes</a> — follow
+  screens, and the eight M3 mocks are pinned in <a href="screens.html">screens.html</a>,
+  <a href="design-tokens.json">tokens.json</a>, and the <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">wireframes</a> — follow
   them literally, same rule as M0–M2.
 </p>
 
@@ -127,7 +127,7 @@
     explicitly left for this doc to answer.</td>
     <td><strong>Decided:</strong> the juice that <em>falls out</em> of dice and damage is in scope (the tumbling
     d20, the floating damage number, the crit flash, "Dodged!" / "Second Wind!" flashes — see
-    <a href="#story-11">Story 11</a> and <a href="design/m3-wireframes.html">wireframe turn 8</a>), because those
+    <a href="#story-11">Story 11</a> and <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">wireframe turn 8</a>), because those
     beats have to exist for the mechanics to read at all. Screen-shake, SFX, and any asset-backed animation stay
     deferred (M6). Juice never blocks a story.</td>
   </tr>
@@ -421,7 +421,7 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
   <h3>Story 4 — Character creation <span class="tag">wireframe t1</span></h3>
   <p>The first screen a fresh save hits — and the moment the whole M3 loop first boots.</p>
   <ul>
-    <li><code>ui/common/Die.tsx</code>: the projected 3D d20 from the <a href="design/m3-wireframes.html">wireframe</a>
+    <li><code>ui/common/Die.tsx</code>: the projected 3D d20 from the <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">wireframe</a>
     (the geometry is already worked out there) — the one die component, reused in Story 6.</li>
     <li><code>ui/create/</code>: <code>AbilityRoller</code> (six <code>4d6-drop-lowest</code> rolls shown as tumbling
     dice, a limited "roll again" that re-rolls the set, the rectangular ability grid from the wireframe),
@@ -718,10 +718,10 @@ bandToServedTier(band, textTierRange, intTierCap): { servedTier, gateTarget }</c
     status/tense moves to past). Light touch — the roadmap is mostly a stable build-order narrative.</li>
     <li><a href="content-plan.html">content-plan.html</a> — light: note that weapons and consumables are now
     config-catalogued content alongside the text tiers and roster, if it's worth a pointer; no rewrite.</li>
-    <li><a href="design/">design/</a> — fold the shipped M3 screens/tokens into the canonical
-    <a href="design/visual-spec.html">visual-spec.html</a> / <a href="design/README.md">README.md</a> /
-    <a href="design/tokens.json">tokens.json</a>, so <code>design/</code> stays the current source of truth. The
-    <a href="design/m3-wireframes.html">M3 wireframes</a> stay put as the original proposal — frozen, like the rest
+    <li><a href="screens.html">screens.html</a> — fold the shipped M3 screens/tokens into the canonical
+    <a href="visual-spec.html">visual-spec.html</a> / <a href="screens.html">screens.html</a> /
+    <a href="design-tokens.json">tokens.json</a>, so <code>screens.html</code> stays the current source of truth. The
+    <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframes</a> stay put as the original proposal — frozen, like the rest
     of the planning record.</li>
   </ul>
   <p><strong>Leave frozen (historical — do <em>not</em> retro-edit):</strong>

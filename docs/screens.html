@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screens — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · screens</nav>
+<header class="page-head">
+  <h1>Screens</h1>
+  <p class="tagline">Every shipped screen and component as it looks and behaves today: layout, states,
+  interactions, and the tokens behind them.</p>
+</header>
+<main>
+
+<h2>Overview</h2>
+<p>
+  Eight screens and components share one D&amp;D-inspired visual language: dark parchment/dungeon palette, gold
+  accents, Cinzel display type, JetBrains Mono for anything the player is actually typing or reading against a
+  clock — see <a href="visual-spec.html">visual-spec.html</a> for the palette/type/layout system itself. The
+  battle screen, the world map, and the dungeon's branching-path view shipped first (M0–M2); character creation,
+  the Inn's two tabs, the Shop, the encounter-d20 modal, and the dungeon map's Bag joined them in M3, reusing
+  that same palette/type/shape system as-is — no new hue family was introduced.
+</p>
+<p>
+  An earlier Inn screen spent accumulated XP on a five-branch skill tree. M3 replaced it outright with ability
+  scores and 5e-style leveling; the skill tree is gone from the game and lives on only as a retired wireframe in
+  <a href="wireframes/done/20260704-nbutko-m2-progression-loop.html">the M2 wireframe page</a>.
+</p>
+<p>
+  This document describes the screens as shipped, present tense. For the original wireframe handoffs — which
+  alternate layouts were explored and rejected, how faithful the mocks were to what shipped — see
+  <a href="wireframes/done/20260704-nbutko-m0-combat-spike.html">the M0 wireframe page</a>,
+  <a href="wireframes/done/20260704-nbutko-m2-progression-loop.html">the M2 wireframe page</a>, and
+  <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">the M3 wireframe page</a>.
+</p>
+
+<h2 id="battle">Battle screen</h2>
+<p><strong>Purpose:</strong> the core combat loop — the player types a prompt to attack while the monster
+"types" its own prompt on its own clock, in real time.</p>
+<p><strong>Layout:</strong> a single centered panel, max-width 1040px, stacked vertically: title → monster panel
+→ divider → player panel (HP, prompt/input/countdown, and the on-screen keyboard).</p>
+<ul>
+  <li>Outer frame: <code>border: 3px solid #7a5a22</code>, plus a 1px inset outline offset 8px in (a
+  double-border look), padding <code>28px</code>, background
+  <code>radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)</code>.</li>
+  <li>Monster panel: <code>border-radius: 8px</code>, <code>border: 2px solid #7a5a22</code>, background
+  <code>linear-gradient(180deg, #3b1220, #2a0d17)</code>, padding <code>16px 20px</code>. Contains: name (Cinzel
+  15px, <code>#e8c766</code>, letter-spacing .06em), an HP readout (JetBrains Mono 12px, <code>#c98d8d</code>),
+  an HP bar (14px tall, 7px radius, track <code>#1c0b0e</code> with <code>1px solid #5a2020</code>, fill
+  <code>linear-gradient(90deg,#8b2020,#c94b4b)</code>), and the monster's live-typed text box (JetBrains Mono
+  16px; correct chars <code>#ede1c3</code>, a wrong char shown in <code>#e05a5a</code> with a wavy underline,
+  untyped remainder dimmed <code>#6a5a4a</code>).</li>
+  <li>Divider: a centered "VS" between two gold diamonds (an 8×8px div rotated 45°, background
+  <code>#c9a227</code>) with fading horizontal rules either side.</li>
+  <li>Player panel: same shape as the monster panel, gold family instead of red — background
+  <code>linear-gradient(180deg,#241f3d20,#1a1226)</code>, HP fill
+  <code>linear-gradient(90deg,#8a6a1a,#e8c766)</code>. Below HP: a row with (a) the prompt/input block — the
+  target prompt shown dimmed above, live input echoed below with a blinking-caret span
+  (<code>border-right:2px solid #e8c766</code>) — and (b) a fixed 64px-wide countdown column (Cinzel 22px
+  <code>#e8c766</code> number + "sec left" caption, JetBrains Mono 10px uppercase <code>#a89a7a</code>).</li>
+  <li>Keyboard: a full 5-row QWERTY. Base key <code>34×32px</code>, 4px radius, <code>1px solid #4a3a18</code>,
+  background <code>rgba(237,225,195,.06)</code>. Row 1 ends in a wide Backspace key; row 3 ends in a wide Enter
+  key; row 4 has Shift keys either side; row 5 is the space bar. See "Keyboard states" below for the only three
+  states that ever apply color.</li>
+</ul>
+<h3>Keyboard states</h3>
+<p>Mutually exclusive, computed from <code>prompt</code> + <code>input</code>:</p>
+<table>
+  <tr><th>State</th><th>Trigger</th><th>Styling</th></tr>
+  <tr><td>On track</td><td><code>input === prompt.slice(0, input.length)</code></td>
+    <td>Next key: solid <code>#e8c766</code> bg, dark text, <code>box-shadow: 0 0 10px #e8c76699</code>. +1 key:
+    <code>rgba(232,199,102,.55)</code>. +2 key: <code>rgba(232,199,102,.3)</code>. Everything else: base key.</td></tr>
+  <tr><td>Off track</td><td>a wrong char anywhere in input, or input longer than prompt</td>
+    <td>Only Backspace gets the "next key" solid-gold treatment; every other key — including letters — drops to
+    base/neutral.</td></tr>
+  <tr><td>Complete</td><td><code>input === prompt</code></td>
+    <td>Only Enter gets the "next key" solid-gold treatment; all else neutral.</td></tr>
+</table>
+
+<h2 id="map">World map</h2>
+<p><strong>Purpose:</strong> the post-battle hub — launch point for dungeons, the Inn, and the Shop.</p>
+<p><strong>Layout:</strong> same outer frame styling as the battle screen. Below the "World Map" title: a flex
+row — a fixed 168px-wide left column (Inn card above Shop card, stacked, 14px gap) and a <code>flex:1</code>
+horizontally-scrolling trail of dungeon-tier cards connected by a dashed gold line.</p>
+<ul>
+  <li>Inn card: <code>border:2px solid #c9a227</code>, background <code>#1c1608</code>, glow
+  <code>box-shadow:0 0 12px #c9a22766</code>. Always in the "available" visual treatment (never locked).</li>
+  <li>Shop card: reuses the same available/locked treatment as the tier cards below rather than a fixed look —
+  through all of M2 it was permanently locked (<code>border:1px dashed #5a4a30</code>, background
+  <code>rgba(40,34,24,.5)</code>, <code>opacity:.6</code>, labeled "Coming soon"); once the Shop shipped in M3
+  it takes the same "available" treatment as the Inn card above.</li>
+  <li>Tier trail: a <code>position:relative</code> scroll container; a horizontal dashed line
+  (<code>repeating-linear-gradient(90deg,#7a5a22 0 8px,transparent 8px 16px)</code>, 2px tall) sits behind the
+  tier cards (76×92px, 8px radius, 36px gap between them).</li>
+  <li>Tier card states — <strong>cleared</strong>: background <code>linear-gradient(160deg,#4a3a12,#2a1f08)</code>,
+  border <code>2px solid #c9a227</code>, glow, plus a small gold "✓" badge (18px circle) at the top-right
+  corner. <strong>available</strong>: background <code>#1c1608</code>, border <code>2px solid #e8c766</code>,
+  glow. <strong>locked</strong>: background <code>rgba(40,34,24,.5)</code>, <code>1px dashed #5a4a30</code>,
+  <code>opacity:.55</code>, and a small two-shape padlock (a bordered arc + a filled rect) centered above the
+  habitat name instead of a checkmark.</li>
+  <li>The tier trail scrolls through the dungeon-tier ladder in habitat order; the current tier count and ladder
+  are tracked in <code>content-plan-v2.html</code> (soon <code>content.html</code>), not restated here.</li>
+  <li>A legend row at the bottom explains the three card states with small color swatches — see "State
+  Management" below.</li>
+</ul>
+
+<h2 id="dungeon-graph">Dungeon branch graph</h2>
+<p><strong>Purpose:</strong> inside a dungeon — shows the generated branching path from entrance to boss so the
+player can choose which available fight to take next.</p>
+<p><strong>Layout:</strong> a header (dungeon name + one-line status, e.g. "Path A cleared → Waypoint now
+available") plus a hearts readout (<code>♥</code>/<code>♡</code> glyphs, Cinzel 20px, filled
+<code>#c94b4b</code>, empty at <code>opacity:.35</code>) top-right. Below: a horizontally-scrollable
+<code>position:relative</code> canvas (1230×460px in the reference example) containing one absolutely
+positioned <code>&lt;svg&gt;</code> line layer (z-index 0) and absolutely positioned node <code>&lt;div&gt;</code>s
+on top (z-index 1, positioned via <code>left</code>/<code>top</code> + <code>transform:translate(-50%,-50%)</code>).</p>
+<ul>
+  <li><strong>Structure:</strong> Entrance (diamond) → 2–4 parallel early paths of 2–4 nodes each → Waypoint
+  (single, larger node) → 2–4 parallel late paths of 3–5 nodes each → Approach (single, larger node) → Boss
+  (largest node, red family). 3–5 treasure-chest nodes hang as dead-end diamond spurs off regular path nodes
+  (never off Waypoint/Approach). Chests are visually <strong>identical</strong> whether real or a mimic — never
+  styled differently, that would leak information to the player.</li>
+  <li><strong>Node shapes:</strong> a regular fight is a 40px circle. Entrance is a 34px diamond (a rotated-45°
+  square). Waypoint/Approach are a 56px circle with a double ring
+  (<code>box-shadow:0 0 0 4px rgba(201,162,39,.25)</code> in addition to the border). The boss is a 64px circle,
+  red-tinted even while locked (<code>rgba(80,20,20,.35)</code> bg, <code>#6a2a2a</code> dashed border) so it
+  reads as "the big one" regardless of state. Chests are 22px diamonds.</li>
+  <li><strong>Node states:</strong> reuse the node-state language described under "State Management" below — no
+  separate visual language per screen.</li>
+  <li><strong>Edge lines:</strong> solid <code>#e8c766</code> 2px when the edge leads to a cleared or available
+  node (i.e. it's currently walkable); dashed <code>#5a4a30</code> 2px (<code>stroke-dasharray:5,5</code>) when
+  it leads to a locked node.</li>
+  <li>A legend row at the bottom repeats the node states plus the chest swatch.</li>
+</ul>
+
+<h2 id="creation">Character creation</h2>
+<p><strong>Purpose:</strong> the screen a fresh (or freshly-migrated) save is gated behind before the world map
+— roll abilities, pick a class, name the hero.</p>
+<p><strong>Layout:</strong> a title, a 4d6-drop-lowest ability roller (six dice, up to two rerolls of the whole
+set, a 500ms tumble animation shared with the encounter d20's <code>Die</code> component), a class picker and a
+name field side by side below a divider, then "Begin Adventure →" (a gold gradient button,
+<code>linear-gradient(180deg,#e8c766,#c9a227)</code>) into a one-screen confirm/summary card with a "↩ Reroll
+everything" escape hatch. Every field starts pre-filled with a valid random default, so mashing the confirm
+button twice produces a complete, playable hero.</p>
+
+<h2 id="inn">The Inn — Rest &amp; Sheet / Armory</h2>
+<p><strong>Purpose:</strong> the M3 replacement for the old skill tree. Two tabs via the shared
+<code>Tabs</code> component:</p>
+<ul>
+  <li><strong>Rest &amp; Sheet:</strong> a Rest panel (restore hearts/HP) beside the character sheet (abilities,
+  level, XP-to-next-level bar, proficiency bonus, an "Improve" button that opens the Ability Score Improvement
+  panel whenever <code>pendingAsi &gt; 0</code>).</li>
+  <li><strong>Armory:</strong> equip one weapon at a time from owned inventory; shows each weapon's die,
+  ability, and crit range.</li>
+</ul>
+<p>The header keeps the battle screen's title treatment (Cinzel, uppercase, <code>.12em</code> tracking,
+<code>text-accent-gold-bright</code>) plus a <code>StatusReadout</code> (XP/coins/hearts) on the right, matching
+the World Map/Shop header pattern.</p>
+
+<h2 id="shop">The Shop</h2>
+<p><strong>Purpose:</strong> spend coins on consumables (restock every visit) and weapons (one-off buys) — the
+sink coins needed once M3's leveling redirect took XP out of spending.</p>
+<p><strong>Layout:</strong> a header (back-to-map, title, coin <code>ResourcePill</code>), an optional CHA/Bard
+discount-or-markup banner (green <code>#a8c98d</code>/<code>rgba(58,90,42,.15)</code> border when discounted,
+red <code>#c98d8d</code>/<code>rgba(139,32,32,.15)</code> when marked up), then a 2-column body: a 3-wide
+consumables card grid on the left, a weapon-rack list (<code>ShopItem</code> in <code>row</code> layout, greys
+out with "owned" once bought) on the right.</p>
+
+<h2 id="encounter-d20">The encounter d20 modal</h2>
+<p><strong>Purpose:</strong> every fight's pre-clock d20 roll (see <a href="m3-scope.html#encounter-roll">the
+encounter-roll mechanics</a>) — reuses the base <code>EncounterModal</code> non-dismissable reveal pattern from
+M2 (mimic/chokepoint reveals), now with a rolled/tumbling <code>Die</code> (the same projected-icosahedron SVG
+component the character-creation ability roller uses) plus a total/breakdown line, a band-result panel, and a
+5-cell fumble/low/mid/high/inspired ladder highlighting the landed band.</p>
+<p>Die palette by result: <strong>gold</strong> (<code>outline #e8c766</code>) for an ordinary landed roll,
+<strong>green</strong> (<code>outline #9cf07c</code>, faces <code>#368349</code> family) for an Inspired nat-20,
+<strong>red</strong> (<code>outline #ff9a9a</code>, faces <code>#872a2a</code> family) for a Fumble nat-1. A
+Bard's "🎵 Reroll" button appears once per dungeon when available; "Begin Battle →" is autofocused so Enter
+fires it without hunting for the mouse.</p>
+
+<h2 id="bag">The Bag</h2>
+<p><strong>Purpose:</strong> an expandable drawer over the dungeon map for using an owned consumable before a
+fight — a <code>🎒 Bag (N)</code> pill button (<code>border/color #e8c766</code>, glow
+<code>0 0 8px #e8c76644</code>) that opens a 300px dropdown panel (<code>border #e8c766</code> on
+<code>#1a0f0a</code>) listing owned items with a one-line mechanical effect summary and a "Use" button (same
+gold-gradient treatment as character creation's confirm button). Deliberately collapsed by default and closed
+again the instant a dungeon node is selected, so it can't be left open mid-fight-prep.</p>
+
+<h2>Interactions &amp; behavior</h2>
+<ul>
+  <li><strong>Battle:</strong> input is local component state; Enter only submits once
+  <code>input.length === prompt.length</code> (shorter input treats Enter as a literal character, for prompts
+  containing inline line breaks). Exact match → hit; anything else → miss; the next prompt starts immediately
+  either way. Keyboard highlight state recomputes on every keystroke from <code>prompt</code> + <code>input</code>
+  (a pure function, no stored state of its own).</li>
+  <li><strong>World map:</strong> tapping an unlocked-or-cleared tier card navigates into that dungeon's branch
+  graph (regenerated fresh each visit). Tapping the Inn opens its Rest &amp; Sheet/Armory tabs. Tapping the Shop
+  opens the Shop.</li>
+  <li><strong>Dungeon graph:</strong> tapping an "available" node starts that fight. Winning marks the node
+  "cleared" and makes its immediate downstream neighbor(s) "available." Losing resets that monster's HP and
+  leaves the node "available" (not cleared) and costs one heart. Hitting 0 hearts discards the entire dungeon
+  run and returns to the world map at the Inn; the dungeon regenerates a new random layout on the next visit.
+  Opening a chest node is a plain reward if it's the real one, or a fight (same rules as any monster) if it's a
+  mimic.</li>
+</ul>
+
+<h2 id="node-states">State management</h2>
+<p>
+  <strong>The node-state language</strong> — <em>cleared</em> / <em>available</em> / <em>locked</em> — is one
+  visual system reused, unchanged, by the world map's tier cards and the dungeon graph's nodes:
+  <strong>cleared</strong> is a gold radial fill + gold border + glow; <strong>available</strong> is a dark
+  background + gold border + glow, no fill; <strong>locked</strong> is dim, with a dashed border and
+  <code>opacity:.55</code>. No screen gets its own separate color language for this. The single source of truth
+  is <code>ui/common/nodeState.ts</code>, consumed by the world-map tiles and the dungeon nodes alike; the
+  shared legend row (<code>ui/common/Legend.tsx</code>) renders the same three swatches wherever it's used.
+</p>
+<ul>
+  <li><strong>Battle:</strong> per the M0 implementation plan, battle state (HP, prompts, countdowns, the
+  monster's live-typed string) lives in a plain-TS engine outside React, read via
+  <code>useSyncExternalStore</code> — not component state, since it updates many times a second. Local component
+  state is only the player's in-progress <code>input</code> string and which screen is showing.</li>
+  <li><strong>Save/progression</strong> (map unlock state, the character — class/level/XP/abilities, coins,
+  equipped weapon + owned inventory, hearts.max): persistent, once-per-action-frequency — Context +
+  <code>useReducer</code> backed by IndexedDB, per <a href="architecture.html">the architecture doc</a>. The
+  in-progress dungeon graph, its cleared/available/locked node states, hearts <em>remaining</em>, and any active
+  consumable buff are explicitly <strong>not</strong> persisted across sessions; they live in the ephemeral
+  dungeon-run store instead. Closing mid-dungeon behaves the same as voluntarily leaving.</li>
+</ul>
+
+<h2>Design tokens</h2>
+<p>See <a href="design-tokens.json">design-tokens.json</a> for the full machine-readable set. Summary:</p>
+<ul>
+  <li><strong>Color:</strong> bg <code>#140b07</code>; player-side panel <code>#1c1608</code>; monster-side
+  panel <code>#2a0d17</code>/<code>#3b1220</code>; border gold <code>#7a5a22</code> (dim <code>#4a3a18</code>);
+  accent gold <code>#c9a227</code> / bright <code>#e8c766</code>; danger <code>#8b2020</code> / bright
+  <code>#c94b4b</code>; text <code>#ede1c3</code> / dim <code>#a89a7a</code>. One hue family per "side" (gold =
+  player/progress, red = monster/danger) — never mixed.</li>
+  <li><strong>Type:</strong> Cinzel (500/700) for all display/headers/labels; EB Garamond (400/400italic) for
+  incidental body copy; JetBrains Mono (400/500/700) for anything the player is typing, reading against a clock,
+  or any numeric readout (HP, XP, costs, timers) — never substituted, it's the legibility-critical font in the
+  whole app.</li>
+  <li><strong>Shape language:</strong> 8px radius on panels/cards, fully round circles for tree/graph nodes,
+  45°-rotated squares for diamonds (entrance/chests), all built from CSS gradients/borders/box-shadows — no
+  bitmap or SVG icon art anywhere except the dungeon-graph's line layer (structural, not iconographic).</li>
+  <li>M3 added one genuinely new component, the projected-icosahedron <strong>d20</strong>
+  (<code>ui/common/Die.tsx</code>), shared by the ability roller and the encounter-roll modal, plus a handful of
+  new semantic tokens (node-locked text variants, a coin color, and the Shop/encounter-modal's green/red banner
+  treatments) — all built from the existing hue families, never a third unrelated one. See
+  <a href="design-tokens.json">design-tokens.json</a> and <code>src/index.css</code>'s <code>@theme</code> block
+  for the exact values.</li>
+</ul>
+
+<h2>Assets</h2>
+<p>No image assets. Three Google Font families (Cinzel, EB Garamond, JetBrains Mono), all free/open-license,
+loaded via a standard Google Fonts <code>&lt;link&gt;</code>, no local font files. The padlock and checkmark are
+drawn from plain divs and a Unicode "✓" glyph, not icon images. Real monster art doesn't arrive until
+<a href="roadmap.html">M6</a>.</p>
+
+<h2>Files</h2>
+<ul>
+  <li><a href="wireframes/done/20260704-nbutko-core-screens.dc.html">the design canvas</a> — the full original
+  wireframe deck (every screen, including rejected alternates). Treat only the screens described above as
+  canonical; the canvas itself is frozen, historical record.</li>
+  <li><a href="wireframes/done/20260704-nbutko-m0-combat-spike.html">M0 wireframe page</a> — the battle screen
+  handoff: which direction was chosen and why, what was rejected.</li>
+  <li><a href="wireframes/done/20260704-nbutko-m2-progression-loop.html">M2 wireframe page</a> — the world map
+  and dungeon graph handoff, plus the retired skill tree.</li>
+  <li><a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframe page</a> — the original,
+  frozen proposal for character creation, the Inn, the Shop, the encounter d20, and the Bag.</li>
+  <li><a href="visual-spec.html">visual-spec.html</a> — the palette/type/layout/keyboard system itself.</li>
+  <li><a href="design-tokens.json">design-tokens.json</a> — the same system, machine-readable.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+</body>
+</html>

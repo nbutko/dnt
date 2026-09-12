@@ -14,7 +14,7 @@ interface VariantStyle {
   glow: string
 }
 
-// Palette lifted from tokens.json + the wireframe: green for the good-
+// Palette lifted from docs/design-tokens.json + the wireframe: green for the good-
 // surprise family (crit/second-wind/sneak-attack), blue for dodge, gold for
 // an ordinary hit number — never the danger-red family, which is reserved
 // for the monster's own HP bar/panel.

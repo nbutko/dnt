@@ -23,7 +23,7 @@
   plan: <strong>one story = one commit, check-in between, never batch stories</strong>; <code>npm run
   presubmit</code> clean before any code commit; engine/data changes proven headlessly (tests +
   <code>engine/sim/</code>) before the UI that consumes them; UI verified visually against
-  <code>docs/design/</code>, not just by tests. Stories are ordered so each phase leaves the game strictly
+  <code>docs/visual-spec.html</code> and <code>docs/screens.html</code>, not just by tests. Stories are ordered so each phase leaves the game strictly
   better and shippable — stop anywhere.
 </p>
 <table>
@@ -84,7 +84,7 @@
   </ul>
   <p><strong>Done when:</strong> a tier-12 passage at a narrow window shows every wrapped line flush-left,
   and typing straight through a wrap never paints a phantom error. Visual check against
-  <code>docs/design/visual-spec.html</code>'s prompt styling.</p>
+  <code>docs/visual-spec.html</code>'s prompt styling.</p>
   <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
 </div>
 
@@ -315,7 +315,7 @@
     defeat (mimic/boss reveal rules already set this precedent).</li>
   </ul>
   <p><strong>Done when:</strong> he can open the book and count what's left; visual check against the design
-  tokens (it's a new screen — match <code>docs/design/</code>).</p>
+  tokens (it's a new screen — match <code>docs/design-tokens.json</code> and <code>docs/visual-spec.html</code>).</p>
   <p class="status">☐ code merged · ☐ verified by Claude · ☐ verified by user</p>
 </div>
 

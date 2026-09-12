@@ -13,7 +13,7 @@ const LOCK_ICON_CLASSES: Record<NodeFamily, { border: string; fill: string }> = 
   danger: { border: 'border-node-danger-locked-text', fill: 'bg-node-danger-locked-text' },
 }
 
-// A tier tile on the world map trail (design/README.md §2, widened from the
+// A tier tile on the world map trail (docs/screens.html#map, widened from the
 // spec's 76px — "Underwater"/"Underdark" don't fit 76px at this font size
 // without overflowing the card). Urban (tier 11) uses the danger family so
 // it stays red-tinted even locked, per the same rule as the dungeon graph's

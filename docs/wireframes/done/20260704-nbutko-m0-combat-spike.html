@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: M0 Combat Spike — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">wireframes</a> · <code>m0-combat-spike</code></nav>
+<header class="page-head">
+  <h1>Wireframes: M0 Combat Spike</h1>
+  <p class="tagline">The battle-screen handoff: which direction shipped, which were rejected, and how faithful
+  the mocks were.</p>
+  <span class="status">feature: <code>m0-combat-spike</code> · author: nbutko · opened: 2026-07-04 · status: <strong>done</strong>
+  · PRD: no (none was written for M0) · wireframes: yes (this page)</span>
+</header>
+<div class="banner done">
+  <p><strong>Shipped 2026-07-04, styled in M1's "one real UI" slice.</strong> Direction 2a below is what shipped;
+  2b and 2c were explored and dropped. The as-shipped visual reference now lives in
+  <a href="../../screens.html#battle">screens.html#battle</a> and <a href="../../visual-spec.html">visual-spec.html</a>;
+  this page is the original handoff, kept for the record of what was chosen and why.</p>
+</div>
+<main>
+
+<p>
+  This wireframe handoff served <a href="../../m0-implementation.html">the M0
+  implementation plan</a> (no PRD was written for M0 — the roadmap's M0 entry and
+  <a href="../../game-design.html">game-design.html</a>'s formulas were the recorded "why").
+</p>
+
+<h2>About the design files</h2>
+<p>The bundled HTML in <a href="20260704-nbutko-core-screens.dc.html">the design canvas</a> is a <strong>design
+reference built as an exploratory wireframe/mock deck</strong>, not production code — several screens show 2–3
+alternative layouts side by side for comparison. It was never meant to be copied directly into the app; the task
+was to <strong>recreate the chosen screens in the target codebase's actual stack</strong> (Vite + React +
+TypeScript + Tailwind, per <a href="../../architecture.html">the architecture doc</a>) using its own patterns —
+component structure, state management, build tooling — not to embed this HTML as-is.</p>
+
+<h2>Fidelity</h2>
+<p><strong>Mixed, closer to low-fidelity-plus:</strong> colors, typography, and component layout were
+final/intentional and safe to implement as specified. Copy text (monster names, numbers) was
+placeholder/example data, not final content.</p>
+
+<h2 id="battle">Screen: Battle screen</h2>
+<p><strong>Which option shipped:</strong> direction <strong>2a ("Vertical Duel")</strong> — a single centered
+panel, vertical stack of monster panel → divider → player panel. Options 2b and 2c were alternate layouts
+explored in the same canvas turn and not chosen; no rationale beyond "2a is the direction" was recorded at the
+time.</p>
+<p>
+  The full visual spec for 2a — outer frame, panel styling, HP bars, the prompt/input row, the countdown
+  column, and the keyboard's three color states — is written up in
+  <a href="../../screens.html#battle">screens.html#battle</a> (as shipped) and
+  <a href="../../visual-spec.html">visual-spec.html</a> (the implementer-ready token spec). Restating it a third
+  time here would just drift out of sync with what actually shipped, so this page points at those instead of
+  duplicating the numbers.
+</p>
+<p>See the canvas for 2a alongside the rejected 2b/2c mocks, side by side as originally presented:
+<a href="20260704-nbutko-core-screens.dc.html#2a">2a</a>,
+<a href="20260704-nbutko-core-screens.dc.html#2b">2b</a>,
+<a href="20260704-nbutko-core-screens.dc.html#2c">2c</a>.</p>
+
+<h2>Rejected directions</h2>
+<p>2b and 2c were alternate battle-screen layouts in the same design canvas turn. The handoff recorded only
+which option was canonical (2a), not the reasoning for rejecting the other two — that reasoning was never
+written down, so it isn't restated here as if it were.</p>
+
+<h2>Links</h2>
+<ul>
+  <li><a href="20260704-nbutko-core-screens.dc.html">The design canvas</a> — the full wireframe deck, all
+  screens including rejected alternates. Shared with the M2 wireframe page below.</li>
+  <li><a href="../../screens.html#battle">screens.html#battle</a> — the battle screen as shipped.</li>
+  <li><a href="../../visual-spec.html">visual-spec.html</a> — the palette/type/layout/keyboard token spec.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · wireframes for <code>m0-combat-spike</code></footer>
+</body>
+</html>

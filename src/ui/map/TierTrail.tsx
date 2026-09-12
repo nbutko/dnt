@@ -16,8 +16,7 @@ const tierState = (tier: number, highestUnlockedTier: number) => {
   return 'locked' as const
 }
 
-// The horizontally-scrolling dashed trail of tier cards (design/README.md
-// §2).
+// The horizontally-scrolling dashed trail of tier cards (docs/screens.html#map).
 const TierTrail = ({ tiers, highestUnlockedTier, onSelectTier }: TierTrailProps) => (
   <div className="scroll-x-subtle flex-1 overflow-x-auto px-1 py-2.5">
     {/* w-max (not a fixed min-width guess): a block-level flex container

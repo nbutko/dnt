@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: M2 Progression Loop — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">wireframes</a> · <code>m2-progression-loop</code></nav>
+<header class="page-head">
+  <h1>Wireframes: M2 Progression Loop</h1>
+  <p class="tagline">The world-map, dungeon-graph, and (retired) Inn-skill-tree handoff: which directions
+  shipped, and the one that didn't survive M3.</p>
+  <span class="status">feature: <code>m2-progression-loop</code> · author: nbutko · opened: 2026-07-04 · status: <strong>done</strong>
+  · PRD: yes — <a href="../../m2-scope.html">M2 PRD</a> · wireframes: yes (this page)</span>
+</header>
+<div class="banner done">
+  <p><strong>Shipped 2026-07-04.</strong> World map (3a) and dungeon graph (3b) below are what shipped and are
+  still current. The Inn skill tree (4a) shipped in M2 and was <strong>retired in M3</strong>, replaced by
+  ability scores and 5e-style leveling — see its own section below for the record. The as-shipped visual
+  reference for the two surviving screens now lives in <a href="../../screens.html#map">screens.html#map</a> and
+  <a href="../../screens.html#dungeon-graph">screens.html#dungeon-graph</a>.</p>
+</div>
+<main>
+
+<p>
+  This wireframe handoff served <a href="../../m2-scope.html">the M2
+  scope doc</a> and <a href="../../m2-implementation.html">the M2 implementation
+  plan</a>.
+</p>
+
+<h2>About the design files</h2>
+<p>
+  Copied from <a href="20260704-nbutko-m0-combat-spike.html">the M0 wireframe page</a>: the bundled HTML in
+  <a href="20260704-nbutko-core-screens.dc.html">the design canvas</a> is a <strong>design reference built as an
+  exploratory wireframe/mock deck</strong>, not production code — several screens show alternative layouts side
+  by side for comparison, and the task was to recreate the chosen screens in the target codebase's own stack, not
+  to embed the HTML as-is.
+</p>
+
+<h2>Fidelity</h2>
+<p>
+  Copied from <a href="20260704-nbutko-m0-combat-spike.html">the M0 wireframe page</a>: mixed, closer to
+  low-fidelity-plus — colors, typography, and component layout were final/intentional; exact pixel positions in
+  the dungeon-graph SVG (3b) were illustrative for one example run, not a layout algorithm (the real graph is
+  procedurally generated); copy text (monster names, numbers) was placeholder/example data.
+</p>
+
+<h2>Node-state legend</h2>
+<p>
+  Copied from <a href="../../screens.html#node-states">screens.html#node-states</a> so this page stands alone:
+  the world map's tier cards and the dungeon graph's nodes below both reuse one visual language, unchanged —
+  <strong>cleared</strong> is a gold radial fill + gold border + glow; <strong>available</strong> is a dark
+  background + gold border + glow, no fill; <strong>locked</strong> is dim, with a dashed border and
+  <code>opacity:.55</code>. No screen gets its own separate color language for this.
+</p>
+
+<h2 id="map">Screen: World map</h2>
+<p><strong>Which option shipped:</strong> option <strong>3a</strong> — no alternatives were explored for this
+screen in the canvas.</p>
+<p>
+  The full visual spec — the Inn/Shop hub column, the scrolling tier trail, the three tier-card states — is
+  written up in <a href="../../screens.html#map">screens.html#map</a> (as shipped). See
+  <a href="20260704-nbutko-core-screens.dc.html#3a">the canvas</a> for the original mock.
+</p>
+
+<h2 id="dungeon-graph">Screen: Dungeon branch graph</h2>
+<p><strong>Which option shipped:</strong> option <strong>3b</strong> — no alternatives were explored for this
+screen in the canvas. Exact pixel positions in the mock's SVG were illustrative for one example run, not a
+layout algorithm — the real graph is procedurally generated per
+<a href="../../game-design.html">the game-design spec</a>.</p>
+<p>
+  The full visual spec — node shapes/sizes, edge-line states, the entrance/waypoint/approach/boss structure — is
+  written up in <a href="../../screens.html#dungeon-graph">screens.html#dungeon-graph</a> (as shipped). See
+  <a href="20260704-nbutko-core-screens.dc.html#3b">the canvas</a> for the original mock.
+</p>
+
+<h2 id="inn-skill-tree">Screen: The Inn — skill tree (retired)</h2>
+<div class="banner retired">
+  <p><strong>Retired in M3.</strong> The skill tree described below shipped in M2 and was replaced outright by
+  ability scores and 5e-style leveling — see <a href="../../m3-scope.html">the
+  M3 PRD</a>. XP is no longer a spendable currency. Kept here for the historical record; the palette/type/shape
+  language it established still applies to the M3 screens that replaced it (see
+  <a href="../../screens.html#inn">screens.html#inn</a>).</p>
+</div>
+<p><strong>Which option shipped:</strong> option <strong>4a</strong> — no alternatives were explored for this
+screen in the canvas.</p>
+<p><strong>Purpose:</strong> spend accumulated XP on five skill-tree branches; each branch was a strictly
+sequential chain (buy node <em>n</em> before node <em>n+1</em> unlocks).</p>
+<p><strong>Layout:</strong> a header bar (back-to-map link, "The Inn — Skill Tree" Cinzel title, XP + coin pill
+readouts on the right) above five equal branch columns (190px wide, <code>2px solid #7a5a22</code> border, 8px
+radius, background <code>rgba(59,18,32,.25)</code>), laid out with <code>flex-direction:column-reverse</code>
+inside each so the cheapest node sat at the bottom and the tree visually "grew" upward.</p>
+<ul>
+  <li>Branch order/node counts: <strong>Endurance</strong> (4 nodes: +20 HP, +20 HP, +1 heart, +1 heart),
+  <strong>Wordsmith</strong> (5 nodes: unlock text tiers 2/4/6/8/10), <strong>Focus</strong> (3 nodes,
+  illustrative: +10%/+20%/+35% time limit), <strong>Luck</strong> (3 nodes, illustrative: +3%/+3% crit chance,
+  +25% crit damage), <strong>Utility</strong> (3 nodes: +1 power-up slot each). Focus/Luck/Utility node counts
+  and exact percentages were illustrative — never spec'd numerically before the tree was retired.</li>
+  <li>Node states, the same 3-tier language as the other screens: <strong>purchased</strong> (gold radial fill,
+  gold border, "✓"), <strong>buyable now</strong> (dark bg, gold border + glow, showing its XP cost as the
+  node's label, tappable), <strong>locked</strong> (dim, dashed border, <code>opacity:.55</code>, showing "?"
+  instead of a cost). Only ever one buyable node per branch at a time.</li>
+  <li>Vertical connector between nodes: 2px wide, <code>#c9a227</code> solid if both nodes it joins were
+  purchased (or the lower purchased and upper buyable), <code>#5a4a30</code> if leading into a locked node.</li>
+</ul>
+<p><strong>Interaction (as it worked in M2):</strong> tapping a "buyable" node spent XP and immediately flipped
+it to "purchased," which revealed the next node in that branch as "buyable" (if affordable) or left it
+locked-but-visible otherwise — cost was always shown even when unaffordable, just not tappable.</p>
+<p>See <a href="20260704-nbutko-core-screens.dc.html#4a">the canvas</a> for the original mock.</p>
+
+<h2>Rejected directions</h2>
+<p>None of the three screens above had alternate directions explored in the canvas — each had exactly one mock.</p>
+
+<h2>Links</h2>
+<ul>
+  <li><a href="20260704-nbutko-core-screens.dc.html">The design canvas</a> — the full wireframe deck, shared
+  with the M0 wireframe page.</li>
+  <li><a href="../../screens.html#map">screens.html#map</a>, <a href="../../screens.html#dungeon-graph">screens.html#dungeon-graph</a>
+  — the two surviving screens as shipped.</li>
+  <li><a href="../../m3-scope.html">The M3 PRD</a> — what replaced the skill
+  tree.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · wireframes for <code>m2-progression-loop</code></footer>
+</body>
+</html>

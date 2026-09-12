@@ -32,16 +32,16 @@ plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
   post-playtest feedback logs)
 - **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop) — **shipped**:
   [m3-scope](docs/m3-scope.html) + [m3-implementation](docs/m3-implementation.html) +
-  [wireframes](docs/design/m3-wireframes.html)
+  [wireframes](docs/wireframes/done/20260705-nbutko-m3-character-sheet.html)
 
 ## Working rules (non-negotiable)
 
 - **One story = one commit, with a check-in between. Never batch.** Implement, verify, commit, stop, wait.
 - **Before any _code_ commit, this must be clean:** `npm run lint` + `tsc` (`npm run build`) + `npm run test`
   (all bundled as `npm run presubmit`). Docs-only commits skip this gate.
-- **Verify UI visually, not just via tests.** Match [`docs/design/`](docs/design/) exactly — the
-  [wireframes](docs/design/m3-wireframes.html), [`visual-spec.html`](docs/design/visual-spec.html),
-  [`README.md`](docs/design/README.md), and [`tokens.json`](docs/design/tokens.json). Dev server:
+- **Verify UI visually, not just via tests.** Match [`docs/screens.html`](docs/screens.html) exactly — the
+  [wireframes](docs/wireframes/done/20260705-nbutko-m3-character-sheet.html), [`visual-spec.html`](docs/visual-spec.html),
+  and [`design-tokens.json`](docs/design-tokens.json). Dev server:
   `npm run dev` → `http://127.0.0.1:5173/` (also serves `/docs/...`; `file://` URLs are blocked by the browser
   tools).
 - **Commit only when asked.** Branch first if on `main`. Commit messages end with:

@@ -5,7 +5,7 @@ interface HubCardProps {
   onSelect: () => void
 }
 
-// Inn/Shop hub tiles (design/README.md §2). Both are now real navigating
+// Inn/Shop hub tiles (docs/screens.html#map). Both are now real navigating
 // buttons with the same gold-bordered affordance — the Shop's M2-era
 // "Coming soon" dashed/locked look retired in Story 10 once it had somewhere
 // to navigate to. `variant` stays as a prop (rather than collapsing to one

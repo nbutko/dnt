@@ -31,7 +31,7 @@ interface Skeleton {
 }
 
 // Roll path counts/lengths until they satisfy the scope's two hard invariants
-// (m2-scope.html#dungeon-structure): shortest path 7-10 and regular-monster
+// (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-structure): shortest path 7-10 and regular-monster
 // total in the target band. Rejection sampling against generous per-segment
 // ranges is simpler than trying to construct a valid shape directly, and stays
 // deterministic because the rng is seeded. The cap is a safety valve the
@@ -62,7 +62,7 @@ const rollSkeleton = (rng: Rng, cfg: DungeonGenerationConfig): Skeleton => {
 
 // generateDungeon(tier, params, rng): the two-fan-out graph, pure and seeded.
 // The same (tier, seed) always yields the identical dungeon — the run store
-// never persists a graph, it regenerates from the seed (m2-scope finding E).
+// never persists a graph, it regenerates from the seed (docs/prds/done/20260704-nbutko-m2-progression-loop.html finding E).
 export const generateDungeon = (
   tier: number,
   cfg: DungeonGenerationConfig,
@@ -132,7 +132,7 @@ export const generateDungeon = (
 
   // Chests: dead-end spurs off regular fight nodes only (never a chokepoint),
   // scattered across both segments. Exactly one is real; the rest are mimics
-  // that look identical until opened (m2-scope#chests).
+  // that look identical until opened (docs/prds/done/20260704-nbutko-m2-progression-loop.html#chests).
   const fightIds = Object.values(nodes)
     .filter((node) => node.kind === 'fight')
     .map((node) => node.id)

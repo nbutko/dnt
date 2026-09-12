@@ -1,6 +1,6 @@
 import type { DungeonGraph, DungeonNode } from '../../domain/dungeon'
 
-// PURE layout for the fixed two-fan-out shape (m2-implementation.html#layout —
+// PURE layout for the fixed two-fan-out shape (docs/plans/done/20260704-nbutko-m2-progression-loop.html#layout —
 // "graph-layout.ts is separate from DungeonGraph.tsx"). A DungeonGraph maps to
 // absolute {x, y} node centres; the React component is then a dumb renderer of
 // those points. Kept pure so it's unit-testable (boss rightmost, no overlaps,

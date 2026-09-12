@@ -29,7 +29,7 @@ interface SaveProviderProps {
 // first wins, so a merely-slow-but-working load still gets its real data.
 const LOAD_TIMEOUT_MS = 4000
 
-// The persistent-save home (m2-implementation.html#state): hydrates from
+// The persistent-save home (docs/plans/done/20260704-nbutko-m2-progression-loop.html#state): hydrates from
 // IndexedDB once on mount, then mirrors every dispatch back to it. Never
 // imports combat/engine — the only bridge to battle numbers is
 // resolveModifiers() (Story 4), called by state/battle-store.ts, not here.

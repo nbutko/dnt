@@ -94,7 +94,7 @@ export const rollIsCrit = (combat: CombatConfig, rng: Rng, options: CritRuleOpti
 // into — the served prompt is already easier (shorter/simpler), but that
 // alone is only a linear discount on damage, which speedBonus can offset.
 // Squaring the tier ratio makes the loss outrun anything speed can buy back
-// (m2-scope.html#wordsmith-gate, now INT/band-driven instead of Wordsmith):
+// (docs/prds/done/20260704-nbutko-m2-progression-loop.html#wordsmith-gate, now INT/band-driven instead of Wordsmith):
 // 1 at/above the target tier, 0.56 at 6/8, 0.25 at 4/8.
 //
 // M3 Story 6 (docs/plans/done/20260705-nbutko-m3-character-sheet.html finding D) reinterprets `targetTier`:

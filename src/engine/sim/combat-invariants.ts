@@ -21,7 +21,7 @@
 //      Adjacent tiers are deliberately NOT compared: content/monsters.json's
 //      per-tier boss HP isn't itself strictly increasing tier-over-tier (e.g.
 //      tier 2's Displacer Beast at 97 HP is softer than tier 1's Goblin Boss
-//      at 150 — a real, frozen roster quirk from m2-implementation.html's
+//      at 150 — a real, frozen roster quirk from docs/plans/done/20260704-nbutko-m2-progression-loop.html's
 //      "widened tier 1 to cover the grandfathered M0 roster" call, not a
 //      Story 13 bug), so a strict pairwise-adjacent assertion would fail on
 //      real, out-of-scope content rather than on anything this story tunes.
@@ -129,7 +129,7 @@ export const sweepHitsToKillBand = (battles = 120, seed = 900): InvariantViolati
     for (const characterClass of CLASSES) {
       // The regular fight at the sample level; the boss gets +4 levels — a
       // dungeon's boss sits behind its regular fights on the shortest path
-      // (m2-scope.html), so a hero reaching it has already leveled up some
+      // (docs/prds/done/20260704-nbutko-m2-progression-loop.html), so a hero reaching it has already leveled up some
       // from clearing the way there, not still standing at the tier's entry
       // level (a level-1 character vs. a tier's own boss is a real, by-design
       // mismatch — see balance.test.ts's Story 13 report for the worked

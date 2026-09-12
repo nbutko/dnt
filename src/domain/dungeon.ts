@@ -1,7 +1,7 @@
 // The dungeon graph — pure data, no logic (transitions live in
 // engine/dungeon/graph.ts, generation in engine/dungeon/generate.ts). Shape is
 // the scope's "hub and spoke, twice": entrance → early paths → waypoint → late
-// paths → approach → boss (m2-scope.html#dungeon-structure).
+// paths → approach → boss (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-structure).
 
 // entrance: the free starting node every early path fans out from (always
 //   available, no fight). fight: a regular monster on a path. waypoint /
@@ -12,7 +12,7 @@ export type NodeKind = 'entrance' | 'fight' | 'waypoint' | 'approach' | 'boss' |
 
 // locked: nothing upstream cleared yet, not fightable. available: an upstream
 // node is cleared (or it's the entrance) — attemptable now. cleared: defeated,
-// stays on the map but can't be re-fought this run (m2-scope.html#dungeon-structure).
+// stays on the map but can't be re-fought this run (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-structure).
 export type NodeState = 'locked' | 'available' | 'cleared'
 
 export interface DungeonNode {

@@ -1,4 +1,4 @@
-// Persistent save (state/save/) — see m2-implementation.html#state. Opposite
+// Persistent save (state/save/) — see docs/plans/done/20260704-nbutko-m2-progression-loop.html#state. Opposite
 // lifetime from the ephemeral dungeon-run store: this survives reload, that
 // doesn't.
 
@@ -20,7 +20,7 @@ export interface SaveData {
     consumables: Record<ItemId, number>
   }
   hearts: { max: number }
-  // Reaches 12 to mean "tier 11 (Urban) cleared too" — see m2-implementation
+  // Reaches 12 to mean "tier 11 (Urban) cleared too" — see docs/plans/done/20260704-nbutko-m2-progression-loop.html
   // finding D. cleared(N) = N < highestUnlockedTier.
   highestUnlockedTier: number
   monstersDefeated: string[]

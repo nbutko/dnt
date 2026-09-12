@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: localhost vs. 127.0.0.1 Are Separate Origins — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>localhost-vs-127-separate-origins</code></nav>
+<header class="page-head">
+  <h1><code>localhost:5173</code> and <code>127.0.0.1:5173</code> are different origins</h1>
+  <p class="tagline">Same dev server, same port — but the browser treats them as two unrelated origins with
+  two unrelated IndexedDB/localStorage stores.</p>
+  <span class="status">author: nbutko · opened: 2026-07-05</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> A save (or anything else in browser storage) appears to have "reset" or
+  "vanished" between two sessions that both look like <code>npm run dev</code> at port 5173 — before assuming
+  a bug in save loading/migration, check whether the two sessions actually used the same hostname in the
+  address bar.
+</div>
+
+<h2>Relevant when</h2>
+<p>You (or an agent's browser tool) are testing the app at <code>localhost:5173</code> in one sitting and
+<code>127.0.0.1:5173</code> in another, and the save data doesn't seem to carry over.</p>
+
+<h2>The gotcha</h2>
+<p>
+  Browsers scope storage (IndexedDB, localStorage, cookies) by origin, and <code>localhost</code> and
+  <code>127.0.0.1</code> — despite resolving to the same machine and the same Vite dev server — are two
+  distinct origins. Each gets its own, completely separate IndexedDB database, so a save written under one
+  hostname is invisible under the other. This surfaced during M2 playtesting as an apparent bug: the app went
+  blank at <code>localhost:5173</code> (see the companion note on IndexedDB opens hanging) while
+  <code>127.0.0.1:5173</code> rendered fine in the same browser at the same time — because the two origins'
+  IndexedDB stores are unrelated, one being wedged said nothing about the other.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Pick one hostname for a given testing session and stick with it — don't hop between
+  <code>localhost:5173</code> and <code>127.0.0.1:5173</code> expecting shared state. If a save looks like it
+  reset, check the address bar's hostname before suspecting <code>domain/save.ts</code>'s migration logic.
+  This also matters for the agent browser tools, which default to one hostname — confirm which one before
+  concluding a save bug is real.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-05 — noticed while diagnosing the IndexedDB-hang blank-screen bug during M2 playtesting; not a
+  bug in itself, but easy to mistake for one.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← notes index</a></footer>
+</body>
+</html>

@@ -1,6 +1,6 @@
 // The single source of truth for cleared/available/locked styling — reused
 // unchanged by world-map tiles, dungeon nodes, and skill-tree nodes (see
-// m2-implementation.html#node-language). A tweak to "what locked looks like"
+// docs/plans/done/20260704-nbutko-m2-progression-loop.html#node-language). A tweak to "what locked looks like"
 // happens once here, not in three drifting copies.
 export type NodeVisualState = 'cleared' | 'available' | 'locked'
 

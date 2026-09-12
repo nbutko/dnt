@@ -22,7 +22,7 @@ export interface DungeonTier {
 // The 11 dungeons, in ladder order. Each dungeon N serves regular text tiers
 // [N, N+2] and its boss N+3 (content-plan-v2.html §2) — the world map, dungeon
 // generator, and content loader all key off this ladder. WPM ranges carry over
-// from m2-scope's tier table.
+// from docs/prds/done/20260704-nbutko-m2-progression-loop.html's tier table.
 export const DUNGEON_TIERS: readonly DungeonTier[] = [
   { tier: 1, habitat: 'Grassland', wpmRange: [10, 30], textTierRange: [1, 3], bossTextTier: 4, rosterPool: 'grassland' },
   { tier: 2, habitat: 'Forest', wpmRange: [14, 20], textTierRange: [2, 4], bossTextTier: 5, rosterPool: 'forest' },

@@ -5,7 +5,7 @@ import type { Rng } from '../../domain/types'
 import { generateDungeon } from '../../engine/dungeon/generate'
 import { clearNode, isComplete } from '../../engine/dungeon/graph'
 
-// The ephemeral dungeon-run home (m2-implementation.html#state, finding E) —
+// The ephemeral dungeon-run home (docs/plans/done/20260704-nbutko-m2-progression-loop.html#state, finding E) —
 // deliberately never persisted. Closing the dungeon mid-run equals leaving; a
 // revisit regenerates from a fresh seed. This reducer is the one place state
 // meets the pure dungeon engine (generate + graph transitions); it imports no
@@ -113,7 +113,7 @@ export const dungeonRunReducer = (
 
     case 'resolveFight': {
       // A win clears the node (opening its downstream); a loss costs a heart
-      // and leaves the node available to retry (m2-scope#hearts). Either way
+      // and leaves the node available to retry (docs/prds/done/20260704-nbutko-m2-progression-loop.html#hearts). Either way
       // the active battle closes and any next-fight buffs expire.
       const activeBuffs = expireNextFightBuffs(state.activeBuffs)
       return action.result === 'win'

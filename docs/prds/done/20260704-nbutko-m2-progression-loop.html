@@ -3,29 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>M2 Scope: Progression Loop — Dungeons & Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>PRD: M2 Progression Loop — Dungeons & Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>m2-progression-loop</code></nav>
 <header class="page-head">
   <h1>M2 Scope: The Progression Loop</h1>
   <p class="tagline">World map, dungeons, hearts, and the skill tree — the metagame that turns single battles into a game.</p>
+  <span class="status">feature: <code>m2-progression-loop</code> · author: nbutko · opened: 2026-07-04 · status: <strong>done</strong></span>
 </header>
+<div class="banner done">
+  <p><strong>Shipped 2026-07-04.</strong> The world map and dungeon structure below are as-shipped and current.
+  The Inn's skill tree — the whole of <a href="#inn">"The Inn: heart recovery and the skill tree"</a> — was
+  <strong>retired in M3</strong> and replaced by ability scores and 5e-style leveling; see
+  <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html">the M3 PRD</a> for what replaced it. The
+  <a href="#save-data">"Save data changes"</a> section stays as the record of the data-model requirement it
+  was — the shape has since moved on (now v4; see <a href="../../architecture.html#persistence">architecture.html</a>).
+  Wireframes: <a href="../../wireframes/done/20260704-nbutko-m2-progression-loop.html">the M2 wireframe page</a>.
+  Evergreen home: <a href="../../game-design.html">game-design.html</a>, <a href="../../screens.html">screens.html</a>,
+  <a href="../../architecture.html">architecture.html</a>.</p>
+</div>
 <main>
 
 <p>
-  <a href="roadmap.html">M0 and M1</a> answered "does one battle feel good?" M2 answers "what happens
+  <a href="../../roadmap.html">M0 and M1</a> answered "does one battle feel good?" M2 answers "what happens
   between battles?" — the loop that makes him come back and fight a second, tenth, hundredth monster. This
   doc defines that metagame concretely enough to build: the world map, what the 11 dungeons actually are,
   how a dungeon's branching paths get generated, the hearts/lives system, and how the Inn and skill tree
   work, plus how the skill tree's Wordsmith branch gates dungeon-tier difficulty (see <a href="#wordsmith-gate">below</a>).
   Power-ups and the Shop's item list are explicitly <strong>not</strong> this milestone — that's
-  <a href="roadmap.html">Roadmap</a> M3 — and neither is any art (M6).
+  <a href="../../roadmap.html">Roadmap</a> M3 — and neither is any art (M6).
 </p>
 
 <div class="callout decision">
-  Everything here is data-driven the same way monsters already are (see <a href="content-plan.html#roster">Content
+  Everything here is data-driven the same way monsters already are (see <a href="../../prds/done/20260704-nbutko-content-v1.html#roster">Content
   Plan</a>): dungeon tiers, path generation parameters, and skill tree costs are config/content, not
   hardcoded logic, so balance changes stay a data edit.
 </div>
@@ -33,7 +45,7 @@
 <h2 id="world-map">The world map</h2>
 <p>
   This is the screen he sees on launch (once a save exists). Text/CSS only, same visual-restraint rule as
-  battles (see <a href="content-plan.html">Content Plan</a>) — no images until M6. It shows:
+  battles (see <a href="../../prds/done/20260704-nbutko-content-v1.html">Content Plan</a>) — no images until M6. It shows:
 </p>
 <ul>
   <li><strong>The Inn</strong> — always available. Restores hearts to full and opens the skill tree (see
@@ -60,7 +72,7 @@
 
 <h2 id="dungeon-tiers">The 11 dungeons: habitats as a difficulty ladder</h2>
 <p>
-  <a href="monster-manual.json">monster-manual.json</a> tags every monster with a real D&amp;D 5e challenge
+  <a href="../../../content-pipeline/monster-manual.json">monster-manual.json</a> tags every monster with a real D&amp;D 5e challenge
   rating (CR) and one or more habitats. Excluding the catch-all <code>"Any Habitat"</code> tag, exactly 11
   named habitats remain — a perfect fit for 11 dungeon tiers. <code>"Any Habitat"</code> monsters (bandits,
   cultists, mages, golems, liches...) aren't a 12th dungeon; they're a shared filler pool any dungeon can
@@ -107,7 +119,7 @@
 <div class="callout decision">
   Boss CR is a target, not a hard formula. Mechanically, "significantly harder than the dungeon" is enforced
   by the boss's actual stats — noticeably higher HP, WPM, and text tier than anything else in that dungeon,
-  tuned the same way <a href="content-plan.html#roster">existing bosses</a> already are. The CR column is
+  tuned the same way <a href="../../prds/done/20260704-nbutko-content-v1.html#roster">existing bosses</a> already are. The CR column is
   purely a <em>name-picking</em> guide, and at the low end of the scale (tiers 1-4) CR fractions compress too
   much to matter — "Goblin Boss" (CR 1) reads as a real boss next to CR-1/4 trash even though the number gap
   looks small on paper. Picking a recognizable boss-coded monster matters more than hitting an exact CR
@@ -119,11 +131,11 @@
   entries total in the manual, fewest of any), so 2 of its 5 example regulars are reflavored Any-Habitat
   humanoids ("Drowned Cultist," "Sunken Bandit" rather than a literal Cultist/Bandit). The brief explicitly
   allows this — it's exactly the situation the Any-Habitat pool exists for. Actual name/flavor authoring for
-  all 11 rosters is content work, not scope work — see <a href="roadmap.html">Roadmap</a> M5, same split
+  all 11 rosters is content work, not scope work — see <a href="../../roadmap.html">Roadmap</a> M5, same split
   as the rest of the roster.
 </div>
 <p>
-  The existing <a href="content-plan.html#roster">Slime / Goblin / Skeleton / Slime King</a> roster becomes
+  The existing <a href="../../prds/done/20260704-nbutko-content-v1.html#roster">Slime / Goblin / Skeleton / Slime King</a> roster becomes
   the concrete Tier 1 (Grassland) roster for now — reskinned generic critters rather than manual entries,
   which is fine since Tier 1 is the tutorial and doesn't need manual-accurate flavor yet. Wraith and Dragon
   don't fit Grassland's CR band at all; they're reserved as placeholders and get reassigned to an
@@ -134,7 +146,7 @@
 <h2 id="wordsmith-gate">Wordsmith gating: dungeon tier vs. unlocked text tier</h2>
 <p>
   Every monster already carries a fixed <code>textTier</code> stat (see the
-  <a href="content-plan.html">Content Plan</a>'s tier table) — that's the prompt difficulty the
+  <a href="../../prds/done/20260704-nbutko-content-v1.html">Content Plan</a>'s tier table) — that's the prompt difficulty the
   dungeon's design "wants" the player to be typing against that monster. Separately, the player has their
   own currently-unlocked max text tier, raised by the <strong>Wordsmith</strong> skill tree branch. These
   don't have to match, and the brief is explicit about what happens when they don't: the player isn't
@@ -149,7 +161,7 @@ tierGatePenalty =
 </code></pre>
 <p>
   <code>tierGatePenalty</code> is a new multiplier on the existing
-  <a href="game-design.html#damage">damage formula</a>: <code>damage = baseDamage * lengthFactor(text) *
+  <a href="../../game-design.html#damage">damage formula</a>: <code>damage = baseDamage * lengthFactor(text) *
   speedBonus * critMultiplier * powerUpMultiplier * tierGatePenalty</code>. It's constant for the whole fight
   against a given monster, since a monster's <code>textTier</code> doesn't change mid-battle.
 </p>
@@ -177,9 +189,9 @@ tierGatePenalty =
   <tr><td>5</td><td>Text tier 10 (full access)</td></tr>
 </table>
 <div class="callout decision">
-  Replaces the old "+ max prompt length per node" framing (see <a href="game-design.html#skill-tree">Game
+  Replaces the old "+ max prompt length per node" framing (see <a href="../../game-design.html#skill-tree">Game
   Design</a>, updated to match) with unlocking whole text tiers directly — length was already just one axis
-  of what a text tier means (see the <a href="content-plan.html">Content Plan</a>'s tier table:
+  of what a text tier means (see the <a href="../../prds/done/20260704-nbutko-content-v1.html">Content Plan</a>'s tier table:
   capitalization, punctuation, numbers, and paragraph structure all ramp in too), so gating the tier
   directly is both simpler and more accurate than gating a character count. 5 nodes covering 10 tiers two at
   a time keeps the branch small, matching every other branch.
@@ -237,7 +249,7 @@ tierGatePenalty =
   3-5 gives a minimum of 2+1+3+1 = 7).</li>
   <li><strong>Total monsters</strong> (excluding mimics) sums every path plus the waypoint and approach node
   — tune path counts/lengths per segment until this lands around 30 (a 26-34 band is fine; exact tuning is
-  a playtesting knob, same spirit as <a href="game-design.html#damage">damage constants</a>).</li>
+  a playtesting knob, same spirit as <a href="../../game-design.html#damage">damage constants</a>).</li>
 </ul>
 <div class="callout decision">
   Two fan-out stages (not a fully general branching DAG) is the "keep it simple and clean" call. It still
@@ -265,7 +277,7 @@ tierGatePenalty =
 
 <h2 id="hearts">Hearts: the meta-level lives system</h2>
 <p>
-  Hearts sit <em>above</em> individual-battle HP (see <a href="game-design.html#damage">Damage</a>/HP,
+  Hearts sit <em>above</em> individual-battle HP (see <a href="../../game-design.html#damage">Damage</a>/HP,
   which is unchanged) — they're the run-level lives system that makes a whole dungeon attempt succeed or
   fail, the same role they play in something like Zelda.
 </p>
@@ -295,7 +307,7 @@ tierGatePenalty =
 <h2 id="inn">The Inn: heart recovery and the skill tree</h2>
 <p>
   Visiting the Inn restores hearts to full (current max) and opens the skill tree screen where XP is spent.
-  The skill tree keeps its <a href="game-design.html#skill-tree">existing 5 branches</a> — Endurance,
+  The skill tree keeps its <a href="../../game-design.html#skill-tree">existing 5 branches</a> — Endurance,
   Wordsmith, Focus, Luck, Utility — with one addition: <strong>Endurance</strong> now has 4 nodes instead of
   a flat "+HP per node," with the top two granting hearts:
 </p>
@@ -308,13 +320,13 @@ tierGatePenalty =
 </table>
 <p>
   That caps max hearts at 3 (1 base + 2 nodes) for now — a small, clearly-tunable number rather than a big
-  new branch, consistent with <a href="game-design.html#skill-tree">keeping the tree small</a> for the
+  new branch, consistent with <a href="../../game-design.html#skill-tree">keeping the tree small</a> for the
   first playable version.
 </p>
 <div class="callout decision">
   Folded into Endurance rather than adding a 6th branch. Hearts and per-battle HP are both "how much beating
   can I take before something resets," so they read as one theme to a 10-year-old, and it keeps the tree at
-  5 branches instead of sprawling — see <a href="game-design.html#skill-tree">Game Design</a>, updated to
+  5 branches instead of sprawling — see <a href="../../game-design.html#skill-tree">Game Design</a>, updated to
   match.
 </div>
 
@@ -322,7 +334,7 @@ tierGatePenalty =
 <p>
   Visible on the world map, but locked for the entirety of M2 — clicking it shows something like "The
   shopkeeper hasn't arrived yet." Its item list, purchasing flow, and inventory are an M3 concern, alongside
-  power-ups generally (see <a href="roadmap.html">Roadmap</a>). It's on the map now purely so the layout
+  power-ups generally (see <a href="../../roadmap.html">Roadmap</a>). It's on the map now purely so the layout
   is stable before M3 adds content to it.
 </p>
 
@@ -343,7 +355,7 @@ list — nothing to spend them on yet beyond that.</p>
 
 <h2 id="save-data">Save data changes</h2>
 <p>
-  Extends the <a href="architecture.html#persistence">existing SaveData record</a> with the new
+  Extends the <a href="../../architecture.html#persistence">existing SaveData record</a> with the new
   persistent metagame fields:
 </p>
 <pre><code>{
@@ -373,6 +385,6 @@ list — nothing to spend them on yet beyond that.</p>
 </div>
 
 </main>
-<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · <a href="../index.html">PRDs</a> · PRD for <code>m2-progression-loop</code></footer>
 </body>
 </html>

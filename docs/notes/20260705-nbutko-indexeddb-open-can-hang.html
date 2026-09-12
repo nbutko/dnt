@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: IndexedDB Open Can Hang Forever — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>indexeddb-open-can-hang</code></nav>
+<header class="page-head">
+  <h1>IndexedDB's <code>open()</code> can hang forever with no error</h1>
+  <p class="tagline">A wedged origin's IndexedDB store never fires success, error, <em>or</em> blocked — code that
+  awaits the open call can wait forever, silently.</p>
+  <span class="status">author: nbutko · opened: 2026-07-05</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're touching anything that opens an IndexedDB database (the save
+  store, or any future one) and gating UI on that open resolving — or you're debugging a screen that renders
+  blank/frozen with no console error, especially right after a browser profile has been doing heavy
+  DevTools/storage work. The symptom looks like a code bug (a stuck promise) but the actual cause is the
+  browser's IndexedDB implementation itself declining to ever answer.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're writing or reviewing code that awaits an IndexedDB open (or any promise gating first paint) and
+need to decide whether — and how — to bound that wait.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>state/save/save-storage.ts</code> opens the save database via <code>idb</code>'s <code>openDB()</code>,
+  and <code>SaveProvider</code> originally gated the entire UI on that promise resolving
+  (<code>if (!hydrated) return null</code>). During M2 playtesting this produced a permanent black screen on
+  one Chrome profile at <code>localhost:5173</code> — no error in the console, nothing thrown, the underlying
+  <code>IDBOpenDBRequest</code> just sat at <code>readyState: 'pending'</code> forever. It fired none of
+  <code>success</code>, <code>error</code>, or <code>blocked</code>. The same code worked fine seconds later at
+  <code>127.0.0.1:5173</code> (see the companion note on origins) — this was a wedged per-origin IndexedDB
+  store, not a code bug, but the code had no way to notice or recover.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Never await an IndexedDB open (or any storage open) as the sole gate on rendering something. Race it against
+  a timeout and treat "timed out" the same as "rejected": fall back to an in-memory default and let the app
+  come up, rather than trusting the platform to always tell you it failed.
+  <code>state/save/SaveProvider.tsx</code> now does exactly this (<code>LOAD_TIMEOUT_MS</code>, currently
+  4000ms) — whichever of the real load or the timeout settles first wins, so a merely-slow load still gets its
+  real data, but a hung/wedged open can no longer blank the screen. If you add a second IndexedDB-backed store
+  later, give it the same race, not just a bare <code>await</code>.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-05 — found during M2 playtesting (feedback item "a hung/failed IndexedDB open leaves the whole
+  app blank"), fixed the same day with the timeout race in <code>SaveProvider</code>, covered by
+  <code>SaveProvider.test.tsx</code>. Recorded here since M2's own plan is now frozen in
+  <code>plans/done/</code> and this trap could recur wherever storage is opened next.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← notes index</a></footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// The M2 skill tree's SkillBranchId/SkillTreeState (m2-implementation.html
+// The M2 skill tree's SkillBranchId/SkillTreeState (docs/plans/done/20260704-nbutko-m2-progression-loop.html
 // Story 4) are retired here in M3 Story 3 — the seam's *input* is now a
 // Character + Weapon + ActiveBuff[] (engine/character/modifiers.ts), not a
 // purchased-node count. config/skill-tree.ts and ui/inn/SkillBranch.tsx keep

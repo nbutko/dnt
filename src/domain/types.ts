@@ -24,7 +24,7 @@ export interface Monster {
   name: string
   tier: number
   role: MonsterRole
-  // The dungeon habitat this roster entry belongs to (m2-scope.html#dungeon-tiers)
+  // The dungeon habitat this roster entry belongs to (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-tiers)
   // — "Any Habitat" manual entries get reflavored directly into a thin
   // habitat's roster rather than modeled as a separate generic pool.
   habitat: string
@@ -71,7 +71,7 @@ export interface BattleConfig {
   playerPrompts: PromptSource
   monsterPrompts: PromptSource
   rng: Rng
-  // Constant for the whole fight (m2-scope.html#wordsmith-gate) — computed
+  // Constant for the whole fight (docs/prds/done/20260704-nbutko-m2-progression-loop.html#wordsmith-gate) — computed
   // once by battle-store from the served vs. monster text tier. Defaults to
   // 1 (no gate) so existing callers/tests that don't know about Wordsmith
   // are unaffected.

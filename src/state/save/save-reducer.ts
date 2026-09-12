@@ -21,7 +21,7 @@ export type SaveAction =
 // Cost/price is passed in rather than looked up here: the reducer stays a
 // pure function of (state, action) with no import of config/weapons.ts or
 // config/items.ts, matching the "save never imports combat/config-that-knows-
-// about-combat" seam rule (m2-implementation.html, carried into M3). Callers
+// about-combat" seam rule (docs/plans/done/20260704-nbutko-m2-progression-loop.html, carried into M3). Callers
 // (the Shop UI, Story 10) read the price from config before dispatching.
 export const award = (coins: number, xp: number): SaveAction => ({ type: 'award', coins, xp })
 

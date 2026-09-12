@@ -7,7 +7,7 @@ interface TierTrailProps {
   onSelectTier: (tier: number) => void
 }
 
-// cleared(N) = N < highestUnlockedTier (m2-implementation.html finding D —
+// cleared(N) = N < highestUnlockedTier (docs/plans/done/20260704-nbutko-m2-progression-loop.html finding D —
 // highestUnlockedTier reaches 12 once tier 11 is cleared too, so this holds
 // for every tier with no special-casing).
 const tierState = (tier: number, highestUnlockedTier: number) => {

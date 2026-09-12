@@ -293,7 +293,7 @@ export interface SimulatedCharacter {
   // stats) — same role as SimulatedPlayer.wpm/accuracy above. Callers
   // typically match this to the target dungeon's own config/dungeon-tiers.ts
   // wpmRange, since that's the game's own "what wpm is this tier built for"
-  // signal (m2-scope.html#dungeon-tiers) — a fixed baseline wpm across every
+  // signal (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-tiers) — a fixed baseline wpm across every
   // tier would make tier 8-10 fights take unplayable real-world minutes.
   wpm: number
   accuracy: number

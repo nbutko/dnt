@@ -19,16 +19,35 @@
 <table>
   <tr><th>Date</th><th>Note</th><th>Relevant when…</th></tr>
   <tr>
-    <td>2026-09-12</td>
-    <td><a href="20260912-nbutko-docs-inventory.html">Docs inventory (pre-refactor)</a></td>
-    <td>You are planning or executing the <code>docs-refactor</code>, or an old doc path turns up and you need to
-    know where its content went.</td>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-tier-unlock-sentinel.html">highestUnlockedTier's 12 sentinel</a></td>
+    <td>You're touching tier-unlock logic or <code>SaveData.highestUnlockedTier</code> and a value of 12 looks
+    like an off-by-one bug (there are only 11 dungeons).</td>
   </tr>
+  <tr>
+    <td>2026-07-05</td>
+    <td><a href="20260705-nbutko-indexeddb-open-can-hang.html">IndexedDB open can hang forever</a></td>
+    <td>You're gating UI on an IndexedDB open resolving, or debugging a screen that renders blank with no
+    console error.</td>
+  </tr>
+  <tr>
+    <td>2026-07-05</td>
+    <td><a href="20260705-nbutko-localhost-vs-127-separate-origins.html">localhost vs. 127.0.0.1 are separate origins</a></td>
+    <td>A save (or other browser storage) appears to reset between two sessions that both look like port 5173
+    — check the hostname before suspecting a save bug.</td>
+  </tr>
+  
   <tr>
     <td>2026-07-08</td>
     <td><a href="20260708-nbutko-class-balance-spread.html">Class balance spread</a></td>
     <td>You are retuning class/ability/weapon numbers, or wondering why the Wizard feels harder to play than
     the other three classes.</td>
+  </tr>
+  <tr>
+    <td>2026-09-12</td>
+    <td><a href="20260912-nbutko-docs-inventory.html">Docs inventory (pre-refactor)</a></td>
+    <td>You are planning or executing the <code>docs-refactor</code>, or an old doc path turns up and you need to
+    know where its content went.</td>
   </tr>
 </table>
 

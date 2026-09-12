@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: highestUnlockedTier's 12 Sentinel — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>tier-unlock-sentinel</code></nav>
+<header class="page-head">
+  <h1><code>highestUnlockedTier</code> can be 12, even though there are only 11 dungeons</h1>
+  <p class="tagline">The save field that tracks dungeon-tier unlocks uses "one past the last real tier" to mean
+  "everything is cleared" — there is no tier 12.</p>
+  <span class="status">author: nbutko · opened: 2026-07-04</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're touching anything that reads or writes
+  <code>SaveData.highestUnlockedTier</code> — tier-unlock logic, the world map's cleared/available/locked
+  state, dungeon-tier config, or a save migration — and a value of <code>12</code> looks like an off-by-one
+  bug. It isn't; it's the deliberate "all 11 dungeons cleared" sentinel.
+</div>
+
+<h2>Relevant when</h2>
+<p>You see or need to produce <code>highestUnlockedTier === 12</code> and there is no tier 12 dungeon to match
+it, or you're writing a bounds check against the 11-tier ladder.</p>
+
+<h2>The gotcha</h2>
+<p>
+  There are exactly 11 dungeon tiers (<code>config/dungeon-tiers.ts</code>, one per habitat, Grassland through
+  Urban). A single number, <code>highestUnlockedTier</code>, tracks progress: tier <em>N</em> is considered
+  "cleared" iff <code>N &lt; highestUnlockedTier</code>. That works cleanly for tiers 1–10, but tier 11 (Urban,
+  the finale) has no "tier 12" to unlock when its boss falls — and the map still needs to show tier 11 as
+  cleared once the Tarrasque is dead. The fix chosen during M2 was to let
+  <code>highestUnlockedTier</code> legitimately reach <code>12</code>, meaning "all 11 tiers, including Urban,
+  are cleared." <code>cleared(N) = N &lt; highestUnlockedTier</code> then holds for every tier with no schema
+  change or special-cased "is this the last tier" branch.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Don't clamp <code>highestUnlockedTier</code> to <code>&le; 11</code>, and don't treat <code>12</code> as
+  invalid input in validation or save-migration code — it's the correct terminal value. If you add a 12th
+  dungeon tier some day, this sentinel scheme breaks (there'd be a real tier 12 competing with the "all
+  cleared" meaning) and needs a deliberate redesign, not a quiet bump. The field and the rule are documented
+  inline at its declaration in <code>src/domain/save.ts</code>.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-04 — decided while reviewing the M2 scope doc against the map's "cleared" checkmark requirement
+  (finding D in the M2 implementation plan); still the live scheme as of the v4 save shape.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← notes index</a></footer>
+</body>
+</html>

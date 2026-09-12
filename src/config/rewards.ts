@@ -18,7 +18,7 @@ import type { MonsterRole } from '../domain/types'
 //    it, a mimic is a fixed "hard surprise", the real chest a small hoard.
 //
 // Rewards bank per-kill, immediately, even if the run later wipes
-// (m2-implementation.html finding C).
+// (docs/plans/done/20260704-nbutko-m2-progression-loop.html finding C).
 
 export interface RewardAmount {
   xp: number

@@ -1,5 +1,5 @@
 // Per-segment knobs for the two-fan-out dungeon generator — the tuning surface
-// the scope flags as a playtesting knob (m2-scope.html#dungeon-structure), kept
+// the scope flags as a playtesting knob (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-structure), kept
 // as data so retuning "how big is a dungeon" never touches generate.ts.
 //
 // The ranges are inclusive [min, max]; the generator rolls each one per

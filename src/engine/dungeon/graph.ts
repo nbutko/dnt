@@ -32,7 +32,7 @@ export const clearNode = (graph: DungeonGraph, id: string): DungeonGraph => {
 }
 
 // The boss unlocks solely when the approach clears — no reachability walk over
-// the whole graph, just the one chokepoint (m2-scope#dungeon-structure). The
+// the whole graph, just the one chokepoint (docs/prds/done/20260704-nbutko-m2-progression-loop.html#dungeon-structure). The
 // boss node going non-locked is exactly that signal.
 export const bossUnlocked = (graph: DungeonGraph): boolean =>
   graph.nodes[graph.bossId].state !== 'locked'

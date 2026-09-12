@@ -46,7 +46,7 @@ const heartsForLevel = (level: number): number =>
 // time and can never drift from the abilities/level that produce it (the
 // derive-don't-store rule — m3-implementation.html Story 2).
 //
-// Story 4 (content-plan-v2-tuning-implementation.html): on top of that sum,
+// Story 4 (docs/plans/done/20260708-nbutko-combat-retune.html): on top of that sum,
 // a flat survivability bonus keyed off the character's CURRENT level (not
 // summed across history, unlike the loop above) — it only ever applies while
 // level <= 3, so it buys HP margin at the tier a fresh character is actually
@@ -163,7 +163,7 @@ export const resolveModifiers = (
     cfg.leveling,
   )
   // INT nudges the encounter d20 toward the high band instead of capping the
-  // served tier (content-plan-v2-tuning.html) — folded in here alongside
+  // served tier (docs/prds/done/20260708-nbutko-combat-retune.html) — folded in here alongside
   // proficiency, the Wizard's Arcane Mind bonus, and any Elixir of Intellect /
   // Luckstone flat bonus.
   const encounterBonus =

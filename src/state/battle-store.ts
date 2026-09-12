@@ -23,7 +23,7 @@ export interface BattleStore {
 // the original wpm so an extreme cut (or a very negative CHA inflating it
 // the other way) can never zero out or invert the monster's speed.
 //
-// Story 2 (content-plan-v2-tuning-implementation.html): CHA "charm" is the
+// Story 2 (docs/plans/done/20260708-nbutko-combat-retune.html): CHA "charm" is the
 // analogous second cut, on the monster's effective *accuracy*
 // (engine/monster-typing.ts's monster.accuracy) instead of its wpm — the
 // monster mistypes its own line more, self-corrects longer, and lands hits

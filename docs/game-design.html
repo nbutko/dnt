@@ -75,18 +75,30 @@
   feature. <code>damageScale</code> is the one config constant (<code>config/abilities.ts</code>) that keeps
   dice-rolled hits in the same ballpark the old flat <code>baseDamage</code> used to occupy — see
   <a href="#abilities">Abilities</a>.</li>
-  <li><strong>lengthFactor</strong> — unchanged in shape: roughly <code>1 + (charCount - referenceLength) /
-  referenceLength</code>, so a longer prompt swings harder — now the payoff for leveling INT high enough to be
-  served longer text (see <a href="#abilities">Abilities</a>), not a skill-tree unlock. Clamped to a small floor
-  (<code>Math.max(0.25, …)</code>) so a very short prompt well under <code>referenceLength</code> can't drive
-  damage to zero or negative.</li>
+  <li><strong>lengthFactor</strong> — <code>1 + (charCount - referenceLength) / referenceLength</code> below
+  reference length, floored at <code>lengthFactorFloor</code> (0.25) so a very short prompt can't drive damage
+  to zero or negative; a longer prompt still swings harder, and that's still the payoff for leveling INT high
+  enough to be served longer text (see <a href="#abilities">Abilities</a>). Above reference length the M4/M5
+  <a href="prds/done/20260708-nbutko-combat-retune.html">combat retune</a> soft-caps it: a rational
+  (Michaelis–Menten-style) knee asymptotes to <code>lengthFactorCap</code> (committed at 20) instead of running
+  away — the 14-tier content ladder spans a ~150× range in prompt length (16 chars at tier 1 to ~2000 at tier
+  14), and the old uncapped formula let a tier-14 boss prompt yield a ~166× multiplier that one-shot bosses
+  regardless of HP. The cap is what lets <code>content/monsters.json</code> author each boss's HP against a
+  <em>bounded</em> hit distribution — a weak roll (min dice, no crit) to a strong roll (max dice + crit) — so a
+  fight lands near its target number of prompts instead of ending in one swing (see
+  <a href="prds/done/20260708-nbutko-combat-retune.html#after">the retune PRD's §9</a> for the converged
+  per-boss numbers).</li>
   <li><strong>speedBonus</strong> — unchanged: multiplier for finishing well under the time limit vs. barely
   making it. There is no separate accuracy factor: a typo already costs time (notice it, backspace, retype), so
   sloppy typing is automatically punished by a worse speedBonus rather than by a second penalty.</li>
-  <li><strong>Crit chance</strong> — today, still a flat <code>combat.criticalChance</code> per swing, exactly
-  as in M0. DEX's crit-chance bonus and a weapon's crit range are both computed (see <a href="#abilities">Abilities</a>
-  / <a href="#weapons">Weapons</a>) but not yet read by the crit roll itself — a known pending wiring gap, not a
-  design decision; see <a href="codebase-architecture.html">Codebase Architecture</a>.</li>
+  <li><strong>Crit chance</strong> — fully wired as of the retune: effective chance is
+  <code>combat.criticalChance</code> (10% baseline) <code>+ critChanceBonus</code> (DEX's per-mod bonus and any
+  item bonus, summed into <code>PlayerModifiers</code>) <code>+ (20 − critRange) / 20</code> (a weapon's
+  <code>critRange</code> narrowing the natural-roll window that counts as a crit — e.g. <code>critRange 19</code>
+  means a natural 19 or 20 crits). A crit's <code>critDamageMult</code> (Oil of Sharpness) is a separate
+  multiplier on top of <code>baseHit</code>, stacking with the extra-dice-on-crit rule above. Raising DEX or
+  equipping a wider-crit-range weapon or item now measurably moves crit odds and damage; see
+  <a href="codebase-architecture.html">Codebase Architecture</a> for where each piece lives.</li>
   <li><strong>powerUpMultiplier</strong> — 1.0 normally; a consumable like Bull's Strength or Elixir of Might
   (see <a href="#consumables">Consumables</a>) raises it for a fight or a dungeon. Stacks multiplicatively with a
   crit if both happen to land on the same swing.</li>

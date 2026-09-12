@@ -110,7 +110,7 @@ export const WEAPONS: readonly WeaponConfig[] = [
   // One "+N magic" tier per governing ability above the launch tier-3
   // ceiling, so a Fighter/Rogue/Bard/Wizard all have somewhere to grow past
   // level ~5 instead of plateauing on their tier-2/3 launch weapon for the
-  // rest of the game (content-plan-v2-tuning-implementation.html#story-3;
+  // rest of the game (docs/plans/done/20260708-nbutko-combat-retune.html#story-3;
   // Story 1's report flagged D9-D11 htk running under target because
   // engine/sim/balance.ts's weaponForTierLevel had nowhere higher to go).
   // Escalates on three axes together — die size (capped at d12, the

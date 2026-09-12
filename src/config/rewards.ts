@@ -7,7 +7,7 @@ import type { MonsterRole } from '../domain/types'
 //    economy (config/weapons.ts, config/items.ts) is tuned against this income,
 //    and the M5 XP retune must not disturb it.
 //
-//  • XP is the M5 retune (content-plan-v2-tuning.html): keep the real 5e level
+//  • XP is the M5 retune (docs/prds/done/20260708-nbutko-combat-retune.html): keep the real 5e level
 //    thresholds (config/leveling.ts), and tune the per-dungeon NORMAL-kill XP
 //    to them so ~100 normal kills raise a player one dungeon's worth up the
 //    curve (~1.3 levels). normalPerDungeon holds that unit per dungeon — read

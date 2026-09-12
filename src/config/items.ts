@@ -17,7 +17,7 @@ export type ItemEffect =
   | { key: 'crit-boost'; critChanceBonus: number; critDamageMultBonus: number }
   | { key: 'int-roll-bonus'; bonus: number }
   | { key: 'heroism'; bonusHpPct: number; fumbleImmune: true }
-  // Story 3 (content-plan-v2-tuning-implementation.html#story-3): persistent
+  // Story 3 (docs/plans/done/20260708-nbutko-combat-retune.html#story-3): persistent
   // defense/HP gear — survivability as a purchasable axis, not only a
   // CON/leveling one. Reuses the existing consumable/buff machinery (Shop,
   // Bag, resolveModifiers) rather than a new equip slot — see config/
@@ -112,7 +112,7 @@ export const ITEMS: readonly ItemConfig[] = [
     tier: 2,
     price: 40,
     // Was "+1 tier cap"; now a flat encounter-roll nudge (the cap retired —
-    // content-plan-v2-tuning.html). Magnitude is a sim-tuned placeholder.
+    // docs/prds/done/20260708-nbutko-combat-retune.html). Magnitude is a sim-tuned placeholder.
     effect: { key: 'int-roll-bonus', bonus: 2 },
   },
   {

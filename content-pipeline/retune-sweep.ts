@@ -2,7 +2,7 @@
  * Retune characterization sweep (step A). Run: `npx tsx content-pipeline/retune-sweep.ts`
  *
  * Prints the MEASURED (dungeon boss × corner × class) win-rate + hits-to-kill
- * surface next to docs/content-plan-v2-tuning.html's TARGET surface, so we can
+ * surface next to docs/prds/done/20260708-nbutko-combat-retune.html's TARGET surface, so we can
  * see how far the current combat math is from the intent before tuning knobs.
  *
  * Not shipped code — a disposable harness that reuses the real engine
@@ -18,7 +18,7 @@ import {
 import type { CharacterClass } from '../src/domain/character'
 import type { TextTier } from '../src/domain/types'
 
-// From docs/content-plan-v2-tuning.html §2/§3: each dungeon boss's target
+// From docs/prds/done/20260708-nbutko-combat-retune.html §2/§3: each dungeon boss's target
 // [level, wpm] at behind / on-track / ahead, plus the on-track #prompts goal.
 interface Corner {
   level: number

@@ -9,7 +9,7 @@ export interface ServedTierResult {
   // The tier the band rolled into — bottom/mid/top of the dungeon's window.
   targetTier: TextTier
   // What the player is actually served. INT no longer caps it (the tier cap
-  // retired — content-plan-v2-tuning.html), so this now always equals
+  // retired — docs/prds/done/20260708-nbutko-combat-retune.html), so this now always equals
   // targetTier; kept as a distinct field so the gate-penalty slot (and the
   // planned tier-reward) still have a servedTier/targetTier pair to read.
   servedTier: TextTier

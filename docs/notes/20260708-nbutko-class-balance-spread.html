@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Class Balance Spread — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>class-balance-spread</code></nav>
+<header class="page-head">
+  <h1>Class Balance Spread</h1>
+  <p class="tagline">The Wizard is structurally the weakest class and the Rogue the strongest, even after the
+  M4/M5 combat retune closed most of the gap — measured, not guessed, by the sim harness.</p>
+  <span class="status">author: nbutko · opened: 2026-07-08 · relates to: <a href="../prds/done/20260708-nbutko-combat-retune.html">combat-retune PRD</a></span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> Read this if you're touching class balance, ability magnitudes
+  (<code>config/abilities.ts</code>), the weapon ladder (<code>config/weapons.ts</code>), or wondering why the
+  Wizard feels harder to play than the other three classes. The gap is measured and structural, not a bug: a
+  d6 hit die plus a wand line that (even after the retune) still starts a level behind the other classes' first
+  weapon upgrade. It survived a whole retune pass aimed at exactly this kind of spread, so don't expect a small
+  tweak to close it — and don't assume it's already fixed just because a later story mentions "the wand line."
+</div>
+
+<h2>Relevant when</h2>
+<p>You're retuning class/ability/weapon numbers, or need to know which class to pick for a "does this feel
+fair" playtest — the Wizard is the stress case, the Rogue the easy case.</p>
+
+<h2>The gotcha</h2>
+<p>
+  The pre-retune sim (<a href="../prds/done/20260708-nbutko-combat-retune.html#findings">the combat-retune
+  PRD's §7, Finding 3</a>) measured on-track win rates of <strong>25–90%</strong> for the Wizard against
+  <strong>88–100%</strong> for Fighter/Rogue/Bard at the same (level, wpm) — a single flat-die wand
+  (<code>d6</code>) with no upgrade path, against Rogue's sneak-attack burst winning most one-shot races.
+</p>
+<p>
+  <a href="../plans/done/20260708-nbutko-combat-retune.html#story-3">Story 3</a> gave the Wizard a wand-line
+  (<code>+1</code>/<code>+2</code>/<code>+3</code> INT weapons) and wired the dead crit subsystem, and the
+  Wizard's on-track win rate climbed sharply (e.g. Dungeon 9, 38% → 68%). It is <strong>not</strong> closed,
+  though — Story 3's own "flagged for user verification" note and the final converged surface in
+  <a href="../prds/done/20260708-nbutko-combat-retune.html#after">the PRD's §9</a> both still show the Wizard
+  (<code>W</code> column) as the lowest on-track win rate of the four classes at almost every boss: D1
+  <strong>8%</strong> vs. 83/83/90 for the others, D6 <strong>40%</strong> vs. 93/100/100, D8
+  <strong>30%</strong> vs. 57/100/100, D9 <strong>70%</strong> vs. 98/100/100, D10 <strong>30%</strong> vs.
+  90/100/100 (D11 is saturated at 100% for every class). The Rogue is at or near 100% in every one of those
+  rows — the strongest class on the converged surface, same as it was pre-retune.
+</p>
+<p>
+  The cause is structural, not a missed knob: the Wizard has the lowest hit die (d6, vs. d8–d10 for the
+  others) so it has the least HP margin, and its Arcane Mind class feature (crits roll 3 dice instead of 2)
+  rewards <em>landing</em> big hits without doing anything to help it <em>survive</em> long enough to land
+  them. Fighter also trails Rogue/Bard by more than Finding 3's original framing suggested — the retune closed
+  the worst of the gap but did not equalize the four classes.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Don't re-derive this from first principles — it's already measured. Before touching class balance again,
+  re-run the sweep and read the surface next to <a href="../prds/done/20260708-nbutko-combat-retune.html#after">§9's
+  "after" table</a> rather than assuming Story 3's wand-line fully fixed it. The sim harness that produces
+  these numbers lives in <code>src/engine/sim/</code>: <code>balance.ts</code> (<code>simulateCharacterBattles</code>,
+  the per-battle model — class, level, abilities, weapon, buffs, encounter roll, served tier, real
+  <code>computeDamage</code>) and <code>balance.test.ts</code> (unit coverage of the sim's own building blocks,
+  e.g. the weak/strong hit-magnitude helper). The sweep script that runs it across every dungeon boss × corner ×
+  class and prints win rate / hits-to-kill / crit rate / dodge rate is
+  <code>content-pipeline/retune-sweep.ts</code> (<code>npx tsx content-pipeline/retune-sweep.ts</code>).
+  <code>src/engine/sim/combat-invariants.ts</code> is the related invariant suite (win-rate monotonicity, the
+  hits-to-kill band) that gates the surface from regressing, not from closing this specific class gap.
+</p>
+<p>
+  If it's worth closing further: the Wizard's HP die and the Arcane Mind feature's total dependence on
+  landing hits (rather than any survivability trade) are the two structural levers a future retune would need
+  to pull — see <a href="../plans/done/20260708-nbutko-combat-retune.html#story-3">Story 3</a>'s own "flagged
+  for user verification" note before assuming this is settled.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-08 — Finding 3 measured the pre-retune Wizard/Rogue spread; Story 3's wand-line + crit wiring
+  narrowed it; the final §9 surface still shows the same ranking (Wizard weakest, Rogue strongest), unverified
+  by the user.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

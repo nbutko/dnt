@@ -36,7 +36,7 @@ export const PROFICIENCY_BY_LEVEL: readonly number[] = [
 // this is just the one scale constant it reads. A Story 13/M5 placeholder.
 export const HP_SCALE = 4
 
-// content-plan-v2-tuning-implementation.html Story 4: D1's on-track anchor
+// docs/plans/done/20260708-nbutko-combat-retune.html Story 4: D1's on-track anchor
 // (L2 @ 10wpm) measured a near-unwinnable ~3% against the Goblin Boss even
 // after softening its cadence (monsters.json) and widening the player's time
 // budget (config/combat.ts's playerBaselineWpm) — a level-1-3 character

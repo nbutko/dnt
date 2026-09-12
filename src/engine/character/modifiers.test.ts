@@ -150,7 +150,7 @@ describe('resolveModifiers — class features', () => {
   })
 })
 
-// Story 2 (content-plan-v2-tuning-implementation.html): the two linear tempo
+// Story 2 (docs/plans/done/20260708-nbutko-combat-retune.html): the two linear tempo
 // levers — WIS lengthens the player's own clock, CHA-charm shortens the
 // monster's effective output by cutting its accuracy. Both must move
 // smoothly/monotonically with the ability score, not in lumpy steps.

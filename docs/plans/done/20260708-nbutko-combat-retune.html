@@ -3,26 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Combat Tuning Implementation Plan — Dungeons & Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>Plan: Combat Retune — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · <a href="content-plan-v2-tuning.html">Tuning Targets</a> · <a href="game-design.html">Game Design</a> · <a href="roadmap.html">Roadmap</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>combat-retune</code></nav>
 <header class="page-head">
-  <h1>Combat Tuning Implementation Plan</h1>
-  <p class="tagline">Turning <a href="content-plan-v2-tuning.html#remediation">§8 of the tuning doc</a> into a
+  <h1>Plan: Combat Retune</h1>
+  <p class="tagline">Turning <a href="../../prds/done/20260708-nbutko-combat-retune.html#remediation">§8 of the PRD</a> into a
   story-by-story build — the keystone first, each knob re-measured by the sim before the next one moves.</p>
+  <span class="status">feature: <code>combat-retune</code> · author: nbutko · opened: 2026-07-08 · status: <strong>done</strong>
+  · PRD: <a href="../../prds/done/20260708-nbutko-combat-retune.html">yes</a> · wireframes: no (no screens change)</span>
 </header>
+<div class="banner done">
+  <p><strong>Code merged and Claude-verified for Stories 1–5.</strong> Each story's status line below still
+  shows <code>☐ Verified by User</code> — that was deliberate at the time (the record only supports what
+  Claude measured) and stays unticked here for the same reason: the converged surface in
+  <a href="../../prds/done/20260708-nbutko-combat-retune.html#after">the PRD's §9</a> was never played and
+  confirmed by the user. Adjacent follow-on work is listed at the bottom, including a forward link to the M5
+  PRD.</p>
+</div>
 <main>
 
 <p>
-  The <a href="content-plan-v2-tuning.html">tuning-targets doc</a> did steps <strong>B.1</strong> (write the
+  The <a href="../../prds/done/20260708-nbutko-combat-retune.html">PRD</a> did steps <strong>B.1</strong> (write the
   target surface) and <strong>A</strong> (measure the real surface with
-  <code>content-pipeline/retune-sweep.ts</code>) and found the gap: <a href="content-plan-v2-tuning.html#findings">§7's
+  <code>content-pipeline/retune-sweep.ts</code>) and found the gap: <a href="../../prds/done/20260708-nbutko-combat-retune.html#findings">§7's
   four findings</a> — hits-to-kill collapsed toward <strong>1</strong> at high tiers (an uncapped
   <code>lengthFactor</code> one-shots bosses), the level↔wpm tradeoff <em>inverts</em>, a wide class spread, and a
   low end that's <em>also</em> broken (D1 unwinnable for a beginner). This doc is <strong>step B.2</strong>: the
-  ordered build that closes that gap, one committable story at a time. It assumes the <a href="content-plan-v2-tuning.html#remediation">§8
+  ordered build that closes that gap, one committable story at a time. It assumes the <a href="../../prds/done/20260708-nbutko-combat-retune.html#remediation">§8
   remediation plan</a> as its spec and does not re-argue it — read §7/§8 first; this doc answers <em>how and in what
   order</em>, not <em>why</em>.
 </p>
@@ -44,7 +54,7 @@
 <ol>
   <li>Make the change (engine shape and/or a knob in <code>config/</code> or <code>content/monsters.json</code>).</li>
   <li>Re-run <code>npx tsx content-pipeline/retune-sweep.ts</code> and read the measured surface against
-  <a href="content-plan-v2-tuning.html#targets">§2/§3's targets</a> — on-track a comfortable win at ~target
+  <a href="../../prds/done/20260708-nbutko-combat-retune.html#targets">§2/§3's targets</a> — on-track a comfortable win at ~target
   hits-to-kill, ahead marginal, behind safe, the impossible corners actually losing.</li>
   <li>Only commit once the sweep shows that story's slice of the surface converging. Numbers are landed
   <em>by measurement</em>, never by derivation-on-paper (same discipline as M0's <code>baseDamage</code> and M3's
@@ -70,7 +80,7 @@
   <tr>
     <td><code>engine/damage.ts</code></td>
     <td><em>Shape only.</em> Soft-cap <code>lengthFactor</code> (Story 1); actually read the crit subsystem the
-    <a href="../CLAUDE.md">CLAUDE.md gotcha</a> flags as dead — <code>rollIsCrit</code>/<code>computeDamage</code>
+    <a href="../../../CLAUDE.md">CLAUDE.md gotcha</a> flags as dead — <code>rollIsCrit</code>/<code>computeDamage</code>
     honouring <code>critChanceBonus</code>, a weapon's <code>critRange</code>, and the crit-boost item's
     <code>critDamageMult</code> (Story 3).</td>
   </tr>
@@ -143,7 +153,7 @@
       <ul>
         <li><strong>strong tail never one-shots</strong> — max dice + crit stays strictly below full HP;</li>
         <li><strong>weak tail doesn't slog</strong> — an average hit is a meaningful fraction of HP, so the fight
-        lands near its <a href="content-plan-v2-tuning.html#shape">target #prompts</a> (K).</li>
+        lands near its <a href="../../prds/done/20260708-nbutko-combat-retune.html#shape">target #prompts</a> (K).</li>
       </ul>
       The crisp low-K rule: <em>two weak hits win, one strong hit doesn't</em>; generalized, <em>~K average hits
       win and the strongest single hit stays well short of a one-shot</em>. The cap exists precisely to compress
@@ -225,11 +235,11 @@
     <li><strong>Extend the weapon ladder the length of the game</strong> (<code>config/weapons.ts</code>): today
     eight weapons top out at tier-3 (<code>weaponForTierLevel</code>'s ladder stops there — the sweep header flags
     it). Add higher-tier weapons <em>per governing ability</em> (STR, DEX, INT) so every class has an upgrade path
-    at every tier, priced into the <a href="content-plan-v2.html">coin economy</a>.</li>
+    at every tier, priced into the <a href="../../content-plan-v2.html">coin economy</a>.</li>
     <li><strong>Give the Wizard a wand-line.</strong> A d6 wand with no successor is why Wizard loses; add
     higher-die INT weapons so the Arcane Mind's 3-dice crit has something to scale on.</li>
     <li><strong>Wire the dead crit subsystem</strong> (<code>engine/damage.ts</code>, the
-    <a href="../CLAUDE.md">CLAUDE.md gotcha</a>): <code>rollIsCrit</code> must read
+    <a href="../../../CLAUDE.md">CLAUDE.md gotcha</a>): <code>rollIsCrit</code> must read
     <code>combat.criticalChance + critChanceBonus</code> (DEX's <code>dexCritChancePctPerMod</code>, already
     computed into <code>PlayerModifiers</code>) and a weapon's <code>critRange</code>; the crit-boost item
     (Oil of Sharpness) must actually apply its <code>critDamageMult</code>. This restores the Rogue identity and
@@ -313,14 +323,14 @@
   <ul>
     <li><strong><code>sweepHitsToKillBand</code></strong> (<code>combat-invariants.test.ts</code>): the flat
     <code>[1.2, 26]</code> band assumed uniformly short prompts; re-express it against the new
-    <em>few-big-prompts</em> design (per-tier target #prompts from <a href="content-plan-v2-tuning.html#shape">§3</a>),
+    <em>few-big-prompts</em> design (per-tier target #prompts from <a href="../../prds/done/20260708-nbutko-combat-retune.html#shape">§3</a>),
     then un-skip.</li>
     <li><strong><code>sweepTierMonotonicity</code></strong> (same file): parked because the uncapped
     <code>lengthFactor</code> made the tier-6 and tier-11 bosses land at <em>fewer</em> hits-to-kill than the
     milestone below them (the boss-length spike outrunning HP growth). Story 1's cap + HP authoring is exactly its
     fix — confirm a higher tier is never easier for a fixed hero, then un-skip.</li>
     <li><strong>Full re-sweep &amp; sign-off:</strong> run <code>retune-sweep.ts</code> one last time and check the
-    whole surface against <a href="content-plan-v2-tuning.html#targets">§2/§3</a> — on-track a comfortable win at
+    whole surface against <a href="../../prds/done/20260708-nbutko-combat-retune.html#targets">§2/§3</a> — on-track a comfortable win at
     ~target htk, ahead marginal, behind safe (via CHA+WIS), the impossible corners actually losing, and the class
     spread inside a reasonable band. Record the final numbers back into the tuning doc's §7 as the "after" column.</li>
     <li><strong>Re-freeze:</strong> restore the "<code>config/combat.ts</code> stays at committed values" invariant
@@ -358,11 +368,82 @@
   on purpose (easier prompts, lean into STR damage) is a §5 idea that rides naturally on Story 3's item work, but
   it's a build-enabler, not a fix for a broken corner — defer unless Story 3's economy pass has room.</li>
   <li><strong>Final feel/pacing tuning</strong> — this pass lands the <em>numerical floor</em> (the surface stops
-  being broken); the playtest-driven feel pass stays <a href="roadmap.html#m5">M5</a>, a values edit on top of this
+  being broken); the playtest-driven feel pass stays
+  <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5</a>, a values edit on top of this
   floor, by design (same split as M3's Story 13 → M5).</li>
 </ul>
 
+<h2 id="appendix-remediation">Appendix: Remediation plan — copied from the PRD</h2>
+<p>
+  Copied verbatim from <a href="../../prds/done/20260708-nbutko-combat-retune.html#remediation">the PRD's §8</a>
+  so the story-by-story build above can be read next to the spec it implements without opening a second file.
+  Section numbers below are the PRD's own (8.1–8.5); anchors here carry an <code>-appendix</code> suffix to avoid
+  colliding with the PRD's ids.
+</p>
+
+<h3 id="remediation-8-1-appendix">8.1 — Keystone: cap <code>lengthFactor</code> + author HP against the hit <em>distribution</em></h3>
+<p>
+  One change fixes Findings 1 and 2 and shrinks Finding 3. Soft-cap <code>lengthFactor</code> so a single hit
+  can't run away, and author each boss's HP so the fight lands on its target #prompts.
+</p>
+<div class="callout decision">
+  <strong>HP is tuned against the hit <em>distribution</em>, not a point estimate.</strong> A "reference hit"
+  isn't one number — it's a range from a <em>weak</em> roll (min dice, no crit) to a <em>strong</em> roll (max
+  dice + crit), and that spread <em>widens with level</em> (bigger dice, crits roll more dice, ability mod grows
+  — the non-linearity, and it bites hardest at high level). Author boss HP so both tails behave:
+  <ul style="margin:0.4rem 0 0;">
+    <li><strong>the strong tail never one-shots</strong> — the biggest realistic hit (max dice + crit) stays strictly below full HP; and</li>
+    <li><strong>the weak tail doesn't slog</strong> — an average / weak hit is a meaningful fraction of HP, so the fight resolves near its target #prompts rather than dragging.</li>
+  </ul>
+  The crisp bounding rule (low-K case): <strong>two weak hits win, one strong hit doesn't</strong> — a weak hit
+  reliably just over half of HP, a strong hit reliably under all of it. Generalized to a K-prompt boss: ~K
+  average hits win, and the strongest single hit stays well short of a one-shot. <strong>The
+  <code>lengthFactor</code> / crit cap exists precisely to <em>compress</em> the weak→strong spread</strong>
+  enough that both bounds can hold at once — without it, raising HP to kill one-shots (strong tail) stretches
+  the weak-hit count far past K, and lowering HP to hit K re-opens the one-shot.
+</div>
+
+<h3 id="remediation-8-2-appendix">8.2 — Make the two <em>linear</em> levers strong: WIS (your time) and CHA (charm)</h3>
+<p>
+  Finding 2's two-axis insight: at high tiers, where the discrete hit axis is too coarse, WIS and CHA are the
+  only smooth controls — and the only viable path for a slow-typing, over-leveled player. They must be
+  <em>meaningful, genuinely linear</em> magnitudes, not token amounts.
+</p>
+<div class="callout open">
+  Consider implementing <strong>CHA as a monster <em>mistype / accuracy</em> cut</strong> ("charm — the monster
+  loses focus, fumbles its own line"), not only the current flat wpm cut. It fits the fantasy and gives a
+  <em>second</em> linear time-buyer distinct from WIS: WIS lengthens your clock, CHA shortens the monster's
+  effective output. Together they're what makes the attrition / "behind" corner winnable once htk is restored —
+  so their magnitudes should be tuned <em>after</em> 8.1, against the corrected fight length.
+</div>
+
+<h3 id="remediation-8-3-appendix">8.3 — Gear ladder + Wizard + crit wiring</h3>
+<p>
+  Attacks Finding 3 and gives the discrete axis somewhere to grow. Extend weapons the length of the game (per
+  governing ability, so every class upgrades); give the Wizard a wand-line upgrade path so it isn't stuck on a
+  d6; wire the dead crit subsystem (DEX crit chance, weapon <code>critRange</code>, the crit-boost item) — which
+  also turns 8.1's "strong tail" into a real, tunable quantity instead of a flat 10% / ×2. Add persistent
+  defense / HP gear so survivability is a purchasable axis, and price items so a flaw can be counter-balanced at
+  each tier.
+</p>
+
+<h3 id="remediation-8-4-appendix">8.4 — Low-end survivability</h3>
+<p>
+  Finding 4: an ~10-wpm, level-2 typist must actually clear the D1 boss (the on-track anchor). Widen the bottom
+  of the band — more low-level HP, and/or a gentler early-boss attack cadence — without touching the top, so the
+  first boss is a fair first fight rather than a wall. Re-check with the sweep at the low corners specifically.
+</p>
+
+<h3 id="remediation-8-5-appendix">8.5 — Re-enable the parked invariants &amp; re-sweep</h3>
+<p>
+  Two invariants are parked on 8.1: <code>sweepHitsToKillBand</code> and <code>sweepTierMonotonicity</code>
+  (<code>combat-invariants.test.ts</code>). Re-shape both against the §3 targets and un-skip them, then re-run
+  <code>retune-sweep.ts</code> to confirm the whole surface converged: on-track a comfortable win at ~target htk,
+  ahead marginal, behind safe (via CHA+WIS), the impossible corners actually losing, and the class spread inside
+  a reasonable band.
+</p>
+
 </main>
-<footer class="page-foot"><a href="content-plan-v2-tuning.html">← Back to the tuning targets</a></footer>
+<footer class="page-foot"><a href="../index.html">← plans index</a> · <a href="../../prds/done/20260708-nbutko-combat-retune.html">PRD</a> · plan for <code>combat-retune</code></footer>
 </body>
 </html>

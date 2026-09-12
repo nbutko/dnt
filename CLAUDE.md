@@ -74,7 +74,7 @@ plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
   `engine/damage.ts`'s crit roll and damage calc — effective crit chance is `combat.criticalChance +
   critChanceBonus + (20 − critRange)/20`, and a crit's `critDamageMult` multiplies its `baseHit`. Raising DEX or
   equipping a wider-crit-range weapon (or item) does move crit odds/damage now; this was a real gap through M3
-  but content-plan-v2-tuning-implementation.html's Story 3 closed it.
+  but docs/plans/done/20260708-nbutko-combat-retune.html's Story 3 closed it.
 - **Battle is not a top-level screen** — it launches _inside_ `DungeonScreen` so the ephemeral run stays mounted,
   and returns via an `onResult` callback.
 - **Tuning knobs are deferred to M5 on purpose.** Per-point magnitudes ship as placeholders (M3 corrals them into

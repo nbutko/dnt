@@ -13,7 +13,7 @@ export type WeaponId =
   | 'warhammer'
   | 'longbow'
   | 'greataxe'
-  // Story 3 (content-plan-v2-tuning-implementation.html): the weapon ladder
+  // Story 3 (docs/plans/done/20260708-nbutko-combat-retune.html): the weapon ladder
   // extended the length of the game, one "+N magic" tier per governing
   // ability (STR/DEX/INT) above the launch tier-3 ceiling, so every class
   // has an upgrade path at every dungeon tier — see engine/sim/balance.ts's

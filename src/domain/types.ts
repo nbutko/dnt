@@ -49,7 +49,7 @@ export interface CombatConfig {
   // far past referenceLength (engine/damage.ts) — a long prompt still hits
   // harder than a short one, but can no longer one-shot a boss the way an
   // uncapped `1 + (charCount-referenceLength)/referenceLength` did at
-  // ~2000 chars (content-plan-v2-tuning.html §7 Finding 1). Landed by the
+  // ~2000 chars (docs/prds/done/20260708-nbutko-combat-retune.html §7 Finding 1). Landed by the
   // M4 retune's sweep (content-pipeline/retune-sweep.ts), tuned together
   // with content/monsters.json's boss/regular HP — see engine/sim/
   // balance.ts's hitMagnitudes.

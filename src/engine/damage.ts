@@ -4,7 +4,7 @@ import { rollDie } from './rng'
 // Longer prompts hit harder — the direct payoff for the skill tree unlocking
 // longer text. Below reference length, clamped to a floor so a short prompt
 // can't drive damage to ~0. Above reference length, soft-capped with
-// diminishing returns (content-plan-v2-tuning.html §8.1): the M4 content
+// diminishing returns (docs/prds/done/20260708-nbutko-combat-retune.html §8.1): the M4 content
 // wiring stretched prompts from ~220 chars to ~2000, and the old
 // `1 + (charCount-referenceLength)/referenceLength` was uncapped above 1, so
 // a 2000-char boss prompt yielded a ~166x multiplier that one-shot bosses

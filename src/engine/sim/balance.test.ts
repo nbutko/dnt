@@ -273,7 +273,7 @@ describe('Story 13 — the whole-pipeline metrics table', () => {
   })
 })
 
-// Story 1 (M4/M5 retune, content-plan-v2-tuning-implementation.html#story-1):
+// Story 1 (M4/M5 retune, docs/plans/done/20260708-nbutko-combat-retune.html#story-1):
 // hitMagnitudes is the closed-form "reference hit" range HP is authored
 // against — weak (min dice, no crit) to strong (max dice + crit), against the
 // now-capped lengthFactor. Pinned for a real, shipped boss (D1's Goblin Boss)
@@ -290,7 +290,7 @@ describe('hitMagnitudes — the weak/average/strong reference-hit range (Story 1
 
     expect(magnitudes.weak).toBeLessThanOrEqual(magnitudes.average)
     expect(magnitudes.average).toBeLessThanOrEqual(magnitudes.strong)
-    // The crisp low-K bounding rule (content-plan-v2-tuning.html §8.1): the
+    // The crisp low-K bounding rule (docs/prds/done/20260708-nbutko-combat-retune.html §8.1): the
     // strongest realistic single hit (max dice + crit) stays STRICTLY below
     // the boss's whole HP bar — no build, at this boss's on-track level,
     // one-shots it.
@@ -304,7 +304,7 @@ describe('hitMagnitudes — the weak/average/strong reference-hit range (Story 1
 
   it("two weak hits lose to the D1 boss's HP but ~K average hits win it (the low-K bounding rule)", () => {
     const boss = bossOf(1)
-    const targetPrompts = 4 // docs/content-plan-v2-tuning.html §3's D1 target
+    const targetPrompts = 4 // docs/prds/done/20260708-nbutko-combat-retune.html §3's D1 target
     const weapon = weaponForTierLevel('fighter', D1_BOSS_ON_TRACK_LEVEL)
     const magnitudes = hitMagnitudes('fighter', D1_BOSS_ON_TRACK_LEVEL, weapon, boss.textTier, combat)
 
@@ -322,7 +322,7 @@ describe('hitMagnitudes — the weak/average/strong reference-hit range (Story 1
   })
 })
 
-// Story 3 (content-plan-v2-tuning-implementation.html#story-3): the weapon
+// Story 3 (docs/plans/done/20260708-nbutko-combat-retune.html#story-3): the weapon
 // ladder extended the length of the game — every class climbs a "+N" line
 // at the same level breakpoints instead of plateauing on its tier-2/3 launch
 // weapon forever (Story 1's report flagged D9-D11 htk running under target

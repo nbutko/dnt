@@ -213,7 +213,7 @@ export const representativeAbilities = (
 
 // --- Story 1 (M4/M5 retune): the hit distribution HP is authored against ---
 //
-// content-plan-v2-tuning.html §8.1: a "reference hit" isn't one number, it's
+// docs/prds/done/20260708-nbutko-combat-retune.html §8.1: a "reference hit" isn't one number, it's
 // a range from a weak roll (min dice, no crit) to a strong roll (max dice +
 // crit) that widens with level, and monster HP has to be authored so BOTH
 // tails behave (weak doesn't slog, strong never one-shots). This is the
@@ -222,7 +222,7 @@ export const representativeAbilities = (
 // expectation, not a sampled one), extended to fold in lengthFactor, since
 // sizing HP against the served tier's (capped) prompt length is exactly what
 // this story tunes. speedBonus is deliberately left out, the same
-// simplification docs/content-plan-v2-tuning.html §3's own battle-shape model
+// simplification docs/prds/done/20260708-nbutko-combat-retune.html §3's own battle-shape model
 // makes ("speed bonus... ignored here — the sim [is what] models [it]") —
 // this helper is a theory-only aid for picking a first-pass HP number; the
 // real convergence check is re-running content-pipeline/retune-sweep.ts.
@@ -380,7 +380,7 @@ export const simulateCharacterBattles = (config: CharacterBalanceSimConfig): Cha
     const playerPrompt = promptForTier(servedTier)
     const monsterPrompt = promptForTier(monster.textTier)
     // CHA intimidate + Story 2's charm (m3-scope.html#ability-mechanics,
-    // content-plan-v2-tuning-implementation.html#story-2) — same rule as
+    // docs/plans/done/20260708-nbutko-combat-retune.html#story-2) — same rule as
     // state/battle-store.ts's intimidatedMonster, inlined so this file never
     // imports state/.
     const intimidatedMonster: Monster = {
@@ -500,8 +500,7 @@ export const textTierRangeForTier = (tier: number): readonly [TextTier, TextTier
 // textTierRange — DungeonScreen.tsx collapses a boss node's band to
 // [bossTextTier, bossTextTier] (config/dungeon-tiers.ts's own doc comment)
 // so every roll lands on the boss's one hardest, longest set-piece prompt,
-// never the dungeon's lower regular tiers. Story 5 (content-plan-v2-tuning-
-// implementation.html): combat-invariants.ts's boss encounters used to reuse
+// never the dungeon's lower regular tiers. Story 5 (docs/plans/done/20260708-nbutko-combat-retune.html): combat-invariants.ts's boss encounters used to reuse
 // textTierRangeForTier for both regulars and bosses, under-serving the boss
 // relative to what a real fight (and retune-sweep.ts) actually serves it —
 // this is the real-gameplay-matching range a boss encounter should use.
@@ -514,11 +513,10 @@ export const bossTextTierRangeForTier = (tier: number): readonly [TextTier, Text
 // A sensible gear-up path per class: start on the class's own starting
 // weapon (config/classes.ts), then climb config/weapons.ts's Story 3 "+N"
 // ladder at the same three level breakpoints for every class (5/9/12,
-// chosen to land roughly on the on-track corner levels content-plan-v2-
-// tuning.html's targets use for D3/D6/D9) — every class has an upgrade path
+// chosen to land roughly on the on-track corner levels
+// docs/prds/done/20260708-nbutko-combat-retune.html's targets use for D3/D6/D9) — every class has an upgrade path
 // at every dungeon tier now, closing Finding 3's "the wand is a d6 with no
-// successor, the ladder stops at tier-3" gap (content-plan-v2-tuning-
-// implementation.html#story-3). Bard shares the Rogue's DEX line (both
+// successor, the ladder stops at tier-3" gap (docs/plans/done/20260708-nbutko-combat-retune.html#story-3). Bard shares the Rogue's DEX line (both
 // classes' damage reads DEX — see representativeAbilities's doc comment on
 // why CHA, its OTHER favored ability, doesn't govern any weapon) but starts
 // on its own launch rapier instead of the Rogue's dagger, matching

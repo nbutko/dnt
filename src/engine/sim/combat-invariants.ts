@@ -7,7 +7,7 @@
 //   1. Hits-to-kill stays in a healthy band for its role, and no fight is
 //      unwinnable for a tier-matched baseline typist — simulateCharacterBattles
 //      (Monte Carlo, a modest battle count so the sweep stays fast). Story 5
-//      (content-plan-v2-tuning-implementation.html) re-expressed this as TWO
+//      (docs/plans/done/20260708-nbutko-combat-retune.html) re-expressed this as TWO
 //      bands, not one: regulars stay a quick, disposable ~1-4 hits at any
 //      tier, while a boss's target is the §3 "few big prompts" range —
 //      tighter than the old flat [1.2, 26], now that a boss is genuinely a
@@ -74,10 +74,10 @@ export const CLASSES: readonly CharacterClass[] = ['fighter', 'wizard', 'rogue',
 
 // --- Check 1: hits-to-kill band + winnability -------------------------------
 
-// Story 5's re-shape (content-plan-v2-tuning-implementation.html): the old
+// Story 5's re-shape (docs/plans/done/20260708-nbutko-combat-retune.html): the old
 // flat [1.2, 26] assumed every fight was made of uniformly short prompts —
 // wrong on both counts once the 14-tier content and the "few big prompts"
-// boss design (content-plan-v2-tuning.html §3) landed. Regulars and bosses
+// boss design (docs/prds/done/20260708-nbutko-combat-retune.html §3) landed. Regulars and bosses
 // now play by different rules (§3's "regulars vs. bosses" section), so they
 // get different bands:
 //
@@ -362,7 +362,7 @@ export const sweepAbilityMonotonicity = (): InvariantViolation[] => {
 // Widely-spaced on purpose — see the file header's note on why adjacent
 // tiers aren't compared.
 //
-// Story 5 re-shape (content-plan-v2-tuning-implementation.html): this used to
+// Story 5 re-shape (docs/plans/done/20260708-nbutko-combat-retune.html): this used to
 // assert on hitsToKill, the same signal Check 1 uses. Fixing the boss-tier
 // modeling bug (file header) was necessary but NOT sufficient to make that
 // signal monotonic — and it can never be, structurally, for milestones this
@@ -381,7 +381,7 @@ export const sweepAbilityMonotonicity = (): InvariantViolation[] => {
 // wpm 40-70 — hitsToKill dips D6->D11 every time), so it is NOT a modeling
 // artifact this story's fixes can paper over: it is a genuine residual gap
 // between how boss HP was authored (against a *tier-matched* hero's
-// reference hit — content-plan-v2-tuning.html §8.1) and what a fixed,
+// reference hit — docs/prds/done/20260708-nbutko-combat-retune.html §8.1) and what a fixed,
 // tier-MISmatched hero's hitsToKill measures when the prompt itself gets
 // dramatically longer at the very top of the ladder.
 //

@@ -18,7 +18,7 @@ export interface PlayerModifiers {
   // -- Focus/WIS: typing time budget --
   timeBudgetBonusMs: number
   // -- The encounter d20 (engine/dice/, Story 6): proficiency bonus + the INT
-  // nudge (INT no longer caps the tier — content-plan-v2-tuning.html) + any
+  // nudge (INT no longer caps the tier — docs/prds/done/20260708-nbutko-combat-retune.html) + any
   // item/class flat bonus (e.g. Luckstone), and whether it rolls twice --
   encounterBonus: number
   hasAdvantage: boolean
@@ -31,7 +31,7 @@ export interface PlayerModifiers {
   intimidateWpmCut: number
   // -- CHA, Story 2: "charm" — cut to the monster's effective accuracy
   // (engine/monster-typing.ts's monster.accuracy), a second linear
-  // time-buyer distinct from intimidateWpmCut (content-plan-v2-tuning.html
+  // time-buyer distinct from intimidateWpmCut (docs/prds/done/20260708-nbutko-combat-retune.html
   // §7 Finding 2/§8.2) --
   charmAccuracyCut: number
   // -- The equipped weapon (Story 7 reads these in engine/damage.ts) --

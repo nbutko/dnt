@@ -14,9 +14,9 @@ import {
 // and balance.test.ts's Story 13 report for what each check catches and why
 // its band/milestones are shaped the way they are).
 describe('combat invariant sweep', () => {
-  // Re-enabled by Story 5 (content-plan-v2-tuning-implementation.html), which
+  // Re-enabled by Story 5 (docs/plans/done/20260708-nbutko-combat-retune.html), which
   // re-expressed the flat [1.2, 26] band as separate regular/boss bands
-  // matching the "few big prompts" boss design (content-plan-v2-tuning.html
+  // matching the "few big prompts" boss design (docs/prds/done/20260708-nbutko-combat-retune.html
   // §3) — see combat-invariants.ts's Check 1 comment for the new shape and
   // why it's split by role.
   it('keeps hits-to-kill in a healthy band for its role and every sampled fight winnable', () => {

@@ -32,7 +32,7 @@ describe('lengthFactor', () => {
     expect(lengthFactor(0, baseCombat)).toBe(baseCombat.lengthFactorFloor)
   })
 
-  // The M4 retune's soft knee (content-plan-v2-tuning.html §8.1): unlike the
+  // The M4 retune's soft knee (docs/prds/done/20260708-nbutko-combat-retune.html §8.1): unlike the
   // old uncapped `1 + (charCount-referenceLength)/referenceLength`, growth
   // above reference length now bends over toward lengthFactorCap instead of
   // climbing forever.

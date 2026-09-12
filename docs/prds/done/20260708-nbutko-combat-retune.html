@@ -3,15 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Combat Tuning Targets — Dungeons &amp; Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<title>PRD: Combat Retune — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a> · <a href="content-plan-v2.html">Content Plan v2</a> · <a href="game-design.html">Game Design</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>combat-retune</code></nav>
 <header class="page-head">
-  <h1>Combat Tuning Targets</h1>
-  <p class="tagline">What "beating a dungeon boss" should <em>cost</em> — in level, wpm, and battle time — before we touch a single knob.</p>
+  <h1>PRD: Combat Retune</h1>
+  <p class="tagline">What "beating a dungeon boss" should <em>cost</em> — in level, wpm, and battle time — and the measured surface the M4/M5 combat retune converged on.</p>
+  <span class="status">feature: <code>combat-retune</code> · author: nbutko · opened: 2026-07-08 · status: <strong>done</strong>
+  · plan: <a href="../../plans/done/20260708-nbutko-combat-retune.html">yes</a> · wireframes: no (no screens change)</span>
 </header>
+<div class="banner done">
+  <p><strong>Retune shipped 2026-07-08 on branch <code>m3</code>.</strong> §9 holds the converged numbers, and
+  <a href="../../game-design.html">game-design.html</a> now carries them as the current combat math. User
+  feel-verification of the converged surface was never recorded — the "Verified by User" boxes in
+  <a href="../../plans/done/20260708-nbutko-combat-retune.html">the implementation plan</a> stay unticked on
+  purpose.</p>
+</div>
 <main>
 
 <p>
@@ -26,7 +35,7 @@
   M0-era combat math stretched the difficulty surface past what it was tuned for: prompts now run to ~2000
   chars (was ~220), damage scales linearly-and-<em>uncapped</em> with prompt length
   (<code>engine/damage.ts</code>'s <code>lengthFactor</code>), and the <code>hits-to-kill</code> balance
-  invariant is currently parked (<code>it.skip</code>). See <a href="game-design.html#damage">Game Design →
+  invariant is currently parked (<code>it.skip</code>). See <a href="../../game-design.html#damage">Game Design →
   Damage</a> for the formula this doc is trying to re-anchor.
 </div>
 
@@ -59,7 +68,7 @@
 <h2 id="targets">2. Level &amp; wpm targets — all 11 bosses</h2>
 <p>
   On-track wpm tracks each dungeon's expected typing speed, pinned to the given anchors and to
-  <a href="content-plan-v2.html#ladder">Content Plan v2</a>'s stamina-tier speeds (T12 ≈ 70, T13 ≈ 85, T14 ≈
+  <a href="../../content-plan-v2.html#ladder">Content Plan v2</a>'s stamina-tier speeds (T12 ≈ 70, T13 ≈ 85, T14 ≈
   100 wpm). Levels and wpm below are <strong>the cost to clear that dungeon's boss at each corner</strong>.
 </p>
 <table>
@@ -340,7 +349,7 @@
 <p>
   Priority order, highest-leverage first. Each item is re-measured by re-running the step-A sweep, so we watch
   the surface converge on §2/§3 rather than guess. The story-by-story build that carries this out is
-  <a href="content-plan-v2-tuning-implementation.html">the tuning implementation plan</a>.
+  <a href="../../plans/done/20260708-nbutko-combat-retune.html">the combat-retune implementation plan</a>.
 </p>
 
 <h3>8.1 — Keystone: cap <code>lengthFactor</code> + author HP against the hit <em>distribution</em></h3>
@@ -436,8 +445,6 @@
 </div>
 
 </main>
-<footer class="page-foot">
-  Dungeons &amp; Typing — combat tuning targets (M4/M5). Targets only; validated by simulation before any knob moves.
-</footer>
+<footer class="page-foot"><a href="../index.html">← PRDs index</a> · <a href="../../plans/done/20260708-nbutko-combat-retune.html">implementation plan</a> · PRD for <code>combat-retune</code></footer>
 </body>
 </html>

@@ -25,7 +25,7 @@ export type ClassFeature =
       // Wizard: crits roll the damage dice this many times (2 is the
       // baseline every other class uses — engine/damage.ts, Story 7), and a
       // flat bonus to the encounter d20 on top of INT (reads harder prompts
-      // more often — the tier cap retired, content-plan-v2-tuning.html).
+      // more often — the tier cap retired, docs/prds/done/20260708-nbutko-combat-retune.html).
       critDiceCount: number
       intEncounterBonus: number
     }
@@ -76,7 +76,7 @@ export const CLASSES: readonly ClassDef[] = [
     startingWeapon: 'wand',
     // "crits roll the damage dice three times instead of two"; the old "+1 INT
     // tier-cap" became a flat encounter-roll nudge when the cap retired
-    // (content-plan-v2-tuning.html). Magnitude is a sim-tuned placeholder.
+    // (docs/prds/done/20260708-nbutko-combat-retune.html). Magnitude is a sim-tuned placeholder.
     feature: { kind: 'arcane-mind', critDiceCount: 3, intEncounterBonus: 2 },
   },
   {

@@ -24,7 +24,7 @@ export interface LevelingConfig {
   asiLevels: readonly number[]
   proficiencyByLevel: readonly number[]
   hpScale: number
-  // Story 4 (content-plan-v2-tuning-implementation.html): a tapering flat HP
+  // Story 4 (docs/plans/done/20260708-nbutko-combat-retune.html): a tapering flat HP
   // bonus for levels 1-3, index 0 = level 1. Empty/short arrays are fine —
   // a level past the array's length just gets 0.
   earlyLevelHpBonus: readonly number[]

@@ -2,7 +2,7 @@ import type { CombatConfig } from '../domain/types'
 
 // All combat tuning knobs live here, never scattered through engine code.
 // Retuned twice: M0 Story 6's balance harness landed the original values,
-// and the M4 combat-tuning pass (content-plan-v2-tuning-implementation.html)
+// and the M4 combat-tuning pass (docs/plans/done/20260708-nbutko-combat-retune.html)
 // re-tuned a subset against the 14-tier content's much longer prompts —
 // `lengthFactorCap` (new) and `playerBaselineWpm` (12 → 8) are that pass's
 // changed knobs; everything else here is unchanged since M0. Both passes are
@@ -20,14 +20,14 @@ const combatConfig: CombatConfig = {
   // Soft ceiling lengthFactor asymptotically approaches — see engine/
   // damage.ts's lengthFactor and domain/types.ts's CombatConfig doc comment.
   // Landed via content-pipeline/retune-sweep.ts against content/monsters.json's
-  // re-authored boss HP (content-plan-v2-tuning-implementation.html Story 1):
+  // re-authored boss HP (docs/plans/done/20260708-nbutko-combat-retune.html Story 1):
   // tuned together, not derived on paper.
   lengthFactorCap: 20,
   // Loosened from 15 after real playtesting felt rushed: the countdown
   // starts the instant a prompt appears, so the budget also has to cover
   // reading the line, not just typing it. See playerReadingBufferMs below.
-  // Lowered again, 12 -> 8, in Story 4 (content-plan-v2-tuning-implementation.
-  // html): this is the assumed typing speed the player's OWN time limit is
+  // Lowered again, 12 -> 8, in Story 4 (docs/plans/done/20260708-nbutko-combat-retune.html):
+  // this is the assumed typing speed the player's OWN time limit is
   // budgeted against (independent of a monster's own clock), and 12 sat
   // ABOVE D1's on-track (10wpm) and behind (7wpm) anchors — a genuine
   // beginner was budgeted less time than their own real typing needs and

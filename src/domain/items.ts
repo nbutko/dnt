@@ -14,8 +14,7 @@ export type ItemId =
   | 'oil-of-sharpness'
   | 'elixir-of-intellect'
   | 'potion-of-heroism'
-  // Story 3: persistent defense/HP gear (content-plan-v2-tuning-
-  // implementation.html#story-3) — see config/items.ts.
+  // Story 3: persistent defense/HP gear (docs/plans/done/20260708-nbutko-combat-retune.html#story-3) — see config/items.ts.
   | 'ring-of-protection'
 
 // Two duration shapes plus instant healing — no status-effect engine needed

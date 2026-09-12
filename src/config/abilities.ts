@@ -17,15 +17,15 @@ export interface AbilitiesConfig {
   // point of DEX modifier.
   dexDodgeChancePctPerMod: number
   // WIS primary: + typing time budget (ms), per point of WIS modifier. The
-  // one *linear* tempo lever on the player's own clock (content-plan-v2-
-  // tuning.html §7 Finding 2/§8.2) — re-landed at Story 2 against the fight
+  // one *linear* tempo lever on the player's own clock
+  // (docs/prds/done/20260708-nbutko-combat-retune.html §7 Finding 2/§8.2) — re-landed at Story 2 against the fight
   // length Story 1 restored, big enough that a WIS-heavy "behind" build buys
   // a genuinely more leisurely cadence (multiple seconds at a high mod), not
   // the pre-Story-2 token few hundred ms.
   wisTimeBudgetMsPerMod: number
   // INT primary: how much each point of INT modifier adds to the encounter
   // d20 (engine/dice/encounter-roll.ts), on top of proficiency. INT no longer
-  // *caps* the served tier — the M4/M5 retune (content-plan-v2-tuning.html)
+  // *caps* the served tier — the M4/M5 retune (docs/prds/done/20260708-nbutko-combat-retune.html)
   // made the full [N, N+2] window always reachable and turned INT into a
   // *nudge* on the roll toward the high band, so a low-INT reader is never
   // walled out of level-appropriate content, only less likely to be pushed to
@@ -42,7 +42,7 @@ export interface AbilitiesConfig {
   // the monster fumble its own line more (engine/monster-typing.ts's
   // monster.accuracy), lengthening its self-correction cycles and shrinking
   // its effective output — a second *linear* time-buyer alongside WIS
-  // (content-plan-v2-tuning.html §7 Finding 2/§8.2), the pair that makes the
+  // (docs/prds/done/20260708-nbutko-combat-retune.html §7 Finding 2/§8.2), the pair that makes the
   // slow-typing, over-leveled "behind" corner winnable once htk is restored.
   chaCharmAccuracyCutPctPerMod: number
   // Mimic-sense deception DC, indexed by dungeon tier (index 0 = tier 1) —
@@ -62,7 +62,7 @@ const abilitiesConfig: AbilitiesConfig = {
   strDamagePctPerMod: 0.05,
   dexCritChancePctPerMod: 0.02,
   dexDodgeChancePctPerMod: 0.03,
-  // Story 2 (content-plan-v2-tuning-implementation.html): 300 -> 1200 —
+  // Story 2 (docs/plans/done/20260708-nbutko-combat-retune.html): 300 -> 1200 —
   // measured against the sweep as a token few hundred ms at the old value
   // (barely denting a fixed reading buffer of 2000ms), 1200/mod makes a
   // +5-mod WIS build (a maxed "behind" tank) buy +6000ms, comparable to the

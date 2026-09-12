@@ -19,7 +19,7 @@
   This is orientation, not gospel: the code is the source of truth, and this doc will drift. Its job is to make the
   <em>next</em> read cheap — to say "here is the shape, here are the rules, here is which file to open" so a change
   starts from a map instead of a search. Keep it roughly current when the shape changes; don't sweat line-level
-  detail. Snapshot re-taken post-<a href="m3-implementation.html">M3</a> (the D&amp;D character layer has shipped).
+  detail. Snapshot re-taken post-<a href="plans/done/20260705-nbutko-m3-character-sheet.html">M3</a> (the D&amp;D character layer has shipped).
 </p>
 
 <h2 id="stack">Stack</h2>
@@ -227,7 +227,7 @@
   combat numbers, called by <code>battle-store.ts</code> (which then builds the fight) and by the map/dungeon/Inn
   screens (for <code>maxHearts</code>/<code>maxHp</code>). <strong>Still the highest-leverage function in the
   codebase:</strong> keep its output contract and you can rewrite everything feeding it without touching the
-  engine — M3 already did exactly that once (see <a href="m3-implementation.html#seams">M3 seams</a>).
+  engine — M3 already did exactly that once (see <a href="plans/done/20260705-nbutko-m3-character-sheet.html#seams">M3 seams</a>).
 </p>
 
 <h2 id="save">The save file</h2>

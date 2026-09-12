@@ -1,5 +1,5 @@
 // Turns an encounter-roll band into the tier of text the player is actually
-// served this fight (m3-implementation.html finding C) — the load-bearing use
+// served this fight (docs/plans/done/20260705-nbutko-m3-character-sheet.html finding C) — the load-bearing use
 // of config/dungeon-tiers.ts's previously-dead textTierRange field.
 
 import type { TextTier } from '../../domain/types'
@@ -17,7 +17,7 @@ export interface ServedTierResult {
 
 // Low -> the bottom of the dungeon's range, high -> the top, mid -> the
 // (rounded) midpoint — "read straight off each dungeon's textTierRange...
-// Low = bottom of the range, high = top" (m3-scope.html#encounter-roll).
+// Low = bottom of the range, high = top" (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll).
 export const bandToServedTier = (
   band: EncounterBand,
   textTierRange: readonly [TextTier, TextTier],

@@ -10,7 +10,7 @@
 // (engine/character/modifiers.ts) so battle-store never has to know which
 // ability, class feature, or item produced which number. Same output *role*
 // as M2's narrower PlayerModifiers, widened for M3's ability/weapon/buff
-// surface (m3-implementation.html#seams, seam 1).
+// surface (docs/plans/done/20260705-nbutko-m3-character-sheet.html#seams, seam 1).
 export interface PlayerModifiers {
   // -- Endurance/HP (CON + level) --
   maxHp: number

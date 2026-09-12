@@ -1,4 +1,4 @@
-// D&D progression as pure functions (m3-scope.html#leveling) — turns a
+// D&D progression as pure functions (docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling) — turns a
 // character's XP total and class into the three automatic level-up grants
 // (HP, proficiency, class features) plus the one discretionary one (ASI
 // points). Seeded entirely off Story 1's config/leveling.ts + config/
@@ -118,7 +118,7 @@ export const grantsForLevel = (
 }
 
 // Points a single ASI grants (5e's "+2 to one ability, or +1 to two" —
-// m3-scope.html#leveling), reused for two things that have to agree: how many
+// docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling), reused for two things that have to agree: how many
 // points state/save/save-reducer.ts's gainXp banks into pendingAsi per ASI
 // level crossed, and the most applyAsi below will let one spend dispatch
 // claim at once (so a character sitting on two unspent ASIs still spends them

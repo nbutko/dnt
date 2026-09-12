@@ -1,4 +1,4 @@
-// The seam (m3-implementation.html#seams, seam 1) — replaces engine/
+// The seam (docs/plans/done/20260705-nbutko-m3-character-sheet.html#seams, seam 1) — replaces engine/
 // progression/skill-effects.ts. Turns a persistent Character + its equipped
 // Weapon + the run's ephemeral ActiveBuffs into the one PlayerModifiers bag
 // battle-store already knows how to consume. Pure; never imports state/ or
@@ -30,7 +30,7 @@ export const DEFAULT_MODIFIERS_CONFIG: ModifiersConfig = {
 }
 
 // Hearts (the per-run lives) now come from level milestones instead of a
-// purchased Endurance node (m3-scope.html#reshaping: "Max hearts now come
+// purchased Endurance node (docs/prds/done/20260705-nbutko-m3-character-sheet.html#reshaping: "Max hearts now come
 // from level milestones... instead of Endurance nodes"). No milestone table
 // exists yet anywhere in Story 1's config, so this is a Story 3 placeholder
 // — one extra heart every 5 levels, landing a level-1 character at today's
@@ -44,7 +44,7 @@ const heartsForLevel = (level: number): number =>
 // Cumulative HP across every level from 1 up to `character.level`, each
 // level's grant computed by Story 2's grantsForLevel so HP is derived at read
 // time and can never drift from the abilities/level that produce it (the
-// derive-don't-store rule — m3-implementation.html Story 2).
+// derive-don't-store rule — docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 2).
 //
 // Story 4 (docs/plans/done/20260708-nbutko-combat-retune.html): on top of that sum,
 // a flat survivability bonus keyed off the character's CURRENT level (not
@@ -190,7 +190,7 @@ export const resolveModifiers = (
       ? { hpThresholdPct: feature.hpThresholdPct, healPct: feature.healPct }
       : null
   // The standard D&D "roll the damage dice twice on a crit" (engine/damage.ts,
-  // Story 7), bumped to 3 for the Wizard's Arcane Mind — m3-scope.html#classes.
+  // Story 7), bumped to 3 for the Wizard's Arcane Mind — docs/prds/done/20260705-nbutko-m3-character-sheet.html#classes.
   const arcaneCritMult = feature.kind === 'arcane-mind' ? feature.critDiceCount : 2
 
   return {

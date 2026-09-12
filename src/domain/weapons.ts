@@ -1,4 +1,4 @@
-// Weapon identity (m3-scope.html#weapons) — the one piece of persistent gear.
+// Weapon identity (docs/prds/done/20260705-nbutko-m3-character-sheet.html#weapons) — the one piece of persistent gear.
 // This file is just the shape; the real table (die, ability, crit range,
 // tier, price for all eight weapons) lands in config/weapons.ts (Story 1).
 

@@ -15,7 +15,7 @@ interface ShopItemProps {
   price: number
   discountPct: number
   coins: number
-  // Weapons are one-off buys (m3-scope.html#shop) — already-owned ones show
+  // Weapons are one-off buys (docs/prds/done/20260705-nbutko-m3-character-sheet.html#shop) — already-owned ones show
   // "Owned" instead of a price/Buy button. Consumables restock every visit,
   // so they're never "owned" in this sense.
   owned?: boolean

@@ -21,7 +21,7 @@ export interface DungeonRunState {
   // between fights. The dungeon screen reads this to know which battle to host.
   activeNodeId: string | null
   // Consumable buffs riding the rest of this dungeon visit (finding E,
-  // m3-implementation.html) — Bag.tsx adds them, resolveFight expires the
+  // docs/plans/done/20260705-nbutko-m3-character-sheet.html) — Bag.tsx adds them, resolveFight expires the
   // 'next-fight' ones, clearBuffs empties everything on win/wipe/leave. Never
   // persisted: owning an item is a save fact, a buff being active is a run
   // fact.
@@ -62,7 +62,7 @@ export const resolveFight = (result: 'win' | 'lose', nodeId: string): DungeonRun
 // is instant, not a buff — see restoreHearts below).
 export const addBuff = (buff: ActiveBuff): DungeonRunAction => ({ type: 'addBuff', buff })
 
-// Fires on run end — win, wipe, or leave (m3-implementation.html Story 9). The
+// Fires on run end — win, wipe, or leave (docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 9). The
 // DungeonRunProvider remounting on a fresh visit already drops buffs for free;
 // this covers the win/wipe transitions where the provider stays mounted for
 // the result screen.
@@ -87,7 +87,7 @@ export const initRun = ({ tier, maxHearts, rng, seed }: EnterParams): DungeonRun
 })
 
 // Expires 'next-fight' buffs after a resolved fight — a win OR a loss both
-// count as the fight the buff rode (m3-implementation.html Story 9: a
+// count as the fight the buff rode (docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 9: a
 // resolved fight, either direction, consumes it). A buff with no
 // fightsRemaining clears after this one fight; one with fightsRemaining (Oil
 // of Sharpness = 3) decrements and drops at 0. 'rest-of-dungeon' buffs are

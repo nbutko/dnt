@@ -4,18 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>M3 Scope: The Character Sheet — Dungeons &amp; Typing</title>
-<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="../../style/style.css">
 </head>
 <body>
-<nav class="crumbs"><a href="index.html">← Dungeons &amp; Typing</a></nav>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">PRDs</a> · <code>m3-character-sheet</code></nav>
 <header class="page-head">
   <h1>M3 Scope: The Character Sheet</h1>
   <p class="tagline">Abilities, levels, dice, weapons, items, and a Shop — the D&amp;D layer that turns a typist into a hero.</p>
+  <span class="status">feature: <code>m3-character-sheet</code> · author: nbutko · opened: 2026-07-05 · status: <strong>done</strong></span>
 </header>
+<div class="banner done">
+  <p><strong>Shipped 2026-07-08.</strong> M3 brought the whole D&amp;D character layer into the game — six
+  abilities, real 5e-style leveling (replacing the M2 skill tree), four classes, character creation, two dice
+  (the encounter d20 + per-hit weapon damage), equippable weapons, consumable items, and the Shop — and the full
+  loop plays end to end like a role-playing game, not a math worksheet (<a href="../../roadmap.html#m3">roadmap
+  M3</a>). The as-shipped rules now live in <a href="../../game-design.html">game-design.html</a>; the shipped
+  screens are in <a href="../../screens.html">screens.html</a>. The <a
+  href="../../wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframes</a> are the original mock
+  handoff. Of the open questions below: the crit-chance/crit-damage wiring (part of "Per-point magnitudes") was
+  closed by the <a href="../../prds/done/20260708-nbutko-combat-retune.html">combat retune</a>; XP pacing and the
+  leveling fix landed in the M5 batch; the rest (weapon/item pricing, the remaining per-point magnitudes, the
+  juice-pass call) are tracked in the <a
+  href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 PRD</a>.</p>
+</div>
 <main>
 
 <p>
-  <a href="m2-scope.html">M2</a> answered "what happens between battles?" — the map, dungeons, hearts, coins,
+  <a href="../../prds/done/20260704-nbutko-m2-progression-loop.html">M2</a> answered "what happens between battles?" — the map, dungeons, hearts, coins,
   XP. M3 answers "<em>who is the kid playing?</em>" It takes the parts of Dungeons &amp; Dragons we haven't
   captured yet — a character with ability scores, a class, a level, dice rolls, weapons, and a bag of
   consumables — and wires each of them into the typing loop that already works, so that a battle stops being
@@ -25,13 +40,13 @@
 <div class="callout why">
   <strong>Stylized screen mocks for every surface below</strong> — character creation, the reworked Inn (rest,
   sheet, Armory), the Shop, the encounter d20, chest premonitions, item &amp; weapon handling, and the in-battle
-  flashes — live in the <a href="wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframes</a>. Several design calls captured in this
+  flashes — live in the <a href="../../wireframes/done/20260705-nbutko-m3-character-sheet.html">M3 wireframes</a>. Several design calls captured in this
   doc (equip-at-Inn-only, the bag drawer, the signed CHA price modifier, HP-full-at-the-Inn) were pinned down while
   drawing those mocks.
 </div>
 
 <div class="callout decision">
-  This milestone deliberately supersedes the old <a href="roadmap.html#m3">Roadmap M3</a> ("power-ups &amp;
+  This milestone deliberately supersedes the old <a href="../../roadmap.html#m3">Roadmap M3</a> ("power-ups &amp;
   juice"). Power-ups survive here as <a href="#items">consumable items</a>, but the milestone's real job grew:
   it's the whole D&amp;D character layer, since M4 is shipping and M5 is tuning — <strong>every mechanical
   element has to be in the game before the M5 balance pass can tune it.</strong> Screen-shake/SFX "juice"
@@ -51,7 +66,7 @@
 <p>
   The heart of M3 is the standard six D&amp;D ability scores. Each score's <em>modifier</em> —
   <code>mod = floor((score − 10) / 2)</code>, exactly as in 5e — feeds directly into a combat number that
-  already exists (see the <a href="game-design.html#damage">damage/HP/time formulas</a>). Every ability has one
+  already exists (see the <a href="../../game-design.html#damage">damage/HP/time formulas</a>). Every ability has one
   <strong>primary</strong> effect that carries its weight, plus a lighter <strong>flavor</strong> effect, so
   no stat is ever a dump stat but the sheet still stays legible to a 10-year-old.
 </p>
@@ -75,7 +90,7 @@
   Modifiers, not raw scores, drive every formula — a score of 10–11 is a flat +0, so a fresh character with
   average stats plays exactly like today's untuned baseline, and every point of a modifier is a small,
   countable step (e.g. "+1 crit tier," "+one reading-buffer chunk"). Exact per-point magnitudes are a
-  <a href="#open">tuning knob</a>, deferred to <a href="roadmap.html#m5">M5</a> with the rest of the numbers.
+  <a href="#open">tuning knob</a>, deferred to <a href="../../roadmap.html#m5">M5</a> with the rest of the numbers.
 </div>
 
 <h2 id="leveling">Leveling, the D&amp;D way (this replaces the skill tree)</h2>
@@ -106,7 +121,7 @@
   instead of a wall of choices.</li>
 </ul>
 <p>
-  XP itself still comes from the <a href="m2-scope.html#xp-coins">same sources M2 already pays out</a>
+  XP itself still comes from the <a href="../../prds/done/20260704-nbutko-m2-progression-loop.html#xp-coins">same sources M2 already pays out</a>
   (per-kill, boss, real chest, scaled by dungeon tier). The 5e XP-to-level table (0, 300, 900, 2700, 6500,
   14000, …) is the starting point; whether it wants compressing so the kid levels at a satisfying pace against
   dnt's actual reward economy is an <a href="#open">M5 tuning question</a>, not a scope one.
@@ -117,7 +132,7 @@
   long rest) and <strong>Armory</strong> (equip/swap your <a href="#weapons">weapon</a> — see there). The skill-tree
   UI is retired; its five branches are absorbed into the ability system (Endurance→CON &amp; the level HP/heart
   gains, Wordsmith→INT's tier cap, Focus→WIS, Luck→DEX &amp; luck items, Utility→consumables). This also resolves
-  the <a href="roadmap.html#m5">M5</a> "activate the deferred Focus/Luck/Utility branches" task — there are no
+  the <a href="../../roadmap.html#m5">M5</a> "activate the deferred Focus/Luck/Utility branches" task — there are no
   branches to activate anymore.
 </div>
 <div class="callout decision">
@@ -167,7 +182,7 @@
 
 <h2 id="creation">Character creation</h2>
 <p>
-  Today a fresh save is just <code>defaultSave()</code>. In M3, when <a href="architecture.html#persistence">
+  Today a fresh save is just <code>defaultSave()</code>. In M3, when <a href="../../architecture.html#persistence">
   IndexedDB</a> holds no valid save, the game opens a one-screen creation flow before the world map. Every step
   is pre-filled with a valid random default, so a kid who just wants to play can mash one button and get a
   complete, sensible character — but each piece is his to change:
@@ -198,7 +213,7 @@
 
 <h3 id="encounter-roll">1. The encounter d20 — rolled once, before you type</h3>
 <p>
-  The moment you commit to a fight, the <a href="m2-scope.html#chests">encounter reveal modal</a> (the one
+  The moment you commit to a fight, the <a href="../../prds/done/20260704-nbutko-m2-progression-loop.html#chests">encounter reveal modal</a> (the one
   built in M2 for mimics and chokepoints) rolls a single dramatic d20. This is the perfect home for it: it's a
   discrete beat <em>before</em> the clock starts, so it can be as big and animated as we like. The roll decides
   which of the dungeon's three prompt-difficulty bands you'll type this fight:
@@ -215,7 +230,7 @@
   <li><strong>Higher roll = harder passage that hits harder,</strong> which is why leveling (proficiency) and
   luck items matter: they push you up the bands. It stays fair because the band is always
   <strong>capped by your INT</strong> — you're never served a tier you literally can't read; if the dungeon
-  out-tiers your INT you get served your cap and eat the existing <a href="m2-scope.html#wordsmith-gate">
+  out-tiers your INT you get served your cap and eat the existing <a href="../../prds/done/20260704-nbutko-m2-progression-loop.html#wordsmith-gate">
   squared tier-gate penalty</a> (which INT now drives instead of the retired Wordsmith branch).</li>
   <li><strong>Natural die vs. total</strong>, exactly as in D&amp;D: the band uses the modified <em>total</em>
   (so a Luckstone can shove a mediocre roll into the high band), but the fumble and the inspiration trigger
@@ -432,7 +447,7 @@
   <tr><td>Prompt tier</td><td>Player-facing tier now comes from the <a href="#encounter-roll">encounter d20 band</a> (capped by INT), consuming the currently-dead <code>textTierRange</code> config. A monster's own <code>textTier</code> still governs the line the <em>monster</em> types.</td></tr>
   <tr><td>Hearts</td><td>Max hearts now come from level milestones (a class-feature-style non-discretionary grant) instead of Endurance nodes; mid-run recovery via the Potion of Healing.</td></tr>
 </table>
-<p>The persistent <a href="architecture.html#persistence">SaveData</a> bumps to <strong>version 3</strong>, roughly:</p>
+<p>The persistent <a href="../../architecture.html#persistence">SaveData</a> bumps to <strong>version 3</strong>, roughly:</p>
 <pre><code>{
   "version": 3,
   "character": {
@@ -461,9 +476,17 @@
 </div>
 
 <h2 id="open">Open questions</h2>
+<div class="callout decision">
+  <strong>Update, in the light of what actually closed these.</strong> Crit chance and crit damage (part of
+  "Per-point magnitudes" below) were wired up and tuned by the
+  <a href="../../prds/done/20260708-nbutko-combat-retune.html">combat retune</a>. XP pacing and a leveling bug
+  were addressed by the M5 batch of commits. Everything else below — the rest of the per-point magnitudes,
+  weapon/item pricing &amp; Shop restock, and the juice-pass call — is tracked in the
+  <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 PRD</a>.
+</div>
 <div class="callout open">
   <strong>XP pacing.</strong> The real 5e XP table vs. a compressed one, and where the level cap sits relative
-  to the 11 dungeon tiers — needs a play-pace pass in <a href="roadmap.html#m5">M5</a>. Levels should feel
+  to the 11 dungeon tiers — needs a play-pace pass in <a href="../../roadmap.html#m5">M5</a>. Levels should feel
   frequent early and meaningful late.
 </div>
 <div class="callout open">
@@ -487,7 +510,7 @@
   toughness and the per-level HP step, the weapon die sets relative per-hit power and variance, mods/proficiency
   are the +Ns. The one arbitrary number — today's 40 — stops being magic: level-1 HP = a hit-die-derived value ×
   a scale factor (~3–4), so a d10 Fighter lands near 40 and a d6 Wizard a bit under. The exact scale factor and
-  per-tier hits-to-kill remain <a href="roadmap.html#m5">M5</a> knobs.
+  per-tier hits-to-kill remain <a href="../../roadmap.html#m5">M5</a> knobs.
 </div>
 <div class="callout open">
   <strong>Weapon/item pricing &amp; Shop restock.</strong> Prices, whether the Shop's stock is fixed or rotates
@@ -501,6 +524,6 @@
 </div>
 
 </main>
-<footer class="page-foot"><a href="index.html">← Back to overview</a></footer>
+<footer class="page-foot"><a href="../index.html">← PRDs index</a> · <a href="../../plans/done/20260705-nbutko-m3-character-sheet.html">the implementation plan</a> · <a href="../../wireframes/done/20260705-nbutko-m3-character-sheet.html">wireframes</a> · PRD for <code>m3-character-sheet</code></footer>
 </body>
 </html>

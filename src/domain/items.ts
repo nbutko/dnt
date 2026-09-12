@@ -1,4 +1,4 @@
-// Consumable identity (m3-scope.html#items) — per-run buffs bought at the
+// Consumable identity (docs/prds/done/20260705-nbutko-m3-character-sheet.html#items) — per-run buffs bought at the
 // Shop, owned forever, spent from the dungeon map before a fight. This file
 // is just the shape; the real table (effect, duration, tier, price for all
 // ten items) lands in config/items.ts (Story 1).
@@ -18,7 +18,7 @@ export type ItemId =
   | 'ring-of-protection'
 
 // Two duration shapes plus instant healing — no status-effect engine needed
-// (m3-scope.html#items).
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#items).
 export type BuffDuration = 'next-fight' | 'rest-of-dungeon' | 'instant'
 
 export interface Consumable {
@@ -32,7 +32,7 @@ export interface Consumable {
 // A consumable's effect once activated — lives in the ephemeral dungeon-run
 // store (state/dungeon-run/, Story 9), never the persistent save: owning a
 // Luckstone is a save fact, but it being active is a run fact that must die
-// when the run does (finding E, m3-implementation.html).
+// when the run does (finding E, docs/plans/done/20260705-nbutko-m3-character-sheet.html).
 export interface ActiveBuff {
   itemId: ItemId
   duration: BuffDuration

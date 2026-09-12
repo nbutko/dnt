@@ -1,5 +1,5 @@
 // Turns a name + class + rolled ability scores into a fresh level-1 Character
-// (m3-scope.html#creation) — pure so CharacterCreateScreen's "one button = a
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#creation) — pure so CharacterCreateScreen's "one button = a
 // complete hero" default is exercisable headlessly, same spirit as Story 2's
 // leveling.ts. Never imports React.
 
@@ -18,7 +18,7 @@ export const DEFAULT_CREATION_CLASS: CharacterClass = 'fighter'
 // front (throws on garbage input, matching getClass's own precedent) even
 // though the hit die/feature/starting weapon themselves are read later, at
 // derived-stat time, via resolveModifiers/getClass — never stored redundantly
-// on the Character (the derive-don't-store rule, m3-implementation.html).
+// on the Character (the derive-don't-store rule, docs/plans/done/20260705-nbutko-m3-character-sheet.html).
 export const createNewCharacter = (
   name: string,
   characterClass: CharacterClass,

@@ -24,7 +24,7 @@ const ROLL_ANIMATION_MS = 500
 
 type Step = 'create' | 'confirm'
 
-// The first screen a fresh save hits (m3-scope.html#creation, wireframe
+// The first screen a fresh save hits (docs/prds/done/20260705-nbutko-m3-character-sheet.html#creation, wireframe
 // turn 1) — gated in by GameShell whenever save.character is null. Every
 // field starts pre-filled with a valid random default, so "mash one button
 // twice" (Begin Adventure → To the World Map) is enough to produce a

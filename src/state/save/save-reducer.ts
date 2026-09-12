@@ -67,7 +67,7 @@ export const unlockTier = (tier: number): SaveAction => ({ type: 'unlockTier', t
 
 // `wpm` defaults to 0 so an older/direct caller that only cares about the
 // defeated-monster list (e.g. an existing test) still compiles — 0 can never
-// raise stats.bestWpm (finding F, m3-implementation.html: dead since M2)
+// raise stats.bestWpm (finding F, docs/plans/done/20260705-nbutko-m3-character-sheet.html: dead since M2)
 // since Math.max floors it at whatever's already banked.
 export const recordDefeat = (monsterId: string, wpm = 0): SaveAction => ({
   type: 'recordDefeat',
@@ -111,7 +111,7 @@ export const saveReducer = (state: SaveData, action: SaveAction): SaveData => {
       const totalSpent = entries.reduce((sum, [, delta]) => sum + (delta ?? 0), 0)
       // Reject a spend the character hasn't banked — without this check, a
       // caller could apply more points than pendingAsi allows (the bug this
-      // routing fixes, m3-implementation.html Story 5's carried-over finding).
+      // routing fixes, docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 5's carried-over finding).
       if (totalSpent <= 0 || totalSpent > state.character.pendingAsi) return state
       // engine/character/leveling.ts's applyAsi is the one validated source of
       // truth for "is this spend legal" (<=2 points, no negative deltas) — it

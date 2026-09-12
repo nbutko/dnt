@@ -44,7 +44,7 @@ export interface BalanceResult {
   winRate: number
   medianDurationMs: number
   // monster.hp / (average damage per landed player hit) — the ratio Story
-  // 13's "HP-scale decision" (m3-scope.html#open) tunes toward a healthy
+  // 13's "HP-scale decision" (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open) tunes toward a healthy
   // multi-prompt band, independent of absolute HP/damage scale.
   hitsToKill: number
 }
@@ -134,7 +134,7 @@ export const simulateBattles = (config: BalanceSimConfig): BalanceResult => {
 
 // The ten launch text tiers' real seed-bank content (content/text/tier-0N.json)
 // grows very unevenly past tier 7 (tiers 8-10 are placeholder long-form
-// paragraphs 500-1400 chars — "real excerpts stay M6", m3-implementation.html
+// paragraphs 500-1400 chars — "real excerpts stay M6", docs/plans/done/20260705-nbutko-m3-character-sheet.html
 // Story 14's out-of-scope note) — plugging those in verbatim would make a
 // tier-9/10 fight take many real minutes per prompt, which is a content-
 // authoring artifact, not a combat-math one. So each tier gets ONE
@@ -175,7 +175,7 @@ const REPRESENTATIVE_LINE_BY_TIER: Record<TextTier, string> = {
 
 export const promptForTier = (tier: TextTier): string => REPRESENTATIVE_LINE_BY_TIER[tier]
 
-// The encounter d20's fumble rule (m3-scope.html#encounter-roll: "damage x0.75
+// The encounter d20's fumble rule (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll: "damage x0.75
 // this fight") — mirrors state/battle-store.ts's own FUMBLE_DAMAGE_MULTIPLIER
 // constant. A repeated literal (not re-derived math), same as that file.
 const FUMBLE_DAMAGE_MULTIPLIER = 0.75
@@ -188,7 +188,7 @@ const FUMBLE_DAMAGE_MULTIPLIER = 0.75
 // level has crossed (config/leveling.ts's ASI_LEVELS) dumps its 2 points into
 // whichever ability actually governs the equipped weapon's damage. That's
 // usually the primary favored ability (Fighter/STR, Rogue/DEX, Wizard/INT),
-// but not always — a Bard favors CHA/WIS (m3-scope.html#classes) yet every
+// but not always — a Bard favors CHA/WIS (docs/prds/done/20260705-nbutko-m3-character-sheet.html#classes) yet every
 // launch weapon its own kit can use (rapier, longbow) reads DEX, so a build
 // that blindly maxed CHA would leave its actual damage stat at the floor
 // forever. Modeling "invests in what its weapon reads" here, not blind
@@ -379,7 +379,7 @@ export const simulateCharacterBattles = (config: CharacterBalanceSimConfig): Cha
 
     const playerPrompt = promptForTier(servedTier)
     const monsterPrompt = promptForTier(monster.textTier)
-    // CHA intimidate + Story 2's charm (m3-scope.html#ability-mechanics,
+    // CHA intimidate + Story 2's charm (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics,
     // docs/plans/done/20260708-nbutko-combat-retune.html#story-2) — same rule as
     // state/battle-store.ts's intimidatedMonster, inlined so this file never
     // imports state/.

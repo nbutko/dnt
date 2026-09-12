@@ -5,7 +5,7 @@ interface MimicWarningModalProps {
   onOpenAnyway: () => void
 }
 
-// WIS mimic sense's "teeth on edge" warning (m3-scope.html#mimic-sense,
+// WIS mimic sense's "teeth on edge" warning (docs/prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense,
 // wireframe turn 5a) — shown ONLY when the hidden d20+WIS+proficiency check
 // (engine/dice/mimic-sense.ts) beats the tier's deception DC on a chest
 // that's genuinely a mimic. Back away skips it with no heart risk (the node

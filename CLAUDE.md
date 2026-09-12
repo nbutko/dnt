@@ -31,7 +31,8 @@ plan's story order. **M3 is done; M4 (shipping it — hosting + PWA) is next.**
   [m2-scope](docs/m2-scope.html) + [m2-implementation](docs/m2-implementation.html) (its tail holds the
   post-playtest feedback logs)
 - **M3** — the D&D character layer (abilities, leveling, two dice, weapons, consumables, the Shop) — **shipped**:
-  [m3-scope](docs/m3-scope.html) + [m3-implementation](docs/m3-implementation.html) +
+  [m3-scope](docs/prds/done/20260705-nbutko-m3-character-sheet.html) +
+  [m3-implementation](docs/plans/done/20260705-nbutko-m3-character-sheet.html) +
   [wireframes](docs/wireframes/done/20260705-nbutko-m3-character-sheet.html)
 
 ## Working rules (non-negotiable)

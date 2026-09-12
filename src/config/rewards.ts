@@ -25,7 +25,7 @@ export interface RewardAmount {
   coins: number
 }
 
-// The real chest's three possible outcomes (m3-scope.html#loot, Story 12) —
+// The real chest's three possible outcomes (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot, Story 12) —
 // relative weights, not required to sum to 1 (engine/progression/rewards.ts's
 // rollChestLoot normalizes). Placeholder split (Story 13/M5 tunes): coins
 // stays the single most-likely single outcome so a chest is never a *worse*
@@ -64,7 +64,7 @@ export interface RewardConfig {
   realChestCoins: number
   // Each tier above 1 adds this fraction of the coin base.
   tierGrowth: number
-  // "Bosses add a larger payout" (m3-scope.html#loot) — multiplies the boss's
+  // "Bosses add a larger payout" (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot) — multiplies the boss's
   // COIN reward on top of the tier-growth scaling (XP uses xp.bossMult).
   bossCoinMult: number
   chestLootWeights: ChestLootWeights

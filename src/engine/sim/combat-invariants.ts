@@ -105,7 +105,7 @@ const MIN_WIN_RATE = 0.15
 // (balance.test.ts) and this sweep both read off of — spread roughly
 // level ~= tier * 20/11 across the whole ladder + level cap. There's no
 // shipped "expected level per tier" table (XP pacing is an explicit M5
-// question, m3-scope.html#open), so this is Story 13's own stand-in for "a
+// question, docs/prds/done/20260705-nbutko-m3-character-sheet.html#open), so this is Story 13's own stand-in for "a
 // hero who has been playing roughly this long," not a claim about the real
 // pacing.
 export const TIER_LEVEL_SAMPLES: readonly { tier: number; level: number }[] = [
@@ -310,7 +310,7 @@ interface AbilityCheck {
 }
 
 // A higher ability score is never strictly worse, per the one derived number
-// each ability primarily governs (m3-scope.html#abilities). The class
+// each ability primarily governs (docs/prds/done/20260705-nbutko-m3-character-sheet.html#abilities). The class
 // feature bonuses layered on top (Arcane Mind's INT bonus, etc.) are a
 // level/class-constant offset added to every sample alike, so they can't
 // introduce a decrease — 'fighter' is used throughout without loss of

@@ -1,6 +1,6 @@
-// The Shop's price formula (m3-scope.html#shop) — the single source of truth
+// The Shop's price formula (docs/prds/done/20260705-nbutko-m3-character-sheet.html#shop) — the single source of truth
 // the Shop UI and any future modifier both read, so they can never disagree
-// on what a hero actually pays (m3-implementation.html#story-10: "a small
+// on what a hero actually pays (docs/plans/done/20260705-nbutko-m3-character-sheet.html#story-10: "a small
 // shared price helper so the Shop and the modifier agree on one formula").
 // Pure; never imports state/ or ui/.
 
@@ -27,7 +27,7 @@ export interface ShopPrice {
   discountPct: number
 }
 
-// CHA's modifier is a *signed* discount (m3-scope.html#shop: "a negative CHA
+// CHA's modifier is a *signed* discount (docs/prds/done/20260705-nbutko-m3-character-sheet.html#shop: "a negative CHA
 // marks prices up instead"), and a Bard's Silver Tongue feature stacks its own
 // flat discount on top — both fold into one net percentage before rounding.
 export const shopPrice = (

@@ -13,7 +13,7 @@ const GameShellRouter = () => {
   const [screen, setScreen] = useState<Screen>(toMap())
   const { save } = useSave()
 
-  // The blocking pre-map gate (finding G, m3-implementation.html#story-4): a
+  // The blocking pre-map gate (finding G, docs/plans/done/20260705-nbutko-m3-character-sheet.html#story-4): a
   // fresh or freshly-migrated save has no character yet, so every other
   // screen is unreachable until creation completes. Not a Screen variant —
   // there's nowhere to navigate "back" to from here.

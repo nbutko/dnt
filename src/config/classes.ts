@@ -1,4 +1,4 @@
-// The four launch classes (m3-scope.html#classes) — hit die, favored
+// The four launch classes (docs/prds/done/20260705-nbutko-m3-character-sheet.html#classes) — hit die, favored
 // abilities, starting weapon, and a machine-readable feature descriptor.
 // Pure data + a lookup; the mechanics that actually *read* these fields
 // (Second Wind firing, Sneak Attack dice landing, the encounter d20 taking
@@ -16,7 +16,7 @@ export type ClassFeature =
       kind: 'second-wind'
       // Fighter: once per battle, the first time HP crosses this threshold,
       // auto-heal by this fraction of max HP and flash "Second Wind!"
-      // (m3-scope.html#ability-mechanics). Placeholders — Story 13/M5 tune.
+      // (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics). Placeholders — Story 13/M5 tune.
       hpThresholdPct: number
       healPct: number
     }

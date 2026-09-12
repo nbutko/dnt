@@ -5,7 +5,7 @@
 // after FLASH_DURATION_MS) and *where* it sits (via `className`/style on the
 // wrapping absolutely-positioned container); this component only ever draws
 // what it's handed and plays the float+fade animation. No mid-typing input —
-// these are read-only reactions to engine events (m3-scope.html#ability-mechanics).
+// these are read-only reactions to engine events (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics).
 
 export type FlashVariant = 'crit' | 'hit' | 'dodge' | 'second-wind' | 'sneak-attack'
 

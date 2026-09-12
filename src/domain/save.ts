@@ -9,7 +9,7 @@ import type { WeaponId } from './weapons'
 
 export interface SaveData {
   version: 4
-  // null is the "uncreated" marker (finding G, m3-implementation.html) — a
+  // null is the "uncreated" marker (finding G, docs/plans/done/20260705-nbutko-m3-character-sheet.html) — a
   // fresh or freshly-migrated save routes the player through character
   // creation (Story 4) before the world map, gated in GameShell.
   character: Character | null
@@ -31,7 +31,7 @@ export const defaultSave = (): SaveData => ({
   version: 4,
   character: null,
   coins: 0,
-  // A cheap, tier-1 starter every class can swing (m3-scope.html#weapons) —
+  // A cheap, tier-1 starter every class can swing (docs/prds/done/20260705-nbutko-m3-character-sheet.html#weapons) —
   // config/weapons.ts (Story 1) gives it a real die/ability/price; Story 4's
   // character creation may override this per class later.
   equippedWeapon: 'dagger',
@@ -98,11 +98,11 @@ const isV2SaveData = (raw: unknown): raw is SaveDataV2 =>
   typeof (raw as { coins?: unknown }).coins === 'number' &&
   typeof (raw as { skillTree?: unknown }).skillTree === 'object'
 
-// v2 -> v4 (finding A, m3-implementation.html): keeps coins, the tier unlock,
+// v2 -> v4 (finding A, docs/plans/done/20260705-nbutko-m3-character-sheet.html): keeps coins, the tier unlock,
 // the defeated-monster list, and stats; drops the retired skillTree; sets
 // character: null so the player is routed through character creation once
 // (finding G). Rather than invent a character for an existing player,
-// m3-scope.html's "Migration from a v2 save" explicitly calls this
+// docs/prds/done/20260705-nbutko-m3-character-sheet.html's "Migration from a v2 save" explicitly calls this
 // acceptable — this is a solo project with one real player, not a live
 // service. (There's no v2 character to reconcile, so it jumps straight to v4.)
 const migrateV2 = (v2: SaveDataV2): SaveData => ({
@@ -143,6 +143,6 @@ export const migrate = (raw: unknown): SaveData => {
 
 // Dev-only escape hatch: wipes to a fresh v4 save. Not wired to any UI yet —
 // for manual console use (or a future dev-menu story) when a save gets into a
-// state not worth migrating. Per m3-scope.html, wiping is explicitly
+// state not worth migrating. Per docs/prds/done/20260705-nbutko-m3-character-sheet.html, wiping is explicitly
 // acceptable for our single real player.
 export const hardResetSave = (): SaveData => defaultSave()

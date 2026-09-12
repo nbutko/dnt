@@ -44,7 +44,7 @@ interface FlashInstance {
 // dodge is its own event; Second Wind rides on whichever monster event
 // triggered it (engine/battle.ts folds it in rather than using a separate
 // kind, since both can land on the same tick). No mid-typing input — purely
-// a reaction to what the engine already decided (m3-scope.html#ability-mechanics).
+// a reaction to what the engine already decided (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics).
 const buildFlashes = (event: BattleEvent, nextId: () => number): FlashInstance[] => {
   const flashes: FlashInstance[] = []
 

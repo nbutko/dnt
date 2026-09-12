@@ -96,7 +96,7 @@ const critRangeLabel = (critRange: number): string => (critRange >= 20 ? '20' : 
 const weaponBlurb = (weapon: WeaponConfig): string =>
   `d${weapon.die}${weapon.bonusDamage > 0 ? `+${weapon.bonusDamage}` : ''} · ${weapon.ability.toUpperCase()} · crit ${critRangeLabel(weapon.critRange)}`
 
-// The Shop (wireframe t3, m3-scope.html#shop): consumables restock every
+// The Shop (wireframe t3, docs/prds/done/20260705-nbutko-m3-character-sheet.html#shop): consumables restock every
 // visit, weapons are one-off buys. CHA (signed) plus a Bard's Silver Tongue
 // adjust every price through the one shared engine/character/pricing.ts
 // formula, surfaced here as a banner and per-item on PriceTag.

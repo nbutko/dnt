@@ -1,4 +1,4 @@
-// 4d6-drop-lowest ability rolling (m3-scope.html#creation, wireframe turn 1) —
+// 4d6-drop-lowest ability rolling (docs/prds/done/20260705-nbutko-m3-character-sheet.html#creation, wireframe turn 1) —
 // pure and headless so CharacterCreateScreen's "one button = a complete hero"
 // default (and the "Roll again" re-roll) can be exercised and tested without
 // React. Takes the same Rng interface as engine/rng.ts's createRng.
@@ -11,7 +11,7 @@ const DICE_PER_ABILITY = 4
 
 // The wireframe's card order (STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE,
 // WISDOM, CHARISMA) — every ability is rolled straight into its own slot, no
-// best-to-worst reassignment (m3-implementation.html Story 4: "a sensible
+// best-to-worst reassignment (docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 4: "a sensible
 // standard-array-style assignment" — straight rolls are the simplest one, and
 // match the wireframe's un-sorted example scores).
 export const ABILITY_ORDER: readonly Ability[] = ['str', 'dex', 'con', 'int', 'wis', 'cha']

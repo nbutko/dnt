@@ -41,7 +41,7 @@ const ITEM_ICON: Record<ItemId, string> = {
 }
 
 // The real chest's (or a boss's guaranteed) gear/consumable drop
-// (m3-scope.html#loot, Story 12) — resolved to an icon + name here rather
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot, Story 12) — resolved to an icon + name here rather
 // than handed pre-formatted, so the modal is the one place that knows how to
 // present a loot drop.
 export interface RewardLoot {
@@ -77,7 +77,7 @@ interface RewardModalProps {
   xpTotal: number
   coinsTotal: number
   // A real chest's (or a boss's guaranteed) gear/consumable drop — undefined
-  // for a plain kill, or a chest that rolled a coin hoard (m3-scope.html#loot).
+  // for a plain kill, or a chest that rolled a coin hoard (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot).
   loot?: RewardLoot
   onConfirm: () => void
 }

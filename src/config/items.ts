@@ -1,4 +1,4 @@
-// The ten launch consumables (m3-scope.html#items) — effect key, duration,
+// The ten launch consumables (docs/prds/done/20260705-nbutko-m3-character-sheet.html#items) — effect key, duration,
 // tier, price. Pure data + a lookup, matching domain/items.ts's Consumable
 // shape exactly (plus the effect payload the scope's item table needs to be
 // machine-readable for Story 9's Bag/buff wiring).
@@ -34,7 +34,7 @@ export interface ItemConfig extends Consumable {
   fights?: number
 }
 
-// Prices/magnitudes are first-pass placeholders (m3-scope.html#open
+// Prices/magnitudes are first-pass placeholders (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open
 // "Weapon/item pricing" is an explicit open question) — Story 13/M5
 // rebalances these, not this story. Listed in defaultSave()'s
 // inventory.consumables key order (domain/save.ts).
@@ -124,7 +124,7 @@ export const ITEMS: readonly ItemConfig[] = [
     effect: { key: 'heroism', bonusHpPct: 0.2, fumbleImmune: true },
   },
   // Story 3: the one new item this story adds — a "rest of dungeon" armor
-  // stand-in (m3-scope.html's item table has no armor slot; a full
+  // stand-in (docs/prds/done/20260705-nbutko-m3-character-sheet.html's item table has no armor slot; a full
   // persistent equip slot + Armory-style UI would be a whole new
   // subsystem, out of scope for this story per CLAUDE.md's "favor simple" —
   // see the implementation report for what's deferred). Smaller than a

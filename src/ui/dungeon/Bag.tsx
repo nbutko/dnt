@@ -100,7 +100,7 @@ interface BagProps {
 
 // The expandable drawer over the dungeon map (wireframe turn 6a): a 🎒 Bag
 // button that expands into the owned-consumables list. Using an item is one
-// dispatch to EACH store (m3-scope.html#items, finding E) — decrement the
+// dispatch to EACH store (docs/prds/done/20260705-nbutko-m3-character-sheet.html#items, finding E) — decrement the
 // owned count in the save, and either add a buff or restore hearts in the
 // ephemeral run. Deliberately collapsed by default; the caller (DungeonScreen)
 // closes it again on node select so it can't be left open mid-fight-prep.

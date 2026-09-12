@@ -85,7 +85,7 @@ describe('grantsForLevel — ASI cadence', () => {
   })
 })
 
-describe('grantsForLevel — level-1 HP targets (m3-scope.html#leveling)', () => {
+describe('grantsForLevel — level-1 HP targets (docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling)', () => {
   it('a d10 Fighter lands at 40 HP', () => {
     expect(grantsForLevel('fighter', 1, 10).hpAdded).toBe(40)
   })

@@ -1,4 +1,4 @@
-// The encounter d20 (m3-scope.html#encounter-roll, wireframe turn 4) — rolled
+// The encounter d20 (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll, wireframe turn 4) — rolled
 // once, before the clock starts, to pick which of the dungeon's three
 // prompt-difficulty bands the player types this fight. Pure + headless, like
 // engine/character/ability-roll.ts's 4d6 roll: takes the project's seeded Rng
@@ -32,7 +32,7 @@ export interface EncounterRoll {
   // fumble/inspired ever key off, so no bonus can manufacture or erase one.
   natural: number
   // natural + mods.encounterBonus. Story 3 already folds proficiency into
-  // encounterBonus (m3-implementation.html seam B), so it is NOT re-added
+  // encounterBonus (docs/plans/done/20260705-nbutko-m3-character-sheet.html seam B), so it is NOT re-added
   // here — double-counting it would silently inflate every band roll.
   total: number
   band: EncounterBand

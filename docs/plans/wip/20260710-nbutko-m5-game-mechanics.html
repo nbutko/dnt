@@ -152,7 +152,7 @@
     state — dies with the run, like everything else there).</li>
     <li><code>ui/dungeon/DungeonScreen.tsx</code>: fold the attempt count into the encounter seed —
     <code>seedFromString(run.graph.seed, revealId, ENCOUNTER_ROLL_SEED_SALT + attempts)</code> — so each
-    <em>commit</em> is a fresh, still-deterministic roll (m3-scope: "rolled the moment you commit"), while
+    <em>commit</em> is a fresh, still-deterministic roll (the M3 PRD, <code>docs/prds/done/20260705-nbutko-m3-character-sheet.html</code>: "rolled the moment you commit"), while
     within one reveal the roll stays frozen exactly as today.</li>
     <li>Test: same node, lose, re-select → different rng stream; same attempt re-rendered → identical roll.</li>
   </ul>

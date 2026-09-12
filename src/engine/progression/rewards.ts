@@ -52,7 +52,7 @@ export const rewardForChest = (tier: number, cfg: RewardConfig): RewardAmount =>
 })
 
 // The boss's coin/xp payout — bossMult normals of XP (via rewardForKill), with
-// bossCoinMult layered onto its coins on top (m3-scope.html#loot "Bosses add a
+// bossCoinMult layered onto its coins on top (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot "Bosses add a
 // larger payout").
 export const rewardForBossKill = (tier: number, cfg: RewardConfig): RewardAmount => {
   const base = rewardForKill(tier, 'boss', cfg)
@@ -60,7 +60,7 @@ export const rewardForBossKill = (tier: number, cfg: RewardConfig): RewardAmount
 }
 
 // A tier-appropriate pool never offers gear above the dungeon's own tier
-// (m3-implementation.html Story 12: "no tier-11 greataxe from a tier-1
+// (docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 12: "no tier-11 greataxe from a tier-1
 // chest") — every launch weapon/item is tier 1-3 (config/weapons.ts,
 // config/items.ts), so this only actually restricts anything for tiers 1-2;
 // every dungeon tier >= 3 draws from the full pool. Always non-empty since
@@ -70,7 +70,7 @@ const itemPoolForTier = (tier: number) => ITEMS.filter((item) => item.tier <= ti
 
 const pick = <T,>(pool: readonly T[], rng: Rng): T => pool[Math.floor(rng.next() * pool.length)]
 
-// The boss's guaranteed gear drop (m3-scope.html#loot: "can guarantee a gear
+// The boss's guaranteed gear drop (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot: "can guarantee a gear
 // drop") — always a weapon, drawn from the toughest tier bracket the
 // dungeon's own tier unlocks (never a starter dagger from a hard-won boss),
 // so a first clear's guaranteed gear actually feels like an upgrade. Still
@@ -82,7 +82,7 @@ export const rewardForBossGear = (tier: number, rng: Rng): WeaponId => {
   return pick(topBracket, rng).id
 }
 
-// The real chest's roll (m3-scope.html#loot): a weapon, a consumable, or a
+// The real chest's roll (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot): a weapon, a consumable, or a
 // coin hoard — the "which chest is real?" gamble now has three different
 // payoffs instead of one. Pure + seeded (same rng discipline as
 // engine/dice/encounter-roll.ts) so a given chest's drop is reproducible for

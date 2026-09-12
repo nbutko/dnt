@@ -112,7 +112,7 @@ const rowBoxShadow = (isEquipped: boolean, isSelected: boolean): string | undefi
 // The Inn's Armory tab (wireframe turn 7a): the owned-weapon list on the left
 // (equipped badge, click-to-select) and a compare-and-equip panel on the
 // right. Equip is only reachable here — the dungeon UI never dispatches
-// equipWeapon, so a weapon is a run-long commitment (m3-scope.html#weapons).
+// equipWeapon, so a weapon is a run-long commitment (docs/prds/done/20260705-nbutko-m3-character-sheet.html#weapons).
 const Armory = () => {
   const { save, dispatch } = useSave()
   const character = save.character!

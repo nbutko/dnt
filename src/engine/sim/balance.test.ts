@@ -70,9 +70,9 @@ describe('balance harness', () => {
 // re-runs the harness with a baseline character (a Fighter's starting
 // longsword: d8, STR +2) and checks config/abilities.ts's damageScale keeps
 // hits-to-kill in the same multi-prompt band the pre-Story-7 flat baseDamage
-// produced (m3-scope.html#open's "HP-scale decision": Gray Ooze/slime ~2.5,
+// produced (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open's "HP-scale decision": Gray Ooze/slime ~2.5,
 // climbing toward the Grassland boss's ~7 — measured pre- and post-dice by
-// the same harness, see m3-implementation.html Story 7's report). Bands are
+// the same harness, see docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 7's report). Bands are
 // generous (not pinned to a single number) since Story 13 owns the real tune.
 describe('dice-era hits-to-kill (Story 7)', () => {
   const BASELINE_FIGHTER = { wpm: 20, accuracy: 0.9, weaponDie: 8, weaponAbilityMod: 2 }
@@ -97,7 +97,7 @@ describe('dice-era hits-to-kill (Story 7)', () => {
   })
 })
 
-// Story 13 (m3-implementation.html#story-13) — the "theory" half: cheap,
+// Story 13 (docs/plans/done/20260705-nbutko-m3-character-sheet.html#story-13) — the "theory" half: cheap,
 // exact checks that catch bugs the Monte-Carlo sim would hide (a formula
 // error that still averages out plausible over a few hundred battles, say).
 // Each one is independently re-derived from the docs/spec, not by calling the
@@ -117,7 +117,7 @@ describe('Story 13 — closed-form theory checks', () => {
   })
 
   it('expected baseline hit damage ≈ combat.baseDamage (10) — pins damageScale', () => {
-    // A Fighter's starting longsword (d8, STR +2 — m3-scope.html#classes),
+    // A Fighter's starting longsword (d8, STR +2 — docs/prds/done/20260705-nbutko-m3-character-sheet.html#classes),
     // at reference length (lengthFactor 1) and a same-instant submit
     // (speedBonus 1), no crit — isolates (dieAvg + mod) * damageScale, the
     // exact quantity config/abilities.ts's damageScale comment calibrates.
@@ -175,7 +175,7 @@ describe('Story 13 — closed-form theory checks', () => {
     expect(critDiceTotal / critCount).toBeCloseTo(2 * 3.5, 0)
   })
 
-  it('HP-per-level: a level-1 d10 Fighter lands near 40, a d6 Wizard a bit under (m3-scope.html#open)', () => {
+  it('HP-per-level: a level-1 d10 Fighter lands near 40, a d6 Wizard a bit under (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open)', () => {
     const fighterL1 = grantsForLevel('fighter', 1, 10)
     const wizardL1 = grantsForLevel('wizard', 1, 10)
     expect(fighterL1.hpAdded).toBe(10 * HP_SCALE) // 40
@@ -193,7 +193,7 @@ describe('Story 13 — closed-form theory checks', () => {
     // A level-1 bonus (+2) vs. a level-20 bonus (+6) should roll into the
     // 'high' band noticeably more often, holding everything else fixed —
     // "simply leveling up makes your dice land in tougher-but-stronger
-    // prompt bands more often" (m3-scope.html#leveling).
+    // prompt bands more often" (docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling).
     const highBandRate = (encounterBonus: number): number => {
       const rng = createRng(4)
       const N = 5000
@@ -334,7 +334,7 @@ describe('weaponForTierLevel — the extended ladder (Story 3)', () => {
     let prevBonus = -Infinity
     for (const level of levels) {
       const weapon = weaponForTierLevel(cls, level)
-      // Bard has no dagger-tier starter (m3-scope.html#classes), so its
+      // Bard has no dagger-tier starter (docs/prds/done/20260705-nbutko-m3-character-sheet.html#classes), so its
       // level-1 weapon is already the level-5 rapier — die/bonus can tie,
       // never regress.
       expect(weapon.die).toBeGreaterThanOrEqual(prevDie)

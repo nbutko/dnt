@@ -16,7 +16,7 @@ import ModalOverlay from '../common/ModalOverlay'
 // game settles on the same beat.
 const ROLL_ANIMATION_MS = 500
 
-// Everything the marquee d20 (m3-scope.html#encounter-roll, wireframe turn 4)
+// Everything the marquee d20 (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll, wireframe turn 4)
 // needs to roll and grade itself. Optional on EncounterModal: when omitted the
 // modal falls back to its pre-Story-6 plain reveal-and-begin behavior (no
 // die), so the mimic/chokepoint reveal call in DungeonScreen.tsx keeps
@@ -201,7 +201,7 @@ const EncounterDiceView = ({ roll, rolling, dice, activeBand, gate }: EncounterD
 // commits, so it never leaks which chest is the mimic or what guards a chokepoint
 // beforehand. Non-dismissable: the sole action is Begin Battle.
 //
-// M3 Story 6 (m3-scope.html#encounter-roll, wireframe turn 4) turns this same
+// M3 Story 6 (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll, wireframe turn 4) turns this same
 // modal into the marquee encounter d20: pass `dice` and it rolls (and tumbles,
 // reusing Die.tsx/die-tumble) the total that picks this fight's prompt band,
 // shows the breakdown + band ladder, and offers Reroll before Begin Battle

@@ -52,9 +52,9 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   the encounter d20, chest premonitions, item &amp; weapon handling, and the new in-battle "juice" moments.</p>
   <p class="wf-meta">Same palette and type tokens as the <a href="20260704-nbutko-core-screens.dc.html">M0 wireframes</a> and the
   <a href="../../visual-spec.html">visual spec</a> — every screen is CSS shapes, no images. Hand-authored (not a Claude Design
-  canvas), but built to drop into the same review flow. Read against the <a href="../../m3-scope.html">M3 scope doc</a>;
+  canvas), but built to drop into the same review flow. Read against the <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html">M3 scope doc</a>;
   section anchors below link back to it. Numbers shown (scores, prices, DCs) are illustrative placeholders — the real
-  values are <a href="../../m3-scope.html#open">M5 tuning knobs</a>.</p>
+  values are <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#open">M5 tuning knobs</a>.</p>
 </header>
 
 <p style="margin:0 48px 20px;padding:10px 16px;border:1px solid #7a5a22;border-radius:6px;background:#1c1608;color:#e8c766;font:600 12px/1.5 system-ui,sans-serif">DONE — shipped as part of M3 (2026-07-05); the as-shipped screens are documented in <a href="../../screens.html" style="color:#c9a227">screens.html</a> and <a href="../../visual-spec.html" style="color:#c9a227">visual-spec.html</a>. This page is the original, frozen proposal.</p>
@@ -65,7 +65,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t1">1</a>
   <div><span class="dv-tname">Character creation — roll a hero on an empty save</span>
   <p class="dv-tsub">The one-screen flow that runs when <a href="../../architecture.html#persistence">IndexedDB</a> holds no
-  valid save (<a href="../../m3-scope.html#creation">M3 scope §creation</a>). Every field is pre-filled with a valid
+  valid save (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#creation">M3 scope §creation</a>). Every field is pre-filled with a valid
   random default, so a kid can mash one button and get a complete hero — but each piece is his to change. Rolled
   stats (<code>4d6-drop-lowest</code>) with one reroll, not point-buy.</p></div>
 </div>
@@ -227,7 +227,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
 <div class="dv-thd">
   <a class="dv-tid" href="#t2">2</a>
   <div><span class="dv-tname">The Inn, reworked — rest + character sheet (no more skill tree)</span>
-  <p class="dv-tsub">The skill tree is <a href="../../m3-scope.html#leveling">retired</a>. The Inn is now the D&amp;D long rest
+  <p class="dv-tsub">The skill tree is <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#leveling">retired</a>. The Inn is now the D&amp;D long rest
   (restore hearts + HP) plus the character sheet where you review stats and spend any pending Ability Score
   Improvements. XP is a running total, not a currency. Compare against the old
   <a href="20260704-nbutko-core-screens.dc.html#4a">skill-tree mock (4a)</a> this replaces.</p></div>
@@ -391,8 +391,8 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
 <div class="dv-thd">
   <a class="dv-tid" href="#t3">3</a>
   <div><span class="dv-tname">The Shop — coins finally get a sink</span>
-  <p class="dv-tsub">The Shop has sat locked on the world map since M2. M3 opens it (<a href="../../m3-scope.html#shop">scope §shop</a>):
-  it sells <a href="../../m3-scope.html#items">consumables</a> (restock every visit) and <a href="../../m3-scope.html#weapons">weapons</a>
+  <p class="dv-tsub">The Shop has sat locked on the world map since M2. M3 opens it (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#shop">scope §shop</a>):
+  it sells <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#items">consumables</a> (restock every visit) and <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#weapons">weapons</a>
   (one-off buys). Your CHA modifier discounts every price — surfaced as a banner so a low CHA is a felt tax, not a hidden one.</p></div>
 </div>
 <div class="dv-opts">
@@ -506,7 +506,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t4">4</a>
   <div><span class="dv-tname">The encounter d20 — rolled once, before you type</span>
   <p class="dv-tsub">The marquee moment. When you commit to a fight, the encounter reveal modal rolls one dramatic d20
-  (<a href="../../m3-scope.html#encounter-roll">scope §encounter-roll</a>). The total picks which of the dungeon's three
+  (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll">scope §encounter-roll</a>). The total picks which of the dungeon's three
   prompt-difficulty bands you'll type; a natural 1 fumbles, a natural 20 inspires. It happens <em>before</em> the clock
   starts, so it can be as big as we like.</p></div>
 </div>
@@ -779,7 +779,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t5">5</a>
   <div><span class="dv-tname">Premonitions — sensing mimics &amp; reading a chokepoint</span>
   <p class="dv-tsub">A hidden <code>d20 + WIS + proficiency</code> vs the dungeon's mimic deception DC
-  (<a href="../../m3-scope.html#mimic-sense">scope §mimic-sense</a>). <strong>Only a mimic ever trips it</strong> — a real
+  (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense">scope §mimic-sense</a>). <strong>Only a mimic ever trips it</strong> — a real
   chest never does — so a warning is a trustworthy "this one's a mimic," while no warning stays ambiguous. WIS also gives a
   soft threat read on hidden chokepoints. The check itself stays hidden; only a success surfaces.</p></div>
 </div>
@@ -862,7 +862,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t6">6</a>
   <div><span class="dv-tname">Item consumption — from the dungeon map, before a fight</span>
   <p class="dv-tsub">Hard rule from the brief: <strong>items are never used during a round — a round is pure typing</strong>
-  (<a href="../../m3-scope.html#items">scope §items</a>). You open the bag from the dungeon map, spend a consumable, and its
+  (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#items">scope §items</a>). You open the bag from the dungeon map, spend a consumable, and its
   buff applies to your next fight (or the rest of the run). All active buffs clear when the run ends. Owned items persist;
   only the <em>buff</em> is per-dungeon. <strong>Design call:</strong> the bag is a <em>drawer you expand from a map
   button</em>, not an always-on panel — the branching graph needs the room, and prepping is a deliberate beat, not
@@ -955,7 +955,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t7">7</a>
   <div><span class="dv-tname">Weapon assignment — the Inn's Armory (between dungeons only)</span>
   <p class="dv-tsub">Unlike consumables, a weapon stays with you across dungeons until you swap it
-  (<a href="../../m3-scope.html#weapons">scope §weapons</a>). <strong>Design call:</strong> you equip <em>only at the Inn</em>,
+  (<a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#weapons">scope §weapons</a>). <strong>Design call:</strong> you equip <em>only at the Inn</em>,
   between runs — never mid-dungeon — so gear choice is a commitment you live with for the whole run, not a per-fight
   fiddle. It's the Armory tab of the reworked <a href="#t2">Inn (turn 2)</a>. A weapon never adds an in-battle action; it
   reshapes the math via its die, governing ability, and crit range. Selecting one shows a side-by-side compare.</p></div>
@@ -1063,7 +1063,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
   <a class="dv-tid" href="#t8">8</a>
   <div><span class="dv-tname">What I'd add — the in-battle "juice" moments (the forgotten screen)</span>
   <p class="dv-tsub">The one M3 surface not covered above: the battle screen itself. It barely changes structurally, but M3 layers
-  on a HUD strip (equipped weapon + active buffs) and the reactive flashes the <a href="../../m3-scope.html#ability-mechanics">no-mid-typing rule</a>
+  on a HUD strip (equipped weapon + active buffs) and the reactive flashes the <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics">no-mid-typing rule</a>
   demands — dodge, Second Wind, the per-hit weapon-die pop, crits. Built on the <a href="20260704-nbutko-core-screens.dc.html#2a">M0 vertical-duel layout (2a)</a>;
   annotations mark only what's new.</p></div>
 </div>
@@ -1139,7 +1139,7 @@ body{margin:0;background:#0d0906;font-family:system-ui,sans-serif}
 </section>
 
 <footer style="padding:32px 48px 60px;font:12px/1.6 system-ui,sans-serif;color:#6a5a3a">
-  Hand-authored M3 wireframes · read alongside the <a href="../../m3-scope.html" style="color:#c9a227">M3 scope doc</a> ·
+  Hand-authored M3 wireframes · read alongside the <a href="../../prds/done/20260705-nbutko-m3-character-sheet.html" style="color:#c9a227">M3 scope doc</a> ·
   all numbers are placeholders for the <a href="../../roadmap.html#m5" style="color:#c9a227">M5 tuning pass</a>.
 </footer>
 

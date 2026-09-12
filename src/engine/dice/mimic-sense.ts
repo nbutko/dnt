@@ -1,4 +1,4 @@
-// WIS mimic sense (m3-scope.html#mimic-sense, wireframe turn 5) — a HIDDEN
+// WIS mimic sense (docs/prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense, wireframe turn 5) — a HIDDEN
 // d20 + WIS mod + proficiency check rolled the instant a chest node is
 // selected, graded against that dungeon tier's mimic deception DC
 // (config/abilities.ts's mimicDeceptionDcByTier). Pure + headless, same
@@ -35,7 +35,7 @@ const rollD20 = (rng: Rng): number => Math.floor(rng.next() * D20_SIDES) + 1
 // `isMimic` is threaded in (rather than assumed true because only mimic
 // chests are ever supposed to call this) so the "a real chest never warns"
 // rule is a hard invariant of the function itself, not a promise every call
-// site has to keep — see m3-scope.html's callout: "Only a mimic can ever
+// site has to keep — see docs/prds/done/20260705-nbutko-m3-character-sheet.html's callout: "Only a mimic can ever
 // trigger it — a real chest never does."
 export const rollMimicSense = (
   isMimic: boolean,

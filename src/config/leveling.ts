@@ -1,17 +1,17 @@
-// D&D-shaped leveling data (m3-scope.html#leveling) — the XP-to-level table,
+// D&D-shaped leveling data (docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling) — the XP-to-level table,
 // the ASI cadence, the proficiency ramp, and the per-level HP scale. Pure
 // data + trivial index lookups; engine/character/leveling.ts (Story 2) is
 // where levelForXp/grantsForLevel/applyAsi actually turn this into a
 // character's derived numbers.
 
-// 5e's own XP table (m3-scope.html: "0, 300, 900, 2700, 6500, 14000, … as
+// 5e's own XP table (docs/prds/done/20260705-nbutko-m3-character-sheet.html: "0, 300, 900, 2700, 6500, 14000, … as
 // the starting curve") — index 0 is level 1's threshold (0 XP). M5 kept these
 // real D&D thresholds deliberately: rather than reshape the level curve, the
 // per-dungeon reward curve (config/rewards.ts's xp.normalPerDungeon) was tuned
 // to them — ~1.3 levels of progress per dungeon, hand-adjusted so per-kill XP
 // stays monotonic across the table's own non-uniform deltas (a naive
 // interpolation dips at the small L11→L12 gap). That closed the "XP pacing"
-// M5 knob (m3-scope.html#open) without moving the thresholds.
+// M5 knob (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open) without moving the thresholds.
 export const XP_THRESHOLDS: readonly number[] = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000,
   265000, 305000, 355000,
@@ -22,14 +22,14 @@ export const XP_THRESHOLDS: readonly number[] = [
 export const ASI_LEVELS: readonly number[] = [4, 8, 12, 16, 19]
 
 // The classic 5e proficiency ramp (+2…+6), added to every encounter d20
-// (m3-scope.html#leveling) — index 0 is level 1's bonus. Same length as
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#leveling) — index 0 is level 1's bonus. Same length as
 // XP_THRESHOLDS so every level the XP table covers has a bonus.
 export const PROFICIENCY_BY_LEVEL: readonly number[] = [
   2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6,
 ]
 
 // Level-1 HP = class hit die × HP_SCALE, landing a d10 Fighter near 40 (today's
-// combat.playerMaxHp) and a d6 Wizard "a bit under" — m3-scope.html#open's
+// combat.playerMaxHp) and a d6 Wizard "a bit under" — docs/prds/done/20260705-nbutko-m3-character-sheet.html#open's
 // HP-scale decision, exact call: 10 × 4 = 40, 6 × 4 = 24. Every level after
 // adds the class hit die's average roll (rounded up) × HP_SCALE + CON mod ×
 // HP_SCALE — that formula itself is Story 2's engine/character/leveling.ts,

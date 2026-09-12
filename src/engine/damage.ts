@@ -97,7 +97,7 @@ export const rollIsCrit = (combat: CombatConfig, rng: Rng, options: CritRuleOpti
 // (m2-scope.html#wordsmith-gate, now INT/band-driven instead of Wordsmith):
 // 1 at/above the target tier, 0.56 at 6/8, 0.25 at 4/8.
 //
-// M3 Story 6 (m3-implementation.html finding D) reinterprets `targetTier`:
+// M3 Story 6 (docs/plans/done/20260705-nbutko-m3-character-sheet.html finding D) reinterprets `targetTier`:
 // it used to be the monster's own textTier, but the player's served tier now
 // comes from the encounter d20's band (engine/dice/band.ts's
 // bandToServedTier), not the monster — so the gate compares against that
@@ -155,7 +155,7 @@ export interface ComputeDamageParams {
   // replacing) the extra dice critCount already rolls. The gotcha's third
   // dead field.
   critDamageMult?: number
-  // A fumble also caps damage at this flat multiplier (m3-scope.html#open:
+  // A fumble also caps damage at this flat multiplier (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open:
   // "the fumble/inspiration magnitudes") — 1 (no cap) outside a fumble.
   fumbleDamageMultiplier?: number
   // Rogue Sneak Attack (Story 11, PlayerModifiers.sneakAttackDice): how many
@@ -172,7 +172,7 @@ export interface ComputeDamageParams {
 // Base hit = (sum of `critCount` weapon-die rolls on a crit, else 1 roll,
 // + weaponAbilityMod) x damageScale x (critDamageMult, on a crit only) —
 // replacing the old flat baseDamage x criticalDamageMultiplier
-// (m3-implementation.html Story 7, game-design.html#damage). Rolling extra
+// (docs/plans/done/20260705-nbutko-m3-character-sheet.html Story 7, game-design.html#damage). Rolling extra
 // dice on a crit is the D&D-correct reading of "a crit rolls the die twice"
 // (thrice for arcane): roll `critCount` dice and sum them, rather than
 // rolling once and doubling the result. critDamageMult (Story 3, Oil of
@@ -206,7 +206,7 @@ export const computeDamage = (params: ComputeDamageParams): DamageResult => {
   const isCrit = rollIsCrit(combat, rng, { forceCrit, noCrits, critChanceBonus: totalCritChanceBonus })
   const rollCount = isCrit ? critCount : 1
   const weaponDiceRolled = Array.from({ length: rollCount }, () => rollDie(rng, weaponDie))
-  // Sneak Attack (m3-scope.html#ability-mechanics): "the first landed hit
+  // Sneak Attack (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics): "the first landed hit
   // each battle — and every crit — adds +Nd6." Rolled as its own d6s (not
   // the weapon's die) and folded into the same swing's total before scaling,
   // so it benefits from lengthFactor/speedBonus/gate like the rest of the hit.

@@ -173,7 +173,7 @@ export const createBattle = (config: BattleConfig): Battle => {
           timeLimitMs: monsterTyperState.timeLimitMs,
           combat,
         })
-        // DEX dodge (m3-scope.html#ability-mechanics): negate the hit
+        // DEX dodge (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics): negate the hit
         // outright, no HP loss — a flash-only reaction, never a prompt.
         const dodged = dodgeChance > 0 && rng.next() < dodgeChance
         // Story 3's persistent defense gear: a flat fraction cut off every

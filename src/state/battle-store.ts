@@ -16,7 +16,7 @@ export interface BattleStore {
   submit(input: string): void
 }
 
-// CHA intimidate / Bard debuff (m3-scope.html#ability-mechanics): cut the
+// CHA intimidate / Bard debuff (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics): cut the
 // monster's effective wpm once, at fight start — baked into the Monster
 // object handed to createBattle, so every prompt this fight reads the
 // already-debuffed wpm without re-applying it per prompt. Floored at 10% of
@@ -54,7 +54,7 @@ export interface FightEncounter {
 export interface ResolvedFightTier {
   servedTier: TextTier
   targetTier: TextTier
-  // This fight's crit rule (m3-scope.html#encounter-roll): a fumble (natural
+  // This fight's crit rule (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll): a fumble (natural
   // 1) suppresses crits outright and caps every hit at fumbleDamageMultiplier;
   // an inspired nat-20 (or any other guaranteedFirstCrit source already on
   // PlayerModifiers) forces the first landed hit to crit.
@@ -63,7 +63,7 @@ export interface ResolvedFightTier {
   guaranteedFirstCrit: boolean
 }
 
-// The fumble's flat damage cap (m3-scope.html#encounter-roll: "damage x0.75
+// The fumble's flat damage cap (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll: "damage x0.75
 // this fight") — its own named constant since it's referenced from both the
 // resolver below and its doc comment.
 const FUMBLE_DAMAGE_MULTIPLIER = 0.75

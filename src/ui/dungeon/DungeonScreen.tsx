@@ -75,7 +75,7 @@ const roleForNode = (node: DungeonNode): MonsterRole => {
 // committed, feedback #13), the waypoint/approach/boss chokepoints
 // (round-2 #C), AND, since Story 12 (finding C/D), a plain fight circle too:
 // every fight now rolls the encounter d20 before the clock starts
-// (m3-scope.html#encounter-roll: "the moment you commit to a fight..."), not
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#encounter-roll: "the moment you commit to a fight..."), not
 // just the previously-hidden ones. A plain fight's monster was already
 // visible on the map, so its reveal copy skips the "you encountered" beat —
 // see revealCopy's 'fight' case below. (A real chest is intercepted earlier —
@@ -139,7 +139,7 @@ interface RewardView {
   xpTotal: number
   coinsTotal: number
   // A real chest's (or a boss's guaranteed) gear/consumable drop
-  // (m3-scope.html#loot, Story 12) — undefined for a plain kill or a
+  // (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot, Story 12) — undefined for a plain kill or a
   // coins-rolling chest.
   loot?: RewardLoot
 }
@@ -236,7 +236,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   // same horizontal scroll offset instead of snapping back to 0 (feedback #7).
   const graphScrollLeft = useRef(0)
 
-  // WIS mimic sense (m3-scope.html#mimic-sense, wireframe turn 5): a HIDDEN
+  // WIS mimic sense (docs/prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense, wireframe turn 5): a HIDDEN
   // d20 + WIS + proficiency roll fired the instant a chest is selected — its
   // own rng stream, seeded off the run's graph so it's still reproducible
   // for a given dungeon, but never shares draws with the graph generator or
@@ -254,7 +254,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     }
   }, [character])
   // Once a chest is sensed as a mimic (Back away or Open anyway), the
-  // knowledge is permanent for that chest (m3-scope.html#mimic-sense) — a
+  // knowledge is permanent for that chest (docs/prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense) — a
   // re-select skips rolling again and goes straight to the warning.
   const [knownMimicIds, setKnownMimicIds] = useState<Set<string>>(new Set())
   // Holds the chest node id currently showing the "teeth on edge" warning
@@ -283,7 +283,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
   const [frozenEncounter, setFrozenEncounter] = useState<EncounterRoll | null>(null)
 
   // Everything the reveal modal's `dice` prop needs to roll and grade the
-  // encounter d20 for whichever node is currently revealing (m3-scope.html
+  // encounter d20 for whichever node is currently revealing (docs/prds/done/20260705-nbutko-m3-character-sheet.html
   // #encounter-roll) — its own rng stream, seeded off the run's graph seed +
   // the specific node id (engine/rng.ts's seedFromString), so it's
   // reproducible per node without sharing draws with the graph generator, the
@@ -332,7 +332,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
     let loot: RewardLoot | undefined
 
     if (node.kind === 'chest' && node.isRealChest) {
-      // The real chest's own rng stream (m3-scope.html#loot) — a weapon, a
+      // The real chest's own rng stream (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot) — a weapon, a
       // consumable, or a coin hoard; never shared with the mimic-sense,
       // graph, or battle streams.
       const lootRng = createRng(seedFromString(run.graph.seed, node.id, CHEST_LOOT_SEED_SALT))
@@ -350,7 +350,7 @@ const DungeonRunView = ({ tier, onNavigate }: DungeonRunViewProps) => {
       }
     } else if (node.kind === 'boss') {
       // Bosses add a larger payout AND guarantee gear on top of it
-      // (m3-scope.html#loot) — its own rng stream for the gear pick.
+      // (docs/prds/done/20260705-nbutko-m3-character-sheet.html#loot) — its own rng stream for the gear pick.
       amount = rewardForBossKill(tier, rewardsConfig)
       const gearRng = createRng(seedFromString(run.graph.seed, node.id, BOSS_GEAR_SEED_SALT))
       const weaponId = rewardForBossGear(tier, gearRng)

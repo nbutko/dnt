@@ -2,12 +2,12 @@
 // worth in each formula. engine/character/modifiers.ts (Story 3) is the only
 // consumer. Corralling every one of these numbers here means the M5 tuning
 // pass (roadmap.html#m5) is a values edit, never a code change
-// (m3-implementation.html "why config/abilities.ts is its own file, empty of
+// (docs/plans/done/20260705-nbutko-m3-character-sheet.html "why config/abilities.ts is its own file, empty of
 // logic"). Every value below is a Story 13 placeholder, not a feel decision —
-// see m3-scope.html#open "Per-point magnitudes."
+// see docs/prds/done/20260705-nbutko-m3-character-sheet.html#open "Per-point magnitudes."
 
 export interface AbilitiesConfig {
-  // STR primary (m3-scope.html#abilities): + melee/finesse attack damage, as
+  // STR primary (docs/prds/done/20260705-nbutko-m3-character-sheet.html#abilities): + melee/finesse attack damage, as
   // a fraction of base hit damage, per point of STR modifier.
   strDamagePctPerMod: number
   // DEX primary: + crit chance per point of DEX modifier (added to the
@@ -32,10 +32,10 @@ export interface AbilitiesConfig {
   // the dungeon's hardest tier. Placeholder magnitude, sim-tuned.
   intEncounterBonusPerMod: number
   // CHA primary: Shop price discount (%), per point of CHA modifier —
-  // signed, so a negative CHA marks prices up (m3-scope.html#shop).
+  // signed, so a negative CHA marks prices up (docs/prds/done/20260705-nbutko-m3-character-sheet.html#shop).
   chaShopDiscountPctPerMod: number
   // CHA flavor: cut to the monster's effective wpm, per point of CHA
-  // modifier (m3-scope.html#ability-mechanics).
+  // modifier (docs/prds/done/20260705-nbutko-m3-character-sheet.html#ability-mechanics).
   chaIntimidateWpmCutPctPerMod: number
   // CHA flavor, Story 2: "charm" — cut to the monster's effective *accuracy*
   // per point of CHA modifier, distinct from the wpm cut above. Charm makes
@@ -46,13 +46,13 @@ export interface AbilitiesConfig {
   // slow-typing, over-leveled "behind" corner winnable once htk is restored.
   chaCharmAccuracyCutPctPerMod: number
   // Mimic-sense deception DC, indexed by dungeon tier (index 0 = tier 1) —
-  // climbs so deeper mimics hide better (m3-scope.html#mimic-sense).
+  // climbs so deeper mimics hide better (docs/prds/done/20260705-nbutko-m3-character-sheet.html#mimic-sense).
   mimicDeceptionDcByTier: readonly number[]
   // Multiplies (dice-total + weaponAbilityMod) so a baseline character's
   // hits-to-kill (engine/sim/balance.ts's `hitsToKill`) lands near the
   // pre-Story-7 flat-baseDamage band. Landed at 1.6 against a Fighter's
   // starting longsword (d8, STR +2) vs. the Grassland roster — see
-  // balance.test.ts's "dice-era hits-to-kill" block and m3-implementation.html
+  // balance.test.ts's "dice-era hits-to-kill" block and docs/plans/done/20260705-nbutko-m3-character-sheet.html
   // Story 7's report for the arithmetic. Story 13's full theory pass owns the
   // real tuning; this is a placeholder landed by measurement, not derivation.
   damageScale: number

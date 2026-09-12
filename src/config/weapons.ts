@@ -1,4 +1,4 @@
-// The eight launch weapons (m3-scope.html#weapons) — die, governing ability,
+// The eight launch weapons (docs/prds/done/20260705-nbutko-m3-character-sheet.html#weapons) — die, governing ability,
 // crit range, tier, price, and the greataxe's time-budget penalty. Pure
 // data + a lookup, matching domain/weapons.ts's Weapon shape exactly (plus
 // the one extra field the scope's weapon table needs).
@@ -8,13 +8,13 @@ import type { Weapon, WeaponId } from '../domain/weapons'
 export interface WeaponConfig extends Weapon {
   // Extra ms subtracted from the typing time budget (engine/character/
   // modifiers.ts, Story 3) — the greataxe's risk/reward tax
-  // (m3-scope.html#weapons: "wildly swingy... but heavy"). 0 for every other
+  // (docs/prds/done/20260705-nbutko-m3-character-sheet.html#weapons: "wildly swingy... but heavy"). 0 for every other
   // weapon. A Story 13/M5 tuning knob, not a scope decision.
   timeBudgetPenaltyMs: number
 }
 
 // Prices are a first-pass ladder against config/rewards.ts's coin payouts
-// (m3-scope.html#open "Weapon/item pricing" is an explicit open question) —
+// (docs/prds/done/20260705-nbutko-m3-character-sheet.html#open "Weapon/item pricing" is an explicit open question) —
 // Story 13/M5 rebalances these, not this story.
 export const WEAPONS: readonly WeaponConfig[] = [
   {

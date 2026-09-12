@@ -19,20 +19,12 @@
   This is orientation, not gospel: the code is the source of truth, and this doc will drift. Its job is to make the
   <em>next</em> read cheap — to say "here is the shape, here are the rules, here is which file to open" so a change
   starts from a map instead of a search. Keep it roughly current when the shape changes; don't sweat line-level
-  detail. Snapshot re-taken post-<a href="plans/done/20260705-nbutko-m3-character-sheet.html">M3</a> (the D&amp;D character layer has shipped).
+  detail.
 </p>
 
-<h2 id="stack">Stack</h2>
-<ul>
-  <li><strong>React 19 + TypeScript</strong>, built with <strong>Vite 8</strong>, styled with <strong>Tailwind
-  4</strong> (design tokens in an <code>@theme</code> block; see <a href="design-tokens.json">tokens.json</a>).</li>
-  <li><strong>IndexedDB via <code>idb</code></strong> for the save file — no backend, no accounts (the
-  <a href="index.html">brief's</a> "one kid, one Chromebook" rule).</li>
-  <li><strong>Vitest 4</strong> (jsdom, globals) for tests; <code>@testing-library/react</code> + <code>user-event</code>
-  for components, <code>fake-indexeddb</code> for storage.</li>
-  <li><strong>No router, no Zustand/Redux.</strong> State is React Context + <code>useReducer</code> plus one
-  hand-rolled external store for the battle. Deliberate — see <a href="#state">state homes</a>.</li>
-</ul>
+<p>See <a href="architecture.html#stack">Architecture → Stack</a> for the framework/styling/state/persistence
+choices and why. This page picks up from there: where each piece actually lives in <code>src/</code> and what
+may import what.</p>
 
 <h2 id="layering">The layering &amp; its one rule</h2>
 <p>
@@ -45,9 +37,11 @@
   <strong>The combat <code>engine/</code> never imports React. The persistent save never imports combat, and
   combat never imports the save.</strong> They meet at exactly one pure function —
   <code>resolveModifiers()</code> — which turns save data into a <code>PlayerModifiers</code> object the battle
-  consumes. This single seam is why milestones stay additive: M3 swapped what feeds it (a Character + equipped
-  Weapon + active consumable buffs, replacing M2's skill tree) without touching the combat math on the other
-  side. <em>Grow the seam; don't route around it.</em>
+  consumes. This single seam is why milestones stay additive: whatever feeds it (today a Character, its
+  equipped Weapon, and active consumable buffs — see the
+  <a href="plans/done/20260705-nbutko-m3-character-sheet.html">M3 build</a> for how this replaced the earlier
+  skill tree without touching the combat math on the other side) can change shape without the engine caring.
+  <em>Grow the seam; don't route around it.</em>
 </div>
 
 <h2 id="tree">The <code>src/</code> tree</h2>
@@ -61,21 +55,21 @@
     dungeon-tiers.ts                  #   the 11 tiers (habitat, wpmRange, textTierRange — now consumed, rosterPool)
     dungeon-generation.ts             #   fan-out generator knobs (path counts, chest counts, target total)
     rewards.ts                        #   per-kill / per-chest xp+coin formula
-    abilities.ts                      #   every per-point ability MAGNITUDE (dice/tier-cap/dodge/shop/mimic-DC scales)
+    abilities.ts                      #   every per-point ability MAGNITUDE (dice/encounter-bonus/dodge/shop/mimic-DC scales)
     leveling.ts                       #   XP thresholds, ASI levels, proficiency-by-level, HP_SCALE
     classes.ts                        #   the 4 launch classes: hit die, favored abilities, starting weapon, feature
-    weapons.ts                        #   the 8 launch weapons: die, ability, crit range, tier, price
-    items.ts                          #   the 10 launch consumables: effect, duration, tier, price
+    weapons.ts                        #   15 weapons (8 launch + a STR/DEX/INT upgrade ladder to tier 10): die, ability, crit range, tier, price
+    items.ts                          #   11 consumables (10 launch + Ring of Protection): effect, duration, tier, price
   content/                            # editable DATA + thin lookups
     monsters.json  monsters.ts        #   70 monster records; getMonster/byTier/byRole
-    text/tier-01.json … tier-10.json  #   line banks per text tier
-    text-banks.ts                     #   loadTier/makePromptSource (degrade-to-easier fallback, no-repeat picker)
-    keyboard-layout.ts
+    text/library.json                 #   the shipped corpus, keyed dungeon -> tier -> lines (content-pipeline/ship.ts)
+    text-banks.ts                     #   loadPool/makePromptSource (degrade-to-easier fallback, no-repeat picker)
+    names.json  keyboard-layout.ts
   domain/                             # PURE TYPES, no logic
-    types.ts                          #   combat/monster/battle types + CombatConfig, TextTier, Rng
+    types.ts                          #   combat/monster/battle types + CombatConfig, TextTier (1-14), Rng
     character.ts                      #   Ability/AbilityScores/CharacterClass/Character + abilityMod()
     weapons.ts  items.ts              #   Weapon/WeaponId; ItemId/Consumable/ActiveBuff
-    save.ts                           #   SaveData (v3) + defaultSave/migrate/isSaveData (migrates a v2 save)
+    save.ts                           #   SaveData (v4) + defaultSave/migrate/isSaveData (migrates a v2 or v3 save)
     dungeon.ts                        #   DungeonGraph/DungeonNode/NodeKind/NodeState
     progression.ts                    #   PlayerModifiers (widened for the ability/weapon/buff surface)
   engine/                             # ← PURE LOGIC, NO REACT (the load-bearing rule)
@@ -104,9 +98,9 @@
     dungeon-run/                      #   EPHEMERAL: DungeonRunProvider + dungeon-run-reducer (never persisted;
                                        #   now also owns active consumable buffs, see addBuff/restoreHearts)
   ui/
-    common/   Frame  nodeState  Legend  ResourcePill  StatusReadout  HeartsReadout  ModalOverlay  Tabs  Die
+    common/   Frame  nodeState  Legend  ResourcePill  StatusReadout  HeartsReadout  ModalOverlay  Tabs  Die  Flash
     create/   CharacterCreateScreen  AbilityRoller  ClassPicker  HeroSummary  NameField
-    battle/   BattleScreen  HealthBar  Keyboard  Key  PlayerPrompt  TypedProgress  BattleResult
+    battle/   BattleScreen  HealthBar  Keyboard  Key  PlayerPrompt  TypedProgress  BattleResult  keyboard-highlights
     map/      WorldMapScreen  HubCard  TierCard  TierTrail
     dungeon/  DungeonScreen  DungeonGraph  DungeonNode  graph-layout  EncounterModal  MimicWarningModal
               RewardModal  Bag  ActiveBuffsStrip
@@ -115,11 +109,6 @@
     hooks/    useBattle  useGameLoop
   test/setup.ts                       # jest-dom import
 </code></pre>
-<p>
-  Retired in M3: <code>config/skill-tree.ts</code>, <code>engine/progression/skill-effects.ts</code>, and
-  <code>ui/inn/SkillBranch.tsx</code>/<code>SkillNode.tsx</code> — the M2 skill tree and its seam implementation.
-  <code>domain/progression.ts</code> no longer exports <code>SkillBranchId</code>/<code>SkillTreeState</code>.
-</p>
 
 <h2 id="state">State: three lifetimes, five stores, no global library</h2>
 <p>
@@ -184,21 +173,22 @@
   independent cycles on one clock. A player submit only counts when <code>input.length === prompt.length</code>
   (exact-match). Player time limit =
   <code>max(floorMs, readingBufferMs + expectedTypingTimeMs(len, baselineWpm))</code>.</li>
-  <li><code>engine/damage.ts</code> — <strong>all core math</strong>: <code>lengthFactor</code> (longer = harder),
+  <li><code>engine/damage.ts</code> — <strong>all core math</strong>: <code>lengthFactor</code> (longer = harder,
+  soft-capped above a reference length so a very long boss prompt can't one-shot it),
   <code>speedBonus</code> (fast finish = up to 2×), <code>rollIsCrit</code>, <code>tierGatePenalty</code>
   (squared tier-ratio when served below the fight's target tier), and <code>computeDamage</code> =
-  <code>(sum of weaponDie rolls + weaponAbilityMod) × damageScale × lengthFactor × speedBonus ×
-  powerUpMultiplier × tierGatePenalty × fumbleDamageMultiplier</code> — the M3 Story 7 rework: a flat
-  <code>baseDamage</code> became a rolled weapon die + ability mod, and a crit rolls <code>critCount</code> dice
-  (2 normally, 3 for the Wizard) and sums them instead of doubling a flat result. <code>computeMonsterDamage</code>
-  stays the old flat shape (<code>baseDamage × lengthFactor × speedBonus</code>, no dice/crit/power-ups, all
-  player-only). <strong>Now lit:</strong> <code>powerUpMultiplier</code> (driven by consumables like Bull's
-  Strength) is finally read by <code>computeDamage</code>. <strong>Still a gap:</strong> DEX's
-  <code>critChanceBonus</code>, a weapon's <code>critRange</code>, and a crit-boost item's
-  <code>critDamageMult</code> are all computed into <code>PlayerModifiers</code> (<code>engine/character/
-  modifiers.ts</code>) but <code>rollIsCrit</code>/<code>computeDamage</code> never read them — crit chance
-  today is still the flat <code>combat.criticalChance</code>, unchanged since M0. A known pending wiring gap
-  (a tuning-coupled pass, not an oversight), not yet scheduled to a story.</li>
+  <code>(sum of weaponDie rolls + weaponAbilityMod) × damageScale × (critDamageMult on a crit) × lengthFactor ×
+  speedBonus × powerUpMultiplier × tierGatePenalty × fumbleDamageMultiplier</code>: a rolled weapon die plus
+  ability mod, rather than a flat <code>baseDamage</code>, and a crit rolls <code>critCount</code> extra dice
+  (2 normally, 3 for the Wizard's arcane crit, plus a Rogue's Sneak Attack dice) and sums them instead of
+  doubling a flat result. <code>computeMonsterDamage</code> stays a flat shape
+  (<code>baseDamage × lengthFactor × speedBonus</code>, no dice/crit/power-ups, all player-only) — difficulty
+  is tuned by monster stats, not a second rulebook. Effective crit chance is
+  <code>combat.criticalChance + critChanceBonus + critRangeChanceBonus(critRange)</code>: DEX's
+  <code>critChanceBonus</code> and a weapon's <code>critRange</code> (computed into
+  <code>PlayerModifiers</code> by <code>engine/character/modifiers.ts</code>) both move the roll, and a crit's
+  <code>critDamageMult</code> (Oil of Sharpness) multiplies just its <code>baseHit</code> — raising DEX or
+  equipping a wider-crit-range weapon or item does move crit odds and damage.</li>
   <li><code>engine/monster-typing.ts</code> — the monster typer: chars arrive on a noisy interval, each may be a
   typo per <code>accuracy</code>, typos aren't corrected until <code>attention</code> seconds pass;
   <code>timeLimitMs = expectedTypingTimeMs(...) × slack</code>.</li>
@@ -215,38 +205,43 @@
 <h2 id="seam">The one seam: <code>resolveModifiers()</code></h2>
 <p>
   <code>engine/character/modifiers.ts</code> exports
-  <code>resolveModifiers(character, weapon, activeBuffs?, cfg?): PlayerModifiers</code> — its new M3 home,
-  replacing the retired <code>engine/progression/skill-effects.ts</code>. It folds a persistent
+  <code>resolveModifiers(character, weapon, activeBuffs?, cfg?): PlayerModifiers</code>. It folds a persistent
   <code>Character</code>'s level/abilities, the equipped <code>Weapon</code>'s die/ability/crit range, the
   character's class feature, and the run's ephemeral <code>ActiveBuff[]</code> into one <code>PlayerModifiers</code>
-  bag — <code>maxHp</code>/<code>maxHearts</code> (level + CON), <code>intTierCap</code> (INT), the encounter d20's
-  <code>encounterBonus</code>/<code>hasAdvantage</code>, DEX's <code>critChanceBonus</code>/<code>dodgeChance</code>,
+  bag — <code>maxHp</code>/<code>maxHearts</code> (level + CON), the encounter d20's
+  <code>encounterBonus</code> (INT's flat nudge, folded in alongside proficiency)/<code>hasAdvantage</code>, DEX's
+  <code>critChanceBonus</code>/<code>dodgeChance</code>,
   CHA's <code>intimidateWpmCut</code>, the weapon's <code>weaponDie</code>/<code>weaponAbilityMod</code>/
   <code>critRange</code>, and class-feature flags (<code>guaranteedFirstCrit</code>, <code>sneakAttackDice</code>,
   <code>secondWind</code>, <code>arcaneCritMult</code>). It is the <strong>sole</strong> bridge from save data to
   combat numbers, called by <code>battle-store.ts</code> (which then builds the fight) and by the map/dungeon/Inn
-  screens (for <code>maxHearts</code>/<code>maxHp</code>). <strong>Still the highest-leverage function in the
-  codebase:</strong> keep its output contract and you can rewrite everything feeding it without touching the
-  engine — M3 already did exactly that once (see <a href="plans/done/20260705-nbutko-m3-character-sheet.html#seams">M3 seams</a>).
+  screens (for <code>maxHearts</code>/<code>maxHp</code>). It is the highest-leverage function in the
+  codebase: keep its output contract and you can rewrite everything feeding it without touching the engine —
+  the <a href="plans/done/20260705-nbutko-m3-character-sheet.html#seams">M3 build</a> already did exactly that
+  once, replacing the earlier skill tree's seam with this one.
 </p>
 
 <h2 id="save">The save file</h2>
 <p>
-  <code>domain/save.ts</code> defines <code>SaveData</code> (now <code>version: 3</code>) —
+  <code>domain/save.ts</code> defines <code>SaveData</code> (now <code>version: 4</code>) —
   <code>character</code> (null until creation), <code>coins</code>, <code>equippedWeapon</code>,
   <code>inventory: { weapons, consumables }</code>, <code>hearts.max</code>, <code>highestUnlockedTier</code>,
-  <code>monstersDefeated</code>, <code>stats</code>. No more <code>xp</code>/<code>skillTree</code> at this level —
-  XP now lives on <code>character.xp</code>. <code>isSaveData()</code> hard-requires <code>version === 3</code>;
-  <code>migrate()</code> knows one real migration (a v2 save: keeps coins/tier-unlock/defeated-list/stats, drops
-  <code>skillTree</code>, sets <code>character: null</code> so the player is routed through character creation
-  once) and falls back to a fresh default for anything older/unrecognized. <code>state/save/</code>:
-  <code>save-reducer.ts</code> (pure; actions include <code>createCharacter</code>, <code>gainXp</code>,
-  <code>applyAsi</code>, <code>equipWeapon</code>, <code>buyWeapon</code>, <code>buyItem</code>,
+  <code>monstersDefeated</code>, <code>stats</code>. No <code>xp</code>/<code>skillTree</code> at this level —
+  XP lives on <code>character.xp</code>. <code>isSaveData()</code> hard-requires <code>version === 4</code>;
+  <code>migrate()</code> knows two real migrations — a v2 save (keeps coins/tier-unlock/defeated-list/stats,
+  drops <code>skillTree</code>, sets <code>character: null</code> so the player is routed through character
+  creation once) and a v3 save (re-derives <code>character.level</code>/<code>pendingAsi</code> from XP, a
+  one-time backfill for a leveling bug that had frozen every v3 character at level 1) — and falls back to a
+  fresh default for anything older/unrecognized; a well-formed v4 save also has its level re-derived on every
+  load, so it can't drift from its XP. <code>state/save/</code>: <code>save-reducer.ts</code> (pure; actions
+  include <code>createCharacter</code>, <code>award</code>, <code>gainXp</code>, <code>applyAsi</code>,
+  <code>rest</code>, <code>equipWeapon</code>, <code>buyWeapon</code>, <code>buyItem</code>,
   <code>consumeItem</code>, <code>unlockTier</code>, <code>recordDefeat</code>, <code>hydrate</code> — costs are
   passed <em>in</em> so the reducer never imports config), <code>save-storage.ts</code> (IndexedDB, 250ms debounced
   write), <code>SaveProvider.tsx</code> (hydrates on mount with a 4s timeout fallback, mirrors every change).
-  <strong>Now lit (M3):</strong> <code>stats.bestWpm</code> is written on every win (a personal-best floor, never
-  lowered). <strong>Still dead:</strong> <code>stats.battlesLost</code> — no action increments it yet.
+  <code>stats.bestWpm</code> is written on every win (a personal-best floor, never lowered);
+  <code>stats.battlesLost</code> stays dead — no action increments it (see the
+  <a href="notes/20260912-nbutko-battles-lost-dead-field.html">note</a>).
 </p>
 
 <h2 id="content-types">Content &amp; the key types</h2>
@@ -259,12 +254,12 @@
   nodes }</code>; nodes are <code>{ id, kind, state, monsterId?, edges, isRealChest? }</code>.
   <code>generateDungeon()</code> builds a two-fan-out graph; <code>graph.ts</code> has the pure transitions
   (<code>clearNode</code>, <code>availableNodes</code>, <code>bossUnlocked</code>, <code>isComplete</code>).
-  Config: <code>DungeonTier { tier, habitat, wpmRange, textTierRange, rosterPool }</code> —
-  <code>textTierRange</code> was dead through M2; <code>engine/dice/band.ts</code>'s <code>bandToServedTier()</code>
-  is now its load-bearing consumer, turning the encounter d20's band into this fight's served text tier.</li>
-  <li><strong>Text tiers</strong> — <code>TextTier = 1..10</code>; <code>TextBank { loadTier, makePromptSource }</code>
-  with a degrade-to-nearest-easier fallback and a never-repeat-the-last-line picker; banks in
-  <code>content/text/tier-0N.json</code>.</li>
+  Config: <code>DungeonTier { tier, habitat, wpmRange, textTierRange, bossTextTier, rosterPool }</code> —
+  <code>textTierRange</code>'s load-bearing consumer is <code>engine/dice/band.ts</code>'s
+  <code>bandToServedTier()</code>, which turns the encounter d20's band into this fight's served text tier.</li>
+  <li><strong>Text tiers</strong> — <code>TextTier = 1..14</code>; <code>TextBank { loadPool, makePromptSource }</code>
+  keyed by (dungeon, tier), with a degrade-to-nearest-easier fallback and a never-repeat-the-last-line picker;
+  the shipped corpus is one bundle, <code>content/text/library.json</code>.</li>
 </ul>
 
 <h2 id="tests">Tests</h2>
@@ -293,7 +288,7 @@
   <tr><td>the encounter d20 or mimic-sense check</td><td><code>engine/dice/encounter-roll.ts</code> / <code>band.ts</code> / <code>mimic-sense.ts</code></td></tr>
   <tr><td>the tier table / dungeon shape</td><td><code>config/dungeon-tiers.ts</code> + <code>engine/dungeon/generate.ts</code></td></tr>
   <tr><td>monster stats / roster</td><td><code>content/monsters.json</code></td></tr>
-  <tr><td>typing prompts</td><td><code>content/text/tier-0N.json</code> + <code>content/text-banks.ts</code></td></tr>
+  <tr><td>typing prompts</td><td><code>content/text/library.json</code> + <code>content/text-banks.ts</code></td></tr>
   <tr><td>navigation / add a screen</td><td><code>app/navigation.ts</code> + <code>app/GameShell.tsx</code></td></tr>
   <tr><td>the shared cleared/available/locked look</td><td><code>ui/common/nodeState.ts</code> (one source of truth for 3 screens)</td></tr>
   <tr><td>the outer frame / tokens</td><td><code>ui/common/Frame.tsx</code> + the <code>@theme</code> block (<a href="design-tokens.json">tokens.json</a>)</td></tr>

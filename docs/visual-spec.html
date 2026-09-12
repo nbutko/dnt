@@ -25,11 +25,10 @@
 <main>
 
 <div class="callout decision">
-  Scope note: <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0's own plan</a> deliberately ships Story 5's UI unstyled
-  (Tailwind defaults, no art) — the point of the spike is to prove the combat math, not the look. Treat this
-  spec as <strong>ready whenever you apply it</strong>: drop it in at M0 if you'd rather build styled from day
-  one, or hold it for M1's "one real UI" milestone and keep M0 truly bare. Either way, these are the exact
-  values so no visual decisions are left to the implementer.
+  Every shipped screen applies this spec (see <a href="#m3">below</a>) — no visual decisions are left to the
+  implementer. <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0's own plan</a> deliberately shipped
+  its Story 5 UI unstyled first (Tailwind defaults, no art), since the point of that spike was to prove the
+  combat math before the look.
 </div>
 
 <h2 id="palette">Color palette</h2>
@@ -126,7 +125,7 @@ font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</
 <h2 id="m3">All screens use this system</h2>
 <p>
   Character creation, the Inn's Rest &amp; Sheet/Armory tabs, the Shop, the encounter-d20 modal, and the Bag
-  (see <a href="screens.html">screens.html</a>'s "M3 screens" for the full per-screen breakdown) all reuse this
+  (see <a href="screens.html">screens.html</a> for the full per-screen breakdown) all reuse this
   palette/type/shape system as-is — same gold family, same Cinzel/EB Garamond/JetBrains Mono trio, same 8px
   panel radius. No new hue family was introduced. The one genuinely new component is the projected-icosahedron
   <strong>d20</strong> (<code>ui/common/Die.tsx</code>), shared by the ability roller and the encounter-roll

@@ -28,59 +28,49 @@
   small and choices simple — favor "works great for him, today" over "scales to a thousand users."
 </p>
 
-<h2>The four planning docs</h2>
+<h2>The evergreen docs</h2>
+<p>Everything below describes the game as it's built today. History — how a design got here, what a
+milestone shipped — lives in the dated artifacts under <a href="#artifacts">Development artifacts</a>.</p>
 <div class="card-grid">
+  <a class="card" href="conventions.html">
+    <span class="card-title">Conventions</span>
+    <span class="card-desc">How <code>docs/</code> is laid out, how to name and place a new document, and how to open and close a feature's docs.</span>
+  </a>
+  <a class="card" href="roadmap.html">
+    <span class="card-title">Roadmap &amp; Milestones</span>
+    <span class="card-desc">Where the project is, what's next, and a one-line link into every finished milestone's history.</span>
+  </a>
   <a class="card" href="game-design.html">
-    <span class="card-title">1. Game Design</span>
+    <span class="card-title">Game Design</span>
     <span class="card-desc">The battle loop, combat math, abilities &amp; D&amp;D leveling, dice, weapons, and consumables. The rules of the game.</span>
   </a>
   <a class="card" href="content.html">
-    <span class="card-title">2. Content Plan</span>
-    <span class="card-desc">Difficulty tiers for typing text, where the text comes from, the monster roster.</span>
+    <span class="card-title">Content</span>
+    <span class="card-desc">The 14-tier typing-difficulty ladder, the dungeon roster, and how the content pipeline fills them today.</span>
   </a>
   <a class="card" href="architecture.html">
-    <span class="card-title">3. Tech &amp; Architecture</span>
-    <span class="card-desc">Stack choice, data model, save data, and — critically — how this gets onto the Chromebook.</span>
-  </a>
-  <a class="card" href="roadmap.html">
-    <span class="card-title">4. Roadmap &amp; Milestones</span>
-    <span class="card-desc">The order we build things in, with a playable deliverable at every step.</span>
-  </a>
-  <a class="card" href="plans/done/20260704-nbutko-m0-combat-spike.html">
-    <span class="card-title">5. M0 Implementation Plan</span>
-    <span class="card-desc">The detailed first-milestone build: file/component layout, state architecture, and stories &amp; tasks.</span>
-  </a>
-  <a class="card" href="prds/done/20260704-nbutko-m2-progression-loop.html">
-    <span class="card-title">6. M2 Scope: Progression Loop</span>
-    <span class="card-desc">The world map, the 11 habitat dungeons, branching paths, hearts, and the Inn's skill tree.</span>
-  </a>
-  <a class="card" href="plans/done/20260704-nbutko-m2-progression-loop.html">
-    <span class="card-title">7. M2 Implementation Plan</span>
-    <span class="card-desc">Building the progression loop: file/component layout, the two new state homes, and stories &amp; tasks.</span>
-  </a>
-  <a class="card" href="prds/done/20260705-nbutko-m3-character-sheet.html">
-    <span class="card-title">8. M3 Scope: The Character Sheet</span>
-    <span class="card-desc">The D&amp;D layer — six abilities, real leveling, dice rolls, weapons, consumable items, and the Shop.</span>
-  </a>
-  <a class="card" href="plans/done/20260705-nbutko-m3-character-sheet.html">
-    <span class="card-title">9. M3 Implementation Plan</span>
-    <span class="card-desc">Building the character sheet: the save↔combat seam reused, the new state tenants, and stories 0–12.</span>
+    <span class="card-title">Tech &amp; Architecture</span>
+    <span class="card-desc">Stack choice, data model, save data, and — critically — how this actually gets onto the Chromebook.</span>
   </a>
   <a class="card" href="codebase-architecture.html">
     <span class="card-title">Codebase Architecture</span>
     <span class="card-desc">A living map of the <code>src/</code> tree — the layering rules, the state homes, the seams, and where each system lives.</span>
   </a>
-  <a class="card" href="prds/wip/20260710-nbutko-m5-game-mechanics.html">
-    <span class="card-title">M5 Game-Mechanics Audit</span>
-    <span class="card-desc">An honest structural review of balance, pacing, and D&amp;D fidelity — what to keep, what to revisit, where the game will hit a wall, and a verified bug ledger.</span>
+  <a class="card" href="visual-spec.html">
+    <span class="card-title">Visual Spec</span>
+    <span class="card-desc">The palette, type, layout, and keyboard system every screen shares.</span>
   </a>
-  <a class="card" href="plans/wip/20260710-nbutko-m5-game-mechanics.html">
-    <span class="card-title">M5 Game-Mechanics Implementation Plan</span>
-    <span class="card-desc">The story-by-story build for the audit's fixes and improvements — bugs first, then balance, then the fun.</span>
+  <a class="card" href="screens.html">
+    <span class="card-title">Screens</span>
+    <span class="card-desc">Every shipped screen and component as it looks and behaves today: layout, states, interactions.</span>
+  </a>
+  <a class="card" href="design-tokens.json">
+    <span class="card-title">Design Tokens</span>
+    <span class="card-desc">The visual spec's palette/type/shape values, machine-readable.</span>
   </a>
 </div>
 
-<h2>Development artifacts</h2>
+<h2 id="artifacts">Development artifacts</h2>
 <div class="card-grid">
   <a class="card" href="conventions.html">
     <span class="card-title">Conventions</span>
@@ -113,9 +103,7 @@
 </ul>
 
 <h2>Status</h2>
-<p>Planning stage — no code yet. Next step is M0: see the detailed
-<a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0 implementation plan</a> (build order for the
-<a href="roadmap.html">roadmap</a>'s first milestone).</p>
+<p>See the <a href="roadmap.html">roadmap</a> for where the project is and what's next.</p>
 
 </main>
 <footer class="page-foot">Dungeons &amp; Typing — internal planning docs.</footer>

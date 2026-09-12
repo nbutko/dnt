@@ -102,11 +102,12 @@
   <li><strong>powerUpMultiplier</strong> — 1.0 normally; a consumable like Bull's Strength or Elixir of Might
   (see <a href="#consumables">Consumables</a>) raises it for a fight or a dungeon. Stacks multiplicatively with a
   crit if both happen to land on the same swing.</li>
-  <li><strong>tierGatePenalty</strong> — 1.0 when the text tier the player is actually served covers this fight's
-  target tier; otherwise <code>(servedTier / targetTier) ** 2</code>. The served tier now comes from the
-  <a href="#encounter-d20">encounter d20</a>'s band, capped by the player's INT-driven tier cap — not a monster's
-  own <code>textTier</code> the way M2's Wordsmith gate worked (the monster's <code>textTier</code> still governs
-  only the line the monster itself types).</li>
+  <li><strong>tierGatePenalty</strong> — <code>(servedTier / targetTier) ** 2</code> when the player is served
+  below this fight's target tier, else 1.0. Always 1.0 today: the served tier
+  (<a href="#encounter-d20">the encounter d20</a>'s band) always equals the target tier, since the INT tier cap
+  that used to open a gap between them was retired — the squared-ratio formula stays in the code as the hook
+  for if a gap is ever reintroduced. The monster's own <code>textTier</code> plays no part in this; it only
+  governs the line the monster itself types.</li>
   <li><strong>fumbleDamageMultiplier</strong> — 1.0 normally; a fumbled encounter roll (natural 1) caps every hit
   that fight at ×0.75 and suppresses crits outright — see <a href="#encounter-d20">the encounter d20</a>.</li>
 </ul>
@@ -120,23 +121,25 @@
 <table>
   <tr><th>Stat</th><th>Base (level 1)</th><th>Grows via</th></tr>
   <tr><td>Player max HP</td><td>class hit die × 4 (e.g. 40 for a d10 Fighter, 24 for a d6 Wizard)</td><td>Level + CON modifier, derived at read time — never stored (see <a href="#leveling">Leveling</a>)</td></tr>
-  <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (15 WPM ≈ 1.25 chars/sec), floor 3s</td><td>WIS modifier (flat ms bonus) + a Potion of Speed; the Greataxe taxes it instead</td></tr>
-  <tr><td>Max text tier the player can be given</td><td>Tier 3 baseline before any INT investment</td><td>INT modifier (+3 tiers per point) caps the <a href="#encounter-d20">encounter d20</a>'s rolled band — fighting into a band above the cap is allowed but non-linearly weak, not blocked</td></tr>
+  <tr><td>Player time limit</td><td>~ text length ÷ baseline typing speed (8 WPM ≈ 0.67 chars/sec), floor 3s</td><td>WIS modifier (flat ms bonus) + a Potion of Speed; the Greataxe taxes it instead</td></tr>
+  <tr><td>Text tier the player is served</td><td>Whichever of the dungeon's three tiers (low/mid/high) the <a href="#encounter-d20">encounter d20</a>'s band rolls into — the full window is always reachable, never capped</td><td>INT adds a flat bonus to the d20 roll, nudging it toward the high band; a Rogue's advantage and a Guidance potion do the same</td></tr>
   <tr><td>Monster HP / typing speed / prompt length</td><td>per-monster, see <a href="content.html#roster">Content Plan</a></td><td>fixed per monster, scales with dungeon depth</td></tr>
 </table>
 <div class="callout why">
   Time limit is derived from text length ÷ an assumed baseline typing speed (expressed in WPM — the same unit
-  the monsters use — and converted to chars/sec via the standard 5 chars/word) rather than a flat number, so an
-  INT-driven jump in served text tier doesn't accidentally also make attacks impossibly short. That baseline WPM
-  is the actual difficulty knob: <strong>15 WPM</strong> is a realistic beginner rate for the target player, so
-  assuming a baseline at or a touch below his real speed keeps early fights generous. The game then gets harder
-  mainly through longer text and tougher monsters; WIS's flat ms bonus effectively lowers the assumed baseline
-  (more time) as it levels, keeping the clock fair rather than punishing.
+  the monsters use — and converted to chars/sec via the standard 5 chars/word) rather than a flat number, so a
+  jump to a harder text tier doesn't accidentally also make attacks impossibly short. That baseline WPM is the
+  actual difficulty knob: <strong>8 WPM</strong> is deliberately below a real beginner's on-track rate (the
+  <a href="prds/done/20260708-nbutko-combat-retune.html">combat retune</a> found 10 WPM on-track and 7 WPM
+  "behind" for an early anchor character, and 8 clears both with margin), so early fights stay generous. The
+  game then gets harder mainly through longer text and tougher monsters; WIS's flat ms bonus effectively lowers
+  the assumed baseline (more time) as it levels, keeping the clock fair rather than punishing.
 </div>
 <div class="callout decision">
-  Note: the divisor is a <em>typing speed</em>, not a raw chars/sec figure — a baseline of 15 <strong>WPM</strong>
-  (≈ 1.25 chars/sec), not 15 chars/sec (≈ 180 WPM, pro-typist speed, which would make anything past the 3s floor
-  unplayable for a 10-year-old). Tuning this baseline is a core job of <a href="roadmap.html">Roadmap</a> M0.
+  Note: the divisor is a <em>typing speed</em>, not a raw chars/sec figure — a baseline of 8 <strong>WPM</strong>
+  (≈ 0.67 chars/sec), not 8 chars/sec (≈ 96 WPM, well past what a 10-year-old beginner types, which would make
+  anything past the 3s floor unplayable). <code>config/combat.ts</code>'s <code>playerBaselineWpm</code> is the
+  one knob to retune if his real typing speed outgrows it.
 </div>
 
 <h2 id="monster-ai">Monster "typing"</h2>
@@ -211,16 +214,17 @@ and a chance at loot.</p>
 
 <h3 id="abilities">The six abilities</h3>
 <p>
-  M3 replaces the M2 skill tree with six D&amp;D-style ability scores. Every score has a modifier via the
-  standard formula <code>floor((score - 10) / 2)</code> — 8 → -1, 10/11 → 0, 15 → +2, 20 → +5 — and every
-  ability-driven number in the game reads off that one modifier, not the raw score:
+  Six D&amp;D-style ability scores drive the character (replacing the
+  <a href="prds/done/20260704-nbutko-m2-progression-loop.html">earlier skill tree</a>). Every score has a
+  modifier via the standard formula <code>floor((score - 10) / 2)</code> — 8 → -1, 10/11 → 0, 15 → +2, 20 → +5
+  — and every ability-driven number in the game reads off that one modifier, not the raw score:
 </p>
 <table>
   <tr><th>Ability</th><th>Primary effect</th><th>Flavor effect</th></tr>
   <tr><td>STR</td><td>+ melee/finesse weapon damage, as a % of the base hit per point of modifier</td><td>—</td></tr>
-  <tr><td>DEX</td><td>+ crit chance per point of modifier (computed, but not yet read by the crit roll — see <a href="#damage">Damage</a>)</td><td>chance to dodge an incoming monster hit entirely</td></tr>
+  <tr><td>DEX</td><td>+ crit chance per point of modifier, wired into the crit roll (see <a href="#damage">Damage</a>)</td><td>chance to dodge an incoming monster hit entirely</td></tr>
   <tr><td>CON</td><td>drives max HP alongside level (see <a href="#hp-timers">HP &amp; timers</a>)</td><td>—</td></tr>
-  <tr><td>INT</td><td>raises the tier cap on text the player can be served — a base of 3 tiers, +3 more per point of modifier</td><td>—</td></tr>
+  <tr><td>INT</td><td>a flat bonus on the <a href="#encounter-d20">encounter d20</a>, per point of modifier, nudging the roll toward the dungeon's higher text tiers</td><td>—</td></tr>
   <tr><td>WIS</td><td>+ typing time budget, flat ms per point of modifier</td><td>—</td></tr>
   <tr><td>CHA</td><td>Shop price discount, % per point of modifier (signed — a negative CHA marks prices <em>up</em>)</td><td>cuts the monster's effective WPM this fight</td></tr>
 </table>
@@ -239,7 +243,7 @@ and a chance at loot.</p>
 <table>
   <tr><th>Class</th><th>Hit die</th><th>Favored abilities</th><th>Feature</th></tr>
   <tr><td>Fighter</td><td>d10</td><td>STR, CON</td><td>Second Wind — once per battle, auto-heals a fraction of max HP the first time HP drops to ≤30%</td></tr>
-  <tr><td>Wizard</td><td>d6</td><td>INT, WIS</td><td>Arcane Mind — crits roll the damage dice 3 times instead of 2, and the INT tier cap sits a tier higher</td></tr>
+  <tr><td>Wizard</td><td>d6</td><td>INT, WIS</td><td>Arcane Mind — crits roll the damage dice 3 times instead of 2, and an extra flat bonus on the encounter d20 on top of INT's own</td></tr>
   <tr><td>Rogue</td><td>d8</td><td>DEX, CHA</td><td>Cunning — advantage on the encounter d20 (roll twice, keep the higher), a Sneak Attack bonus die on the first landed hit and every crit, and Expertise (double proficiency) on the mimic-sense check</td></tr>
   <tr><td>Bard</td><td>d8</td><td>CHA, WIS</td><td>Silver Tongue — a flat Shop discount (stacks with CHA), a debuff on this dungeon's monsters, and one encounter-d20 reroll per dungeon</td></tr>
 </table>
@@ -252,8 +256,9 @@ and a chance at loot.</p>
 
 <h3 id="encounter-d20">The encounter d20</h3>
 <p>
-  Every fight opens with a d20 roll (+ proficiency bonus + any item bonus, e.g. a Luckstone) before the clock
-  starts, and the total picks which of the dungeon's three prompt-difficulty bands the player types this fight:
+  Every fight opens with a d20 roll (+ proficiency bonus + INT's bonus, e.g. a Wizard's Arcane Mind, plus any
+  item bonus like a Luckstone or Elixir of Intellect) before the clock starts, and the total picks which of the
+  dungeon's three prompt-difficulty bands the player types this fight:
 </p>
 <table>
   <tr><th>Total</th><th>Result</th></tr>
@@ -264,30 +269,35 @@ and a chance at loot.</p>
   <tr><td>natural 20</td><td>Inspired — high band, and the first landed hit is a guaranteed crit</td></tr>
 </table>
 <p>
-  The band's target tier is then capped by the player's INT-driven tier cap to produce the fight's actual
-  <em>served</em> tier, which is what feeds <a href="#damage">tierGatePenalty</a> — the same squared-ratio
-  math as before M3, just sourced from the d20's band instead of a monster's own text tier. A Rogue's Cunning
-  rolls this d20 twice and keeps the higher (advantage); a Guidance potion grants the same for one fight.
+  The band's target tier is what the player is actually served — the full <code>[N, N+2]</code> window is
+  always reachable, with no cap to fall short of, so <a href="#damage">tierGatePenalty</a> never actually bites
+  today; INT's job is to nudge the roll toward the high band rather than unlock it. A Rogue's Cunning rolls
+  this d20 twice and keeps the higher (advantage); a Guidance potion grants the same for one fight.
 </p>
 
 <h3 id="weapons">Weapons</h3>
 <p>
   Eight launch weapons — Dagger, Shortsword, Longsword, Rapier, Wand, Warhammer, Longbow, Greataxe — each with
-  a damage die (d4 up to d12), a governing ability, a 5e-style crit range, and a price. Bought at the Shop,
+  a damage die (d4 up to d12), a governing ability, a 5e-style crit range, tier, and price. Bought at the Shop,
   equipped one at a time from the Inn's Armory; each class starts with one for free. The Greataxe (d12, the
   hardest-hitting) taxes the typing time budget as its risk/reward tradeoff — see <a href="#damage">Damage</a>.
+  Past the tier-3 launch ceiling, the STR (Greatsword), DEX (Fine Rapier), and INT (Wand) lines each keep
+  extending — bigger die, a flat bonus, and a tighter crit range — up to tier 10, so a Fighter, Rogue, or
+  Wizard has somewhere to grow instead of plateauing on a launch weapon for the rest of the game; the Wand
+  gets three upgrades rather than two since the Wizard was the class most out of gear.
 </p>
 
 <h3 id="consumables">Consumables &amp; the Shop</h3>
 <p>
-  Ten consumable items — potions, elixirs, oils — bought with coins at the Shop and carried forever until
-  used. Each grants a buff lasting one fight, several fights, or the rest of the dungeon (never persisted past
-  the run, same rule as hearts): instant healing, a power-up-style damage multiplier (Bull's Strength, Elixir
-  of Might), extra typing time (Potion of Speed), encounter-roll help (Guidance's advantage, a Luckstone's flat
-  bonus), a crit-chance/damage buff (Oil of Sharpness), a temporary INT tier-cap bump (Elixir of Intellect), and
-  fumble immunity plus bonus HP (Potion of Heroism). The player chooses when to use one from the dungeon map's
-  Bag — a tap/click before a fight, not something that interrupts typing. Prices and magnitudes are Story
-  13/M5 placeholders like everything else ability-driven.
+  Eleven consumable items — potions, elixirs, oils, and a ring — bought with coins at the Shop and carried
+  forever until used. Each grants a buff lasting one fight, several fights, or the rest of the dungeon (never
+  persisted past the run, same rule as hearts): instant healing, a power-up-style damage multiplier (Bull's
+  Strength, Elixir of Might), extra typing time (Potion of Speed), encounter-roll help (Guidance's advantage,
+  a Luckstone's or Elixir of Intellect's flat bonus), a crit-chance/damage buff (Oil of Sharpness), fumble
+  immunity plus bonus HP (Potion of Heroism), and a rest-of-dungeon max-HP/damage-reduction buff (Ring of
+  Protection). The player chooses when to use one from the dungeon map's Bag — a tap/click before a fight, not
+  something that interrupts typing. Prices and magnitudes are Story 13/M5 placeholders like everything else
+  ability-driven.
 </p>
 
 </main>

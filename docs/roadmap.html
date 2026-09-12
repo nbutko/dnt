@@ -15,117 +15,101 @@
 <main>
 
 <p>
-  Each milestone below produces something that can actually be handed to him to try — no milestone is
-  "invisible plumbing only." Scope is deliberately small per step; expand once each layer is proven fun.
+  Each milestone is scoped to produce something that can actually be handed to him to try — no milestone is
+  "invisible plumbing only." Scope stays deliberately small per step; a layer expands once it's proven fun.
+</p>
+
+<h2 id="where">Where we are, what's next</h2>
+<p>
+  The game is mid-<a href="#m5">M5</a>: the core loop (map → dungeon → typed battles → D&amp;D character →
+  Shop) shipped in M0–M4 and is live on the Chromebook. M5 is the open-ended playtest/balance/content loop
+  that keeps that loop honest. Its plan is
+  <a href="plans/wip/20260710-nbutko-m5-game-mechanics.html">plans/wip/20260710-nbutko-m5-game-mechanics.html</a>
+  (PRD: <a href="prds/wip/20260710-nbutko-m5-game-mechanics.html">the game-mechanics audit</a>), nineteen
+  stories in four phases; none have shipped as of this writing, so the next phase is
+  <strong>Phase A — live bug fixes</strong> (Stories 1–8: the two reported bugs plus every other item on the
+  bug ledger, nothing new, everything solid) before Phase B's balance pass. <a href="#m6">M6</a> is the
+  optional visual upgrade after that.
 </p>
 
 <div class="milestone">
-  <h3>M0 — Combat math spike <span class="tag playable">playable: yes (barebones)</span></h3>
-  <p>Build the battle math (<a href="game-design.html#damage">damage formula</a>, HP, timers, monster typing
-  simulation) as plain functions with no UI polish — a single unstyled page: one text box, one monster with
-  a health bar, one player health bar. Prove the numbers feel right before investing in any art or animation.</p>
-  <ul>
-    <li>Type a line, see damage happen, see the monster's bar tick down on its own clock.</li>
-    <li>Tune <code>baseDamage</code>, the baseline-WPM time limit, and monster wpm/accuracy/attention until a
-    fight feels winnable-but-tense at ~30-45 seconds.</li>
-  </ul>
-  <p>Detailed build breakdown — file/component layout, state architecture, and stories/tasks — in the
-  <a href="plans/done/20260704-nbutko-m0-combat-spike.html">M0 implementation plan</a>.</p>
+  <h3 id="m0">M0 — Combat math spike <span class="tag playable">shipped</span></h3>
+  <p>The battle math (<a href="game-design.html#damage">damage formula</a>, HP, timers, monster typing
+  simulation) as plain functions with no UI polish, proven on an unstyled page before any art or animation
+  was invested. Plan: <a href="plans/done/20260704-nbutko-m0-combat-spike.html">plans/done/20260704-nbutko-m0-combat-spike.html</a> (no PRD was written — nothing preceded the math to record).</p>
 </div>
 
 <div class="milestone">
-  <h3>M1 — Playable vertical slice <span class="tag playable">playable: full battle</span></h3>
-  <p>One real UI: prompt display, countdown, HP bars for both sides, win/lose screen. Hardcoded to one
-  monster (Slime) and one text tier. No save data yet — every session starts fresh.</p>
-  <ul>
-    <li>Deliverable: he can sit down, fight the Slime, and see a win or lose screen.</li>
-    <li>This is the first "does this even feel fun" checkpoint — get his reaction before building progression on top.</li>
-  </ul>
+  <h3 id="m1">M1 — Playable vertical slice <span class="tag playable">shipped</span></h3>
+  <p>One real UI — prompt display, countdown, HP bars for both sides, win/lose screen — hardcoded to one
+  monster and one text tier, the first "does this even feel fun" checkpoint before progression was built on
+  top. No artifacts recorded for this milestone.</p>
 </div>
 
 <div class="milestone">
-  <h3>M2 — Progression loop <span class="tag playable">playable: multi-battle session</span></h3>
-  <p>Add the save file (<a href="architecture.html#persistence">IndexedDB</a>), a world map (Inn, a locked
-  Shop, and 11 habitat-themed dungeons), the hearts/lives system, coins, XP, and the skill tree. Each
-  dungeon is a randomly-generated set of branching paths of monsters leading to a boss, gated behind
-  clearing the previous dungeon's boss. Full breakdown — habitat difficulty order, path generation rules,
-  hearts, the Inn — in the <a href="prds/done/20260704-nbutko-m2-progression-loop.html">M2 scope doc</a>, with the step-by-step build in the
-  <a href="plans/done/20260704-nbutko-m2-progression-loop.html">M2 implementation plan</a>.</p>
-  <ul>
-    <li>Deliverable: pick a dungeon from the map, fight your way along a branching path to its boss, earn
-    XP, spend it at the Inn, feel the next dungeon get slightly easier to approach.</li>
-    <li><strong>Skill-tree scope for M2:</strong> only the two branches whose effects are fully specced and
-    wire into systems that exist yet — <strong>Endurance</strong> (max HP + hearts) and <strong>Wordsmith</strong>
-    (text-tier unlocks) — are buyable. <strong>Focus</strong>, <strong>Luck</strong>, and <strong>Utility</strong>
-    render on the tree but ship visible-but-locked ("Coming soon"), since their magnitudes aren't spec'd yet and
-    Utility's power-up slots have nothing to fill until M3. They get their numbers and are switched on in
-    <a href="#m5">M5</a> (Utility no earlier than M3, once power-ups exist).</li>
-  </ul>
+  <h3 id="m2">M2 — Progression loop <span class="tag playable">shipped</span></h3>
+  <p>The save file (<a href="architecture.html#persistence">IndexedDB</a>), the world map (Inn, Shop, and
+  habitat-themed dungeons), hearts/lives, coins, XP, and the original skill tree. Scope:
+  <a href="prds/done/20260704-nbutko-m2-progression-loop.html">prds/done/20260704-nbutko-m2-progression-loop.html</a>;
+  build: <a href="plans/done/20260704-nbutko-m2-progression-loop.html">plans/done/20260704-nbutko-m2-progression-loop.html</a>.
+  The skill tree it shipped was retired in <a href="#m3">M3</a>, replaced by ability scores and 5e leveling.</p>
 </div>
 
 <div class="milestone">
-  <h3 id="m3">M3 — The character sheet (the D&amp;D layer) <span class="tag playable">delivered — full loop</span></h3>
-  <p>Grew well past the original "power-ups &amp; juice" plan: M3 brought the missing D&amp;D concepts into the
-  typing game — six ability scores, real 5e-style leveling (which <em>replaced</em> the M2 skill tree),
-  classes, character creation, dice rolls (an encounter d20 + per-hit weapon damage dice), equippable weapons,
-  consumable items, and the Shop (coins finally got a sink). Power-ups survive as the consumable items; the old
-  hit-flash / screen-shake / SFX "juice" list rode along where the dice and damage numbers create natural
-  animation moments. Full breakdown in the <a href="prds/done/20260705-nbutko-m3-character-sheet.html">M3 scope doc</a>, with the story-by-story build
-  (the save↔combat seam reused) in the <a href="plans/done/20260705-nbutko-m3-character-sheet.html">M3 implementation plan</a>.</p>
-  <ul>
-    <li>Delivered: the full loop end to end feels like a role-playing game, not a math worksheet — you roll a
-    character, level it up the D&amp;D way, buy gear, and every fight opens with a d20 — all still without a
-    single image asset. See <a href="codebase-architecture.html">Codebase Architecture</a> for the shipped shape,
-    including a known pending gap (DEX/weapon crit-range aren't wired into the crit roll yet).</li>
-  </ul>
+  <h3 id="m3">M3 — The character sheet (the D&amp;D layer) <span class="tag playable">shipped</span></h3>
+  <p>The D&amp;D concepts the typing game was missing — six ability scores, 5e-style leveling (which replaced
+  the M2 skill tree), classes, character creation, dice rolls (an encounter d20 plus per-hit weapon damage
+  dice), equippable weapons, consumable items, and the Shop. The full loop now plays like a role-playing
+  game, not a math worksheet, still without a single image asset. Scope:
+  <a href="prds/done/20260705-nbutko-m3-character-sheet.html">prds/done/20260705-nbutko-m3-character-sheet.html</a>;
+  build: <a href="plans/done/20260705-nbutko-m3-character-sheet.html">plans/done/20260705-nbutko-m3-character-sheet.html</a>.
+  See <a href="codebase-architecture.html">Codebase Architecture</a> for the shipped shape.</p>
 </div>
 
 <div class="milestone">
-  <h3>M4 — Ship it <span class="tag playable">playable: on his Chromebook, for real</span></h3>
-  <p>Wire up hosting (<a href="architecture.html#hosting">GitHub Pages</a>, via a GitHub Actions build), add the PWA manifest/service worker,
-  install it on the actual Chromebook, and test with the actual keyboard in the actual room he'll play in.</p>
-  <ul>
-    <li>Deliverable: an icon on his Chromebook that opens the game, no laptop/dev-server dependency on your machine.</li>
-  </ul>
+  <h3 id="m4">M4 — Ship it <span class="tag playable">shipped</span></h3>
+  <p>Hosting (<a href="architecture.html#hosting">GitHub Pages</a>, via a GitHub Actions build on every push
+  to main), the PWA manifest and service worker, installed on the actual Chromebook. Plan (reconstructed from
+  memory and git history — no contemporaneous doc was written):
+  <a href="plans/done/20260708-nbutko-m4-ship-it.html">plans/done/20260708-nbutko-m4-ship-it.html</a>.</p>
 </div>
 
 <div class="milestone">
-  <h3 id="m5">M5 — Content &amp; balance pass <span class="tag playable">playable: ongoing</span></h3>
-  <p>Playtest with him directly, watch where he struggles or gets bored, retune damage/time constants and
-  the skill tree pacing. Add tier 5–6 content and the remaining roster (Wraith, Dragon), maybe a second boss.</p>
-  <ul>
-    <li><strong>Tune the character layer.</strong> M2's visible-but-locked Focus/Luck/Utility skill branches
-    were <em>retired</em> in <a href="#m3">M3</a>, absorbed into the six ability scores and D&amp;D leveling
-    (see the <a href="prds/done/20260705-nbutko-m3-character-sheet.html#reshaping">M3 scope</a>). This is where that layer gets its real numbers:
-    the XP-to-level pacing, per-modifier magnitudes, HP scale, weapon/item pricing, and the fumble/inspiration
-    knobs — all the <a href="prds/done/20260705-nbutko-m3-character-sheet.html#open">open tuning questions</a> M3 shipped with placeholders for.</li>
-  </ul>
-  <ul>
-    <li>This milestone doesn't really "end" — it's the ongoing content/balance loop once the game exists.</li>
-  </ul>
+  <h3>Content v1 &amp; v2 — the 14-tier ladder <span class="tag playable">shipped</span></h3>
+  <p>The text-tier content plan, superseded once by its own v2: the 14-tier difficulty ladder, the
+  dungeon→tier mapping, and the generation pipeline that produces it, covered evergreen in
+  <a href="content.html">content.html</a>. v1 PRD:
+  <a href="prds/done/20260704-nbutko-content-v1.html">prds/done/20260704-nbutko-content-v1.html</a>;
+  v2 scope: <a href="prds/done/20260707-nbutko-content-v2-tiers.html">prds/done/20260707-nbutko-content-v2-tiers.html</a>;
+  v2 build: <a href="plans/done/20260707-nbutko-content-v2-tiers.html">plans/done/20260707-nbutko-content-v2-tiers.html</a>.</p>
 </div>
 
 <div class="milestone">
-  <h3>M6 — Visual upgrade <span class="tag playable">playable: stretch, optional</span></h3>
-  <p>Once the text-only game is proven and stable, swap in real monster art/sprites and start pulling in
-  tier 7–10 long-form content (see <a href="prds/done/20260704-nbutko-content-v1.html">Content Plan</a>: public-domain children's
-  books, excerpted). This is deliberately last and deliberately optional — the game is already complete and
-  playable without it.</p>
-  <ul>
-    <li>Deliverable: the same battles, now with actual monster illustrations instead of text descriptions.</li>
-  </ul>
+  <h3>Combat retune <span class="tag playable">shipped</span></h3>
+  <p>The damage-cap, per-tier-factor, and crit-wiring pass that closed the M3 crit-range gap (DEX and a
+  weapon's crit range now move crit odds and damage). Scope:
+  <a href="prds/done/20260708-nbutko-combat-retune.html">prds/done/20260708-nbutko-combat-retune.html</a>;
+  build: <a href="plans/done/20260708-nbutko-combat-retune.html">plans/done/20260708-nbutko-combat-retune.html</a>. User feel-verification was never recorded.</p>
 </div>
 
-<h2>Suggested build order recap</h2>
-<ol>
-  <li>M0: math spike (no UI)</li>
-  <li>M1: one real battle, one monster</li>
-  <li>M2: save file, XP, skill tree, more monsters</li>
-  <li>M3: power-ups, text/CSS-based animation, sound, more text tiers</li>
-  <li>M4: hosting + PWA + Chromebook install</li>
-  <li>M5: playtest-driven balance and content, forever</li>
-  <li>M6: real art + long-form (tier 7–10) content, whenever it's worth the time</li>
-</ol>
+<div class="milestone">
+  <h3 id="m5">M5 — Content &amp; balance pass <span class="tag playable">in progress</span></h3>
+  <p>The ongoing playtest-driven loop: watch where he struggles or gets bored, and retune the character layer
+  M3 handed off with placeholder numbers — M2's Focus/Luck/Utility skill branches were retired in
+  <a href="#m3">M3</a> and absorbed into the six ability scores and D&amp;D leveling, and it's here that layer
+  gets its real numbers (XP-to-level pacing, per-modifier magnitudes, HP scale, weapon/item pricing, the
+  fumble/inspiration knobs), alongside content and roster growth as the ladder expands. This milestone
+  doesn't "end" — it's the ongoing content/balance loop for as long as the game keeps being played. Active
+  plan and PRD linked above in <a href="#where">Where we are, what's next</a>.</p>
+</div>
+
+<div class="milestone">
+  <h3 id="m6">M6 — Visual upgrade <span class="tag playable">ahead, optional</span></h3>
+  <p>Once the text-only game is proven and stable, swap in real monster art/sprites and pull in tier 7–10
+  long-form content (public-domain children's books, excerpted — see
+  <a href="prds/done/20260704-nbutko-content-v1.html">content-v1</a>). This is deliberately last and
+  deliberately optional — the game is already complete and playable without it.</p>
+</div>
 
 </main>
 <footer class="page-foot"><a href="index.html">← Back to overview</a></footer>

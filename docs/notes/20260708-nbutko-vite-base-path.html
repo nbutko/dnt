@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: The /dnt/ Base Path Is Build-Only — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>vite-base-path</code></nav>
+<header class="page-head">
+  <h1><code>/dnt/</code> is a production-build-only base path</h1>
+  <p class="tagline"><code>npm run dev</code> always serves from root; only the built site (deployed on every
+  push to <code>main</code>) is served from the <code>/dnt/</code> subpath.</p>
+  <span class="status">author: nbutko · opened: 2026-07-08 · relates to: <a href="../plans/done/20260708-nbutko-m4-ship-it.html">M4 ship-it plan</a></span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're adding an absolute asset path or a link that assumes a particular
+  base path, debugging a 404 that only happens on the deployed site (never in <code>npm run dev</code>), or
+  wiring up something new in <code>.github/workflows/deploy.yml</code>.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're touching <code>vite.config.ts</code>'s <code>base</code>, adding an absolute-path asset reference, or
+debugging something that 404s only on <code>nbutko.github.io/dnt/</code> and not locally.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>vite.config.ts</code> (confirmed current) sets <code>base: command === 'build' ? '/dnt/' : '/'</code> —
+  the <code>/dnt/</code> project-pages subpath only applies to the production build, matching
+  <code>https://nbutko.github.io/dnt/</code>. Dev (<code>npm run dev</code>) always serves from root at
+  <code>127.0.0.1:5173/</code>, which is also how it keeps serving <code>/docs/...</code> for agent browser
+  tools (see the companion note on <code>file://</code> URLs). An absolute path hardcoded as
+  <code>/something</code> in app code works in dev but 404s in production because the real path is
+  <code>/dnt/something</code> — always go through Vite's asset handling (import, or <code>%BASE_URL%</code> in
+  <code>index.html</code>, as the manifest link and favicon already do) rather than a literal absolute path.
+</p>
+<p>
+  Deploy itself (<code>.github/workflows/deploy.yml</code>) runs on every push to <code>main</code> (plus
+  manual <code>workflow_dispatch</code>): <code>npm ci &amp;&amp; npm run build</code>, then
+  <code>actions/upload-pages-artifact</code> + <code>actions/deploy-pages</code> publish <code>dist/</code> to
+  GitHub Pages. Concurrency is capped at one deploy at a time (a newer push cancels an in-flight one).
+</p>
+
+<h2>What to do</h2>
+<p>
+  Reference assets the way <code>index.html</code> already does (Vite-resolved imports, or
+  <code>%BASE_URL%</code>), never a literal leading <code>/</code>. If something works locally but 404s on the
+  live site, check whether it's an absolute path that skipped Vite's base-path substitution before suspecting
+  the deploy workflow itself.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-08 — base path and deploy workflow added in M4 (commit <code>b54fcb4</code>, re-triggered by
+  <code>176afd3</code> once Pages' Source setting was switched to "GitHub Actions").</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

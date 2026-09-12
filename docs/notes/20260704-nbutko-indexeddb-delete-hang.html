@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Deleting the Save DB From DevTools Can Hang the Origin — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>indexeddb-delete-hang</code></nav>
+<header class="page-head">
+  <h1>Deleting the save DB from DevTools can wedge the whole origin</h1>
+  <p class="tagline">Deleting an IndexedDB database from DevTools while any tab still holds an open connection
+  to it can leave that origin's IndexedDB answering nothing, forever — a debugging action, not a code bug.</p>
+  <span class="status">author: nbutko · opened: 2026-07-04</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You (or an agent driving a browser tool) want to reset save state during
+  testing by deleting the IndexedDB database from DevTools' Application panel or console, or you're staring at
+  an app that went permanently blank at one origin right after doing that.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're trying to wipe a save for testing and a tab that has (or recently had) the app open at that origin is
+still around.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>indexedDB.deleteDatabase()</code> — whether triggered from DevTools' delete button or the console —
+  blocks until every open connection to that database closes. If a tab holding an open <code>SaveProvider</code>
+  connection is left around (even backgrounded, even a different tab than the one you're deleting from), the
+  delete request can sit pending forever, and the origin's IndexedDB store then answers no further
+  <code>open()</code> calls either. The symptom is identical to the companion note's
+  (<a href="20260705-nbutko-indexeddb-open-can-hang.html">IndexedDB's <code>open()</code> can hang forever</a>)
+  — a blank page, no console error — but the cause here is a debugging action, not app code. Confirmed with
+  <code>fake-indexeddb</code> unit tests and by opening a fresh database name in the same tab: the app's own
+  code was not at fault.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Close (or fully reload) every tab open at that origin before deleting its save database from DevTools. If a
+  hang happens anyway, switching origin (<code>127.0.0.1:5173</code> vs <code>localhost:5173</code> — see
+  <a href="20260705-nbutko-localhost-vs-127-separate-origins.html">the separate-origins note</a>) is a faster
+  way to get a clean slate than debugging the reducer/storage code. Prefer
+  <code>hardResetSave()</code> (<code>src/domain/save.ts</code>) or the app's own UI for wiping a save where
+  possible, rather than deleting the database out from under a live connection.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-04 — hit during M2 development while resetting a save between test runs; traced to the open
+  connection, not a reducer/storage bug.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

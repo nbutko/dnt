@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: ESLint Is Pinned to 8.57.1 — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>eslint-pinned</code></nav>
+<header class="page-head">
+  <h1>ESLint is deliberately pinned to 8.57.1</h1>
+  <p class="tagline">Not the latest ESLint — <code>eslint-config-airbnb</code> and
+  <code>airbnb-typescript</code> don't support ESLint's flat config, so a newer major would need a compat
+  shim this project doesn't want.</p>
+  <span class="status">author: nbutko · opened: 2026-07-04</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're about to run <code>npm update</code>/<code>npm outdated</code>
+  and see ESLint flagged as behind, or you're tempted to bump it to pick up a new rule or fix a warning about
+  "flat config is the new default."
+</div>
+
+<h2>Relevant when</h2>
+<p>You're updating dependencies and ESLint (or one of the <code>eslint-config-airbnb*</code> packages) shows up
+as outdated.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>package.json</code> pins <code>eslint</code> to exactly <code>8.57.1</code> (confirmed current as of
+  this note), not a caret range. <code>eslint-config-airbnb</code> (19.0.4) and
+  <code>eslint-config-airbnb-typescript</code> (18.0.0) — the base of <code>.eslintrc.cjs</code> — only support
+  ESLint's legacy (<code>.eslintrc</code>) config format, not the flat-config format ESLint 9+ defaults to.
+  Bumping ESLint past 8 would need a <code>FlatCompat</code> shim (or waiting on upstream airbnb-config flat
+  support) that isn't worth the complexity for a solo project.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Don't bump <code>eslint</code> alone. If ESLint 9+ is ever wanted, that's a deliberate migration: either wait
+  for <code>eslint-config-airbnb</code>/<code>airbnb-typescript</code> to ship flat-config support, or migrate
+  <code>.eslintrc.cjs</code> to a flat <code>eslint.config.js</code> with a <code>FlatCompat</code> bridge and
+  re-verify every rule still applies (the two custom syntax bans — no <code>function</code>, no
+  <code>class</code> — are hand-written <code>no-restricted-syntax</code> rules and should survive either way).
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-04 — pinned during M0 setup; still the pinned version as of this note.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

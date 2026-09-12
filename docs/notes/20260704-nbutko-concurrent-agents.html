@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Unfamiliar Files May Be a Concurrent Agent's Work — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>concurrent-agents</code></nav>
+<header class="page-head">
+  <h1>Unfamiliar files may be another agent's work in progress</h1>
+  <p class="tagline">More than one agent session can be working in this repo at the same time — a file you
+  didn't create and don't recognize might be legitimate, not a stray artifact to delete.</p>
+  <span class="status">author: nbutko · opened: 2026-07-04</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You (an agent) notice a file in the working tree that you don't
+  remember creating, that isn't mentioned in your own session's plan, and that looks unfinished or unwired —
+  before deleting it, cleaning it up, or silently committing it as your own, read this.
+</div>
+
+<h2>Relevant when</h2>
+<p>An unexplained file shows up mid-session that you didn't create and can't account for from the task in front
+of you.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>docs/monster-manual.json</code> (a ~4500-line D&amp;D-style monster reference dataset) appeared
+  unexplained mid-session during M0, created by a different concurrent agent session working on future
+  content/roster work — not a bug, not a stray file, and not something the session that found it had asked
+  for. The parallel-worktree structure this project's docs-refactor itself uses (multiple story branches at
+  once) makes this more likely, not less: another session's checked-out worktree or in-flight commit can leave
+  files that look orphaned to a session that hasn't seen the plan behind them.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Don't assume an unfamiliar file is a stray artifact and delete it, and don't silently commit it as part of
+  unrelated work either — check with the user (or, in a multi-agent/worktree setup, check whether another
+  story/session owns it) before doing either. If it turns out to be legitimate, treat it as that other
+  session's deliverable and leave it for that session (or its commit) to land normally.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-04 — <code>monster-manual.json</code> confirmed as another agent's concurrent work and committed
+  (<code>41209ca</code>); it later became real pipeline input (moved to
+  <code>content-pipeline/monster-manual.json</code> in the docs-refactor's Story 6).</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

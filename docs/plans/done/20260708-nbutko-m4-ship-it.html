@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan: M4 Ship It — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>m4-ship-it</code></nav>
+<header class="page-head">
+  <h1>M4 Implementation Plan — Ship It</h1>
+  <p class="tagline">Getting the game onto the Chromebook: hosting, an installable/offline PWA, and a real
+  favicon.</p>
+  <span class="status">feature: <code>m4-ship-it</code> · author: nbutko · opened: 2026-07-08 · status: <strong>done</strong>
+  · PRD: no (none was written for M4) · wireframes: no (none was written for M4)</span>
+</header>
+<div class="banner done">
+  <p><strong>Reconstructed 2026-09-12</strong> from the maintainer's session memory and git history — no plan
+  existed for M4 when it shipped. Rebuilt from commits <code>b54fcb4</code>, <code>176afd3</code>,
+  <code>6258e29</code>, <code>67ead92</code> (all 2026-07-08). Evergreen home:
+  <a href="../../architecture.html#hosting">architecture.html's hosting section</a>.</p>
+</div>
+<main>
+
+<p>
+  M4's goal per the <a href="../../roadmap.html">roadmap</a> was simply to get the game playable on the actual
+  target device: hosted somewhere stable, installable as an app icon, and working offline. No PRD or
+  wireframes were written — this was infrastructure work with no new screen or player-facing decision to
+  argue for, just a plan's worth of stories to execute.
+</p>
+
+<h2>Stories &amp; tasks</h2>
+<ul class="tasks">
+  <li>☑ <strong>GitHub Pages deploy</strong> (<code>b54fcb4</code>, re-triggered by <code>176afd3</code>).
+  Set <code>vite.config.ts</code>'s <code>base</code> to <code>/dnt/</code> for the production build only (dev
+  stays at root); added <code>.github/workflows/deploy.yml</code> to build with <code>npm ci &amp;&amp; npm run
+  build</code> and publish <code>dist/</code> via <code>actions/upload-pages-artifact</code> +
+  <code>actions/deploy-pages</code> on every push to <code>main</code>. <code>176afd3</code> was an empty
+  re-trigger once Pages' Source setting was switched to "GitHub Actions" in the repo's own settings (a one-time
+  manual toggle, not something a commit can do). Live at
+  <a href="https://nbutko.github.io/dnt/">nbutko.github.io/dnt</a>.</li>
+  <li>☑ <strong>Hand-rolled PWA</strong> (<code>6258e29</code>). Added <code>public/manifest.webmanifest</code>
+  (standalone display, the favicon as its icon) and a dependency-free <code>public/sw.js</code>
+  (network-first for navigations so deploys propagate, cache-first for hashed assets and Google Fonts) —
+  written by hand rather than via <code>vite-plugin-pwa</code>/workbox specifically so it can't break under
+  rolldown-vite (see the <a href="../../notes/20260708-nbutko-pwa-hand-rolled.html">PWA note</a>). Registered
+  production-only from <code>main.tsx</code>; <code>sw.js</code> added to ESLint's <code>ignorePatterns</code>
+  as a browser SW-globals script outside the typed app graph.</li>
+  <li>☑ <strong>Real favicon</strong> (<code>67ead92</code>). Replaced the template favicon with a gold d20 on
+  a "bright brown" radial plate, traced from <code>Die.tsx</code>'s <code>gold</code> variant and using the
+  <code>borderGold</code>/<code>accentGold</code> token family; no face number (muddies the mark at 16px). One
+  SVG serves the tab favicon, the PWA/home-screen icon, and <code>apple-touch-icon</code>.</li>
+  <li>☐ <strong>Install + offline test on the real Chromebook</strong> — the roadmap's literal M4 deliverable.
+  Never recorded as done in any commit or session memory; still open as of this reconstruction. Whoever picks
+  this up should tick it here once it's actually been run on the device, not assume the PWA plumbing above is
+  equivalent to having tried it.</li>
+</ul>
+
+<h2>What's still true</h2>
+<p>
+  The game is a public static SPA with no backend — the save lives in the browser's IndexedDB, so progress is
+  per-device (no cross-device sync, by design). Google Fonts still load from the CDN at runtime rather than
+  being self-hosted; the service worker just caches them after first use. See
+  <a href="../../notes/20260708-nbutko-vite-base-path.html">the base-path note</a> for the
+  dev-vs-build split and deploy trigger, and
+  <a href="../../notes/20260708-nbutko-pwa-hand-rolled.html">the PWA note</a> for the service worker's
+  caching strategy.
+</p>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← plans index</a> · plan for <code>m4-ship-it</code></footer>
+</body>
+</html>

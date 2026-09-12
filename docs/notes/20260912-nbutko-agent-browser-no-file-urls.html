@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Agent Browser Tools Can't Open file:// URLs — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>agent-browser-no-file-urls</code></nav>
+<header class="page-head">
+  <h1>Agent browser tools can't open <code>file://</code> URLs — and the dev server can't tell you a link is
+  broken</h1>
+  <p class="tagline">A human opens docs straight from disk; an agent's browser tool needs
+  <code>npm run dev</code> and <code>/docs/...</code> — and either way, the dev server's SPA fallback returns
+  200 for any path, so HTTP link-checking is meaningless here.</p>
+  <span class="status">author: nbutko · opened: 2026-09-12</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're an agent about to verify a doc renders correctly, or about to
+  write a link-checking script, or wondering why a browser tool navigation to a local file path fails outright.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're rendering-checking a <code>docs/</code> page with a browser tool, or writing/running any kind of link
+audit.</p>
+
+<h2>The gotcha</h2>
+<p>
+  A human maintainer can open any <code>docs/</code> page directly with a
+  <code>file:///Users/.../dnt/docs/...</code> URL — every doc's relative stylesheet and links are written to
+  work that way. Agent browser tools, however, are blocked from opening <code>file://</code> URLs at all, so an
+  agent must instead run <code>npm run dev</code> and open <code>http://127.0.0.1:5173/docs/...</code> (the dev
+  server serves the whole repo root, not just the app). Separately — and this trips people up even when using
+  the dev server — Vite's SPA fallback returns HTTP 200 for <em>any</em> path that doesn't match a real file,
+  because it's designed to hand unmatched routes to the client-side app. That means an HTTP-based link checker
+  (curl, fetch-and-check-status) cannot distinguish a real doc page from a typo'd path: both return 200. It
+  looks like proof a link works when it proves nothing.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Verify docs render by opening them with an agent browser tool via <code>npm run dev</code>'s
+  <code>127.0.0.1:5173/docs/...</code> URL, not <code>file://</code>. Check links by reading the filesystem
+  directly (does the target path actually exist on disk), never by an HTTP status code against the dev server —
+  see the docs-refactor plan's <a href="../plans/wip/20260912-nbutko-docs-refactor.html">§7.1 link audit</a>
+  for the filesystem-based script this project actually uses.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-09-12 — written while building the docs-refactor's link audit, which is filesystem-based
+  specifically because of the SPA-fallback trap above.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

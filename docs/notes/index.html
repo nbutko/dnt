@@ -25,6 +25,34 @@
     like an off-by-one bug (there are only 11 dungeons).</td>
   </tr>
   <tr>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-save-migrations.html">Save migrations are brittle by design</a></td>
+    <td>You're changing <code>SaveData</code>'s shape or version, or debugging why an old save reset instead of
+    loading.</td>
+  </tr>
+  <tr>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-indexeddb-delete-hang.html">Deleting the save DB from DevTools can hang the origin</a></td>
+    <td>You're resetting save state via DevTools' IndexedDB delete while a tab still holds the app open.</td>
+  </tr>
+  <tr>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-case-only-filenames.html">Case-only filename collisions fail <code>tsc -b</code></a></td>
+    <td>You're naming a new file and an existing one differs only by capitalization, or a build fails with
+    TS1149/TS1261.</td>
+  </tr>
+  <tr>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-eslint-pinned.html">ESLint is pinned to 8.57.1</a></td>
+    <td>You're updating dependencies and ESLint (or an <code>eslint-config-airbnb</code> package) shows up as
+    outdated.</td>
+  </tr>
+  <tr>
+    <td>2026-07-04</td>
+    <td><a href="20260704-nbutko-concurrent-agents.html">Unfamiliar files may be a concurrent agent's work</a></td>
+    <td>An unexplained file shows up mid-session that you didn't create and can't account for.</td>
+  </tr>
+  <tr>
     <td>2026-07-05</td>
     <td><a href="20260705-nbutko-indexeddb-open-can-hang.html">IndexedDB open can hang forever</a></td>
     <td>You're gating UI on an IndexedDB open resolving, or debugging a screen that renders blank with no
@@ -36,7 +64,6 @@
     <td>A save (or other browser storage) appears to reset between two sessions that both look like port 5173
     — check the hostname before suspecting a save bug.</td>
   </tr>
-  
   <tr>
     <td>2026-07-08</td>
     <td><a href="20260708-nbutko-class-balance-spread.html">Class balance spread</a></td>
@@ -44,10 +71,38 @@
     the other three classes.</td>
   </tr>
   <tr>
+    <td>2026-07-08</td>
+    <td><a href="20260708-nbutko-pwa-hand-rolled.html">The PWA is hand-rolled, not a plugin</a></td>
+    <td>You're changing caching behavior, adding a PWA feature, or debugging why stale assets are served after
+    a deploy.</td>
+  </tr>
+  <tr>
+    <td>2026-07-08</td>
+    <td><a href="20260708-nbutko-vite-base-path.html"><code>/dnt/</code> is a production-build-only base path</a></td>
+    <td>You're adding an absolute asset path, or debugging a 404 that only happens on the deployed site.</td>
+  </tr>
+  <tr>
+    <td>2026-07-09</td>
+    <td><a href="20260709-nbutko-flex-min-width.html">Flex items need <code>min-w-0</code> to wrap text</a></td>
+    <td>A <code>flex-1</code> child holding text is stretching far wider than its container instead of
+    wrapping.</td>
+  </tr>
+  <tr>
     <td>2026-09-12</td>
     <td><a href="20260912-nbutko-docs-inventory.html">Docs inventory (pre-refactor)</a></td>
     <td>You are planning or executing the <code>docs-refactor</code>, or an old doc path turns up and you need to
     know where its content went.</td>
+  </tr>
+  <tr>
+    <td>2026-09-12</td>
+    <td><a href="20260912-nbutko-battles-lost-dead-field.html"><code>stats.battlesLost</code> is dead</a></td>
+    <td>You're about to read or display <code>stats.battlesLost</code> expecting it to hold real loss data.</td>
+  </tr>
+  <tr>
+    <td>2026-09-12</td>
+    <td><a href="20260912-nbutko-agent-browser-no-file-urls.html">Agent browser tools can't open <code>file://</code> URLs</a></td>
+    <td>You're rendering-checking a <code>docs/</code> page with a browser tool, or writing a link-checking
+    script.</td>
   </tr>
 </table>
 

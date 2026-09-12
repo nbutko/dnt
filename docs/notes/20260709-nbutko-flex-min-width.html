@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Flex Items Need min-w-0 to Wrap Text — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>flex-min-width</code></nav>
+<header class="page-head">
+  <h1>A flex item's default <code>min-width: auto</code> can blow out to thousands of pixels</h1>
+  <p class="tagline">Without <code>min-w-0</code>, a flex child holding unbroken text sizes itself to fit that
+  text instead of wrapping — the battle panels once measured a 6581px-wide column before this was found.</p>
+  <span class="status">author: nbutko · opened: 2026-07-09</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're building a flex layout that's supposed to wrap or truncate long
+  text (a prompt panel, a name field, any <code>flex-1</code> child with a text node inside), and the column
+  is instead stretching far wider than its container.
+</div>
+
+<h2>Relevant when</h2>
+<p>A <code>flex-1</code> (or similar) child containing text isn't wrapping/truncating as expected and the
+layout stretches unexpectedly wide.</p>
+
+<h2>The gotcha</h2>
+<p>
+  A flex item's default <code>min-width</code> is <code>auto</code>, which means "at least as wide as my
+  content" — for a text node with no natural break points (a long unbroken passage, or one Tailwind's default
+  <code>flex-1</code> doesn't override), that lets the item's measured width blow past its flex container
+  entirely instead of wrapping or shrinking. This surfaced in the M5 multiline-typing work
+  (commit <code>f1f7f4f</code>) as a non-wrapping battle line measuring <strong>6581px</strong> wide instead of
+  respecting the panel's intended column width.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Add Tailwind's <code>min-w-0</code> to any <code>flex-1</code> (or other flex-grow) container that's supposed
+  to wrap or truncate its text content. Both battle panels in
+  <code>src/ui/battle/BattleScreen.tsx</code> carry it today (confirmed at the two
+  <code>min-w-0 flex-1</code> divs, with an inline comment explaining why) — copy that pattern for any new
+  flex column that holds prompt/name/label text rather than rediscovering the bug.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-09 — found and fixed alongside the deterministic-wrap multiline typing rework (<code>f1f7f4f</code>).</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

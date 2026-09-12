@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Case-Only Filename Collisions Fail tsc -b — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>case-only-filenames</code></nav>
+<header class="page-head">
+  <h1>Filenames that differ only in case break <code>tsc -b</code></h1>
+  <p class="tagline">Two files whose names differ only by capitalization (e.g. <code>keyboard.ts</code> vs.
+  <code>Keyboard.tsx</code>) fail TypeScript's build-mode casing check with TS1149/TS1261 — not just a
+  macOS-filesystem quirk.</p>
+  <span class="status">author: nbutko · opened: 2026-07-04</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're about to name a new file, and an existing file in the same
+  (or a case-insensitively-colliding) directory has a similar name with different capitalization — or
+  <code>npm run build</code> fails with <code>TS1149</code>/<code>TS1261</code> mentioning two files that look
+  almost identical.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're adding a new source file and another file's name differs only in capitalization, or a build fails
+citing TS1149/TS1261.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>src/ui/battle/keyboard.ts</code> (the module) collided with <code>src/ui/battle/Keyboard.tsx</code> (the
+  component) during M0 — names identical except for the leading letter's case. <code>tsc -b</code>'s
+  cross-file casing check treats this as an error (<code>TS1149</code>/<code>TS1261</code>) on <em>any</em>
+  filesystem, including case-sensitive ones — this is a TypeScript project-reference rule, not a workaround for
+  macOS's (usually case-insensitive) filesystem. The build fails even though the two files coexist fine on
+  disk.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Pick names that differ by more than case. The module was renamed
+  <code>keyboard.ts</code> → <code>keyboard-highlights.ts</code> (still true today, alongside
+  <code>Keyboard.tsx</code> and <code>keyboard-highlights.test.ts</code>) rather than trying to make the
+  casing work. Before naming a new file, check for an existing file whose name matches yours case-insensitively.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-07-04 — hit during M0 while splitting the keyboard-highlighting logic out of the
+  <code>Keyboard.tsx</code> component; renamed to <code>keyboard-highlights.ts</code>, still the name in use.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

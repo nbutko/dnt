@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: stats.battlesLost Is Dead — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>battles-lost-dead-field</code></nav>
+<header class="page-head">
+  <h1><code>stats.battlesLost</code> is a dead field</h1>
+  <p class="tagline">It exists in the save shape and in tests, but no reducer action anywhere ever writes it,
+  and nothing reads it — it's permanently 0 on every real save.</p>
+  <span class="status">author: nbutko · opened: 2026-09-12</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're building a feature that would want a loss count (a hall-of-records
+  screen, a win/loss ratio stat, a "close call" achievement) and are tempted to read
+  <code>save.stats.battlesLost</code> expecting it to hold real data.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're about to read or display <code>stats.battlesLost</code>, or wondering why it's always 0.</p>
+
+<h2>The gotcha</h2>
+<p>
+  <code>SaveData.stats</code> (<code>src/domain/save.ts</code>) declares
+  <code>{ battlesWon, battlesLost, bestWpm }</code>, and <code>battlesLost</code> defaults to <code>0</code> like
+  the rest. But <code>state/save/save-reducer.ts</code>'s <code>award</code> action — the only place
+  <code>stats</code> is ever updated — increments <code>battlesWon</code> on every win and never touches
+  <code>battlesLost</code> anywhere (confirmed: it's the only <code>stats.</code> write in the reducer). No
+  action fires on a loss to increment it either. Nothing in <code>src/ui/</code> reads the field. Unlike
+  <code>stats.bestWpm</code> and <code>powerUpMultiplier</code>, which were "lit up" (wired to real writers) in
+  M3, <code>battlesLost</code> never got its writer.
+</p>
+
+<h2>What to do</h2>
+<p>
+  Don't build a feature on the assumption this field already tracks losses — it doesn't, on any existing save.
+  To make it real: add an action (or extend an existing one, e.g. wherever a dungeon-run wipe is recorded) that
+  increments <code>stats.battlesLost</code> on a lost battle, the same way <code>award</code> increments
+  <code>battlesWon</code> today. No save migration is needed since the field and its default already exist in
+  the v4 shape — only a writer is missing.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-09-12 — confirmed still dead (no writer, no reader) while seeding this note; previously called out
+  only in <code>CLAUDE.md</code>'s Gotchas section.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: Docs Inventory (pre-refactor) — Dungeons & Typing</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>docs-inventory</code></nav>
+<header class="page-head">
+  <h1>Docs Inventory (pre-refactor)</h1>
+  <p class="tagline">What is in <code>docs/</code> on 2026-09-12, what each file is made of, and first thoughts on
+  where the pieces might land under the <code>docs-refactor</code> layout.</p>
+  <span class="status">note · author: nbutko · 2026-09-12 · relates to: <a href="../prds/wip/20260912-nbutko-docs-refactor.html">docs-refactor PRD</a></span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> Read the full note if you are writing or executing the
+  <code>docs-refactor</code> plan and need the file-by-file picture: what each pre-refactor document contains,
+  which parts are PRD-shaped vs. plan-shaped vs. wireframe-shaped vs. evergreen, the inferred date and candidate
+  feature name for each, which files outside <code>docs/</code> link in, and the list of gotchas that could seed
+  <code>notes/</code>. Also useful afterward when a link to an old path (<code>docs/m3-scope.html</code>,
+  <code>docs/design/README.md</code>, …) turns up and you need to know where that content went. Skip it if the
+  refactor is finished and you just want the current docs — use <code>docs/index.html</code>. Nothing here is a
+  decision; the plan decides, this note only lays out the material.
+</div>
+
+<h2>1. Snapshot of <code>docs/</code> today</h2>
+
+<p>Dates are each file's first git commit. Everything in the initial import shares 2026-07-04, so ordering
+within that day comes from milestone number, not the date.</p>
+
+<table>
+  <tr><th>File</th><th>Size</th><th>First commit</th><th>Cross-links from outside <code>docs/</code></th></tr>
+  <tr><td><code>index.html</code></td><td>6 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>style.css</code></td><td>4 KB</td><td>2026-07-04</td><td>—</td></tr>
+  <tr><td><code>roadmap.html</code></td><td>8 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>game-design.html</code></td><td>20 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>architecture.html</code></td><td>16 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>content-plan.html</code></td><td>9 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>m0-implementation.html</code></td><td>26 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>m2-scope.html</code></td><td>24 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>m2-implementation.html</code></td><td>61 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>monster-manual.json</code></td><td>—</td><td>2026-07-04</td><td><code>content-pipeline/manifest-gen.ts</code> reads it at build time</td></tr>
+  <tr><td><code>design/M0 Wireframes.dc.html</code></td><td>71 KB</td><td>2026-07-04</td><td>—</td></tr>
+  <tr><td><code>design/README.md</code></td><td>19 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code>, <code>src/ui/common/Legend.tsx</code>, <code>src/ui/common/nodeState.ts</code> (cites "§3"), <code>src/ui/common/Frame.tsx</code> ("§1/§2"), <code>src/index.css</code></td></tr>
+  <tr><td><code>design/visual-spec.html</code></td><td>13 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code>, <code>src/ui/battle/HealthBar.tsx</code> (<code>#palette</code>), <code>BattleScreen.tsx</code> (<code>#layout</code>)</td></tr>
+  <tr><td><code>design/tokens.json</code></td><td>3 KB</td><td>2026-07-04</td><td><code>CLAUDE.md</code>, <code>src/ui/battle/Key.tsx</code> (<code>#keyboard</code>), <code>src/index.css</code></td></tr>
+  <tr><td><code>codebase-architecture.html</code></td><td>23 KB</td><td>2026-07-05</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>m3-scope.html</code></td><td>37 KB</td><td>2026-07-05</td><td><code>CLAUDE.md</code>, <code>src/domain/character.ts</code></td></tr>
+  <tr><td><code>m3-implementation.html</code></td><td>59 KB</td><td>2026-07-05</td><td><code>CLAUDE.md</code></td></tr>
+  <tr><td><code>design/m3-wireframes.html</code></td><td>96 KB</td><td>2026-07-05</td><td><code>CLAUDE.md</code>, <code>src/ui/common/Tabs.tsx</code> ("turn 2"), <code>src/ui/common/Die.tsx</code> ("turn 4")</td></tr>
+  <tr><td><code>content-plan-v2.html</code></td><td>29 KB</td><td>2026-07-07</td><td>—</td></tr>
+  <tr><td><code>content-plan-v2-tuning.html</code></td><td>34 KB</td><td>2026-07-08</td><td><code>content-pipeline/retune-sweep.ts</code> (cites §2/§3), <code>src/engine/sim/balance.ts</code> and <code>balance.test.ts</code> (cite §3)</td></tr>
+  <tr><td><code>content-plan-v2-tuning-implementation.html</code></td><td>31 KB</td><td>2026-07-08</td><td>—</td></tr>
+  <tr><td><code>m5-game-mechanics-audit.html</code></td><td>41 KB</td><td>2026-07-10</td><td>—</td></tr>
+  <tr><td><code>m5-game-mechanics-implementation.html</code></td><td>32 KB</td><td>2026-07-10</td><td>—</td></tr>
+  <tr><td><code>prds/wip/20260912-nbutko-docs-refactor.html</code></td><td>—</td><td>2026-09-12 (uncommitted)</td><td>already in the new layout</td></tr>
+  <tr><td><code>notes/…</code> (this note, <code>notes/index.html</code>)</td><td>—</td><td>2026-09-12 (uncommitted)</td><td>already in the new layout</td></tr>
+  <tr><td><code>plans/wip/20260912-nbutko-docs-refactor.html</code>, <code>plans/index.html</code></td><td>—</td><td>2026-09-12 (uncommitted)</td><td>already in the new layout</td></tr>
+</table>
+
+<p>The cross-link column counts comments that cite a <code>docs/…</code> path. Many more source comments cite a
+doc by bare name and section, and every one of those goes stale when the file is renamed: eight more
+<code>src/ui/</code> files cite <code>design/README.md §2</code>/<code>§3</code> (<code>DungeonGraph</code>,
+<code>DungeonScreen</code>, <code>DungeonNode</code>, <code>HeartsReadout</code>, <code>HubCard</code>,
+<code>ResourcePill</code>, <code>TierCard</code>, <code>TierTrail</code>); five files cite
+<code>m3-scope.html#creation</code> / <code>#encounter-roll</code> / <code>#mimic-sense</code>
+(<code>src/ui/dungeon/</code>, <code>src/engine/dice/</code>, <code>src/engine/character/ability-roll.ts</code>);
+<code>content-plan-v2.html §2</code>/<code>§3.x</code> is cited from <code>src/config/</code>,
+<code>src/content/monsters.ts</code>, <code>src/engine/sim/balance.ts</code>, and seven
+<code>content-pipeline/*.ts</code> scripts; <code>content-plan-v2-tuning.html §3</code>/<code>§7</code>/<code>§8.x</code>
+from <code>src/engine/</code>, <code>src/config/abilities.ts</code>, and <code>src/domain/</code>. A basename grep
+finds them all; a <code>docs/</code>-path grep does not.</p>
+
+<p>Untracked clutter: <code>docs/.DS_Store</code> and <code>docs/design/.DS_Store</code> exist on disk but are not
+in git. Also on disk but not in the repo: nothing else. <em>Missing</em> from the repo:
+<code>docs/design/support.js</code>, which <code>M0 Wireframes.dc.html</code> loads via
+<code>&lt;script src="./support.js"&gt;</code> — the canvas file has always shipped without its helper, so
+moving it cannot make that worse, but the plan should decide whether to note it or drop the reference.</p>
+
+<h2>2. How the sorting was done</h2>
+
+<ul>
+  <li><strong>Evergreen</strong> = still true about the repo, or fixable to be true by rewriting in the present
+  tense. Test: would a reader in six months be misled by a sentence? If the sentence is a "why" that still
+  holds, it stays; if it is a narrative of how things changed, it goes to <code>done/</code> and gets linked.</li>
+  <li><strong>PRD-shaped</strong> = what the player gets and why: rules, screens described from the player's
+  seat, target numbers, open questions about the experience.</li>
+  <li><strong>Plan-shaped</strong> = how: file/component layout, state homes, seams, API sketches, stories with
+  tasks, "done when," out-of-scope lists, review-note tables, post-playtest checklists.</li>
+  <li><strong>Wireframe-shaped</strong> = the screens themselves and the option comparisons that picked them.</li>
+  <li><strong>Note-shaped</strong> = a gotcha: something surprising that cost time and would cost it again.</li>
+  <li>The old scope/implementation pairs already split cleanly along PRD/plan lines by intent; the mess is in
+  the docs that grew by accretion (content plan ×3, design README, roadmap, index).</li>
+  <li>Feature names below are <em>candidates</em>. The constraint that matters is that a feature's PRD,
+  wireframes, and plan share one name.</li>
+</ul>
+
+<h2>3. Per-document first thoughts</h2>
+
+<h3>Milestone pairs (the easy ones)</h3>
+
+<table>
+  <tr><th>Today</th><th>What's inside</th><th>Might land as</th><th>Thoughts</th></tr>
+  <tr><td><code>m0-implementation.html</code></td>
+    <td>Plan-shaped throughout: review-notes table, state architecture, file layout, engine API sketch, content
+    format, keyboard viz, Stories 0–7 with tasks, out-of-scope.</td>
+    <td><code>plans/done/20260704-nbutko-m0-combat-spike.html</code></td>
+    <td>No PRD ever existed; the "why" was two paragraphs in the roadmap's M0 entry plus the game-design
+    formulas. Probably leave the PRD slot empty and quote the roadmap blurb in the plan's status banner rather
+    than manufacture a PRD. M1 (the vertical slice) has no doc at all; leave it a gap.</td></tr>
+  <tr><td><code>m2-scope.html</code></td>
+    <td>PRD-shaped: world map, 11 habitats, Wordsmith gating, dungeon structure, chests/mimics, hearts, Inn,
+    Shop, XP/coins. Plus a "Save data changes" section (plan-shaped) and open questions.</td>
+    <td><code>prds/done/20260704-nbutko-m2-progression-loop.html</code></td>
+    <td>The save-data section could migrate to the plan, or stay as a data-model requirement — either reads
+    fine. The Inn skill tree described here was retired in M3; the status banner must say so and point at the
+    M3 PRD.</td></tr>
+  <tr><td><code>m2-implementation.html</code></td>
+    <td>Plan-shaped: review notes, five stores, file layout, the skill-tree→combat seam, Stories 0–11,
+    out-of-scope. <em>Then two appended sections:</em> "Post-playtest feedback checklist" and "…round 2."</td>
+    <td><code>plans/done/20260704-nbutko-m2-progression-loop.html</code></td>
+    <td>The playtest tails are a record of what happened after the plan closed — keep them in the plan as an
+    appendix under the banner, and mine them for note-shaped gotchas (§5). One of its review-note rows records
+    that <code>m2-scope</code> was once mis-filed under <code>design/</code> — mildly funny given this
+    refactor; it can stay.</td></tr>
+  <tr><td><code>m3-scope.html</code></td>
+    <td>PRD-shaped: six abilities, leveling, classes, creation, two dice, mimic sense, weapons, items, Shop,
+    drops, "what this changes," open questions. Links heavily into the wireframes by turn id.</td>
+    <td><code>prds/done/20260705-nbutko-m3-character-sheet.html</code></td>
+    <td>The cleanest existing example of a PRD; a good candidate for the template's tone. Its open-questions
+    list is the origin of the "tuning knobs deferred to M5" theme — the banner should say which were since
+    answered (crit wiring by the retune, leveling by the M5 batch).</td></tr>
+  <tr><td><code>m3-implementation.html</code></td>
+    <td>Plan-shaped: review notes, two new state tenants, three pure-function seams, Stories 0–14 (each tagged
+    with the wireframe turn it implements), out-of-scope. Story 14 was itself a "docs pass."</td>
+    <td><code>plans/done/20260705-nbutko-m3-character-sheet.html</code></td>
+    <td>Good plan template material: story headers carry a category tag and a wireframe reference. Keep the
+    <code>t1…t8</code> anchor references working after the wireframe move.</td></tr>
+  <tr><td><code>design/m3-wireframes.html</code></td>
+    <td>Eight <code>section.dv-turn</code> blocks (<code>#t1</code>–<code>#t8</code>): creation, Inn tabs,
+    Shop, encounter d20, ability flashes, Bag, Armory, mimic sense. Self-styled (its own CSS, not
+    <code>style.css</code>).</td>
+    <td><code>wireframes/done/20260705-nbutko-m3-character-sheet.html</code></td>
+    <td>Two source comments (<code>Tabs.tsx</code>, <code>Die.tsx</code>) cite it by path; every other
+    "wireframe turn N" comment is prose only. So the move needs those two comments, the <code>CLAUDE.md</code>
+    link, and the M3 scope/plan links updated. Anchors must survive.</td></tr>
+  <tr><td><code>m5-game-mechanics-audit.html</code></td>
+    <td>Parts I–III + V are PRD-shaped (what works, the structural wall, nine findings, prioritized
+    recommendations). Part IV is a verified bug ledger B1–B15 — plan-shaped, and the M5 plan's Phase A maps
+    onto it one-to-one.</td>
+    <td><code>prds/wip/20260710-nbutko-m5-game-mechanics.html</code>, possibly minus Part IV</td>
+    <td>Split option: move the ledger into the plan (it is literally the Phase A task list) and leave the PRD
+    with findings and recommendations. Non-split option: keep whole, since every plan story cites audit
+    numbers and re-numbering would break those citations. Lean: keep whole, add the wip banner. Decisions
+    recorded in it (dungeons 9–11 are the parents' game; no profiles) are PRD content and stay.</td></tr>
+  <tr><td><code>m5-game-mechanics-implementation.html</code></td>
+    <td>Plan-shaped: phase table, Stories 1–19 with tasks and "done when," each with an unchecked
+    <code>☐ code merged · ☐ verified by Claude · ☐ verified by user</code> line.</td>
+    <td><code>plans/wip/20260710-nbutko-m5-game-mechanics.html</code></td>
+    <td>The active plan. Its checkboxes are all empty, yet the 2026-07-09 playtest-fix batch (leveling, XP
+    curve, multiline wrap, debug-text removal) shipped the day <em>before</em> it was written and overlaps
+    some stories. Reconciling which stories are already partly done is a task for the refactor plan, not a
+    doc move. Also the reference case for what a plan template's task checkboxes should look like.</td></tr>
+</table>
+
+<h3>The content-plan lineage (three docs, three shapes each)</h3>
+
+<table>
+  <tr><th>Today</th><th>What's inside</th><th>Might land as</th><th>Thoughts</th></tr>
+  <tr><td><code>content-plan.html</code> (v1)</td>
+    <td>PRD-shaped: 10 difficulty tiers, sourcing (hand-authored T1–6, public-domain books T7–10), monster
+    roster, a short "visual identity" section.</td>
+    <td><code>prds/done/20260704-nbutko-content-v1.html</code></td>
+    <td>Fully superseded by v2's 14-tier ladder; banner says so. The "visual identity" paragraph is the only
+    part that might still be current — check against the visual spec before scrubbing. <code>CLAUDE.md</code>
+    still points here as "the content doc," so an evergreen replacement is required.</td></tr>
+  <tr><td><code>content-plan-v2.html</code></td>
+    <td>§1–2 the 14-tier ladder and dungeon→tier mapping (PRD, and current); §3 the generation pipeline
+    (manifest → drills → draw → compose → lint → merge; plan-shaped, and shipped as
+    <code>content-pipeline/</code>) with its measured prototype yields (record); §4 the cast of characters
+    (content, current); §5 a worked example (the Swamp); §6 status &amp; build order; §7 the cheap-generation
+    implementation (agent tree, cost, spawn plan).</td>
+    <td>PRD: <code>prds/done/20260707-nbutko-content-v2-tiers.html</code>; plan: same name under
+    <code>plans/done/</code>; evergreen: a new content doc</td>
+    <td>Three-way split candidate. The evergreen content doc would state the ladder, the mapping, the cast, and
+    how the pipeline works today in present tense; the PRD keeps the ladder rationale ("one new demand per
+    tier") and the cast as designed; the plan keeps the pipeline stages, lint rules, and volume targets with
+    their measurements. If a three-way split feels like too much surgery, PRD + evergreen with the pipeline
+    steps left in the PRD as an appendix is the fallback.</td></tr>
+  <tr><td><code>content-plan-v2-tuning.html</code></td>
+    <td>§1–6 tuning targets (three-corner model, per-boss level/wpm, battle shape, five-stage ramp,
+    prerequisites, sim questions) — PRD; §7 sim findings 1–4 — the "why" for the fixes; §8 remediation plan
+    8.1–8.5 — plan-shaped and duplicated almost verbatim as the implementation doc's Stories 1–5; §9 converged
+    numbers after the retune — record, and the source for evergreen numbers.</td>
+    <td><code>prds/done/20260708-nbutko-combat-retune.html</code> (§1–7); §8 merged into or cross-linked
+    from the plan; §9 folded into <code>game-design.html</code> and left in the PRD's banner</td>
+    <td><code>content-pipeline/retune-sweep.ts</code> cites "§2/§3" of this doc in comments — keep the
+    section numbering or update the comment. Confirm <code>game-design.html</code> already reflects §9
+    (the retune plan's Story 5 claimed a docs pass; verify rather than assume).</td></tr>
+  <tr><td><code>content-plan-v2-tuning-implementation.html</code></td>
+    <td>Plan-shaped: the measure-everything rule, where the knobs live, the seam note (CHA charm), Stories 1–5
+    with tasks and <code>☑ Code merged / ☑ Verified by Claude / ☐ Verified by User</code> lines, "adjacent,
+    deliberately not in this pass."</td>
+    <td><code>plans/done/20260708-nbutko-combat-retune.html</code></td>
+    <td>The "verified by user" boxes are still unchecked. Memory says feel-verification never formally
+    happened; the banner should state that honestly rather than tick them. The "adjacent, not in this pass"
+    list partly became the M5 audit's findings — worth a forward link.</td></tr>
+</table>
+
+<h3>The design folder</h3>
+
+<table>
+  <tr><th>Today</th><th>What's inside</th><th>Might land as</th><th>Thoughts</th></tr>
+  <tr><td><code>design/README.md</code></td>
+    <td>Mixed. Handoff framing ("about the design files," fidelity, which option is canonical: 2a / 3a / 3b /
+    4a) — wireframe-shaped. Screens 1–3 and 5–9 described as shipped, plus Interactions, State Management,
+    Design Tokens, Assets — evergreen visual reference. Screen 4 (Inn skill tree) marked RETIRED — history.</td>
+    <td>Evergreen: merged into the visual spec (or a sibling "screens" doc); wireframe-shaped parts:
+    <code>wireframes/done/20260704-nbutko-core-screens.md</code> or folded into the M0/M2 wireframe entries</td>
+    <td>Only Markdown file in <code>docs/</code>. Four source comments cite it by <code>docs/</code> path (one
+    of them by "§3") and eight more by bare <code>design/README.md §N</code> (see the list under §1), so the
+    dungeon-graph node-state description needs a stable new home and the comments need repointing. Converting
+    to HTML during the merge keeps the "one format" rule.</td></tr>
+  <tr><td><code>design/visual-spec.html</code></td>
+    <td>Evergreen: palette, typography, the Vertical Duel layout, keyboard states, "M3 screens reuse this
+    system," assets checklist. Anchors <code>#palette</code>, <code>#layout</code> are cited from source.</td>
+    <td><code>docs/visual-spec.html</code> (top level)</td>
+    <td>The one doc memory explicitly says to follow literally. Keep anchors; the "(2a)" option label in its
+    layout heading is the only history smell.</td></tr>
+  <tr><td><code>design/tokens.json</code></td>
+    <td>Evergreen data: colors, fonts, keyboard key states. Cited from <code>Key.tsx</code> as
+    <code>#keyboard</code>.</td>
+    <td><code>docs/design-tokens.json</code> or next to the visual spec</td>
+    <td>Not read by code at runtime (the app's <code>@theme</code> block duplicates it by hand), so a rename is
+    safe; the comment repoint is the only cost.</td></tr>
+  <tr><td><code>design/M0 Wireframes.dc.html</code></td>
+    <td>A Claude Design canvas: battle options 2a/2b/2c, world map 3a, dungeon graph 3b, Inn 4a — i.e. it
+    covers the M0/M1 <em>and</em> M2 screens despite the name. Self-contained styling; references a missing
+    <code>support.js</code>.</td>
+    <td><code>wireframes/done/20260704-nbutko-core-screens.dc.html</code> — or split the name decision: it is
+    the wireframe artifact for both <code>m0-combat-spike</code> and <code>m2-progression-loop</code></td>
+    <td>The shared-feature-name rule strains here because one canvas served two features. Options: name it by
+    content (<code>core-screens</code>) and link it from both plans' headers, or duplicate under both names
+    (wasteful, 71 KB). Lean: name by content, link from both. Keep the <code>.dc.html</code> extension.</td></tr>
+</table>
+
+<h3>Evergreen candidates (top level)</h3>
+
+<table>
+  <tr><th>Today</th><th>State</th><th>Thoughts</th></tr>
+  <tr><td><code>index.html</code></td><td>Stale ("Planning stage — no code yet"); lists docs as a numbered
+    "planning docs" grid.</td><td>Rewrite as the doc index: evergreen docs, the four sub-indexes, the
+    conventions doc, and the pitch/principles (those are still true).</td></tr>
+  <tr><td><code>roadmap.html</code></td><td>Mixed: M0–M2 entries are history, M3 entry narrates the scope
+    change, M4 is described as future (it shipped), M5 is current, M6 is future. "Build order recap" lists
+    M3 as "power-ups" (superseded).</td><td>Rewrite to "where we are, what's next": M5 in progress, M6 ahead,
+    each done milestone reduced to a one-line link into <code>done/</code>. The milestone narratives are raw
+    material for the done PRDs' status banners.</td></tr>
+  <tr><td><code>game-design.html</code></td><td>Mostly current rules. Needs a check that the damage section
+    carries the retune's cap and per-tier factors, the XP table matches the M5 batch's reward retune, and
+    crit is described as wired.</td><td>Evergreen, in place; verify numbers against <code>src/config/</code>
+    rather than against older docs.</td></tr>
+  <tr><td><code>architecture.html</code></td><td>Stack, three state homes, code style, "things worth knowing
+    going in," persistence, content data model, "getting it onto the Chromebook" (written as a plan; now
+    shipped), non-goals.</td><td>Evergreen, in place; hosting/PWA to present tense. "Things worth knowing"
+    is note-shaped — candidates for <code>notes/</code>, with the section shrunk to what is architectural.
+    Overlaps <code>codebase-architecture.html</code>; the plan should decide whether two docs are warranted or
+    one absorbs the other.</td></tr>
+  <tr><td><code>codebase-architecture.html</code></td><td>Current map of <code>src/</code>; a few "as of
+    M3" / "retired M2's…" phrasings; a "known pending gap" that has since closed (crit wiring).</td>
+    <td>Evergreen, in place; scrub the narration.</td></tr>
+  <tr><td><code>style.css</code></td><td>Shared docs stylesheet.</td><td><code>style/style.css</code>; every
+    doc's <code>&lt;link&gt;</code> becomes a relative path of the right depth.</td></tr>
+  <tr><td><code>monster-manual.json</code></td><td>Reference data read by the content pipeline.</td>
+    <td>Stay put. Moving it is a code change.</td></tr>
+  <tr><td>(new) conventions doc</td><td>Does not exist.</td><td>The PRD's §4 rules, the lifecycle checklist,
+    template locations, the author-as-hint rule, the stale-note rule. Probably <code>docs/conventions.html</code>
+    or folded into the index if short.</td></tr>
+  <tr><td>(new) content doc</td><td>Does not exist as evergreen.</td><td>Ladder, mapping, cast, pipeline as
+    shipped. Replaces <code>content-plan.html</code> as <code>CLAUDE.md</code>'s "content" pointer.</td></tr>
+</table>
+
+<h3>Outside <code>docs/</code></h3>
+<ul>
+  <li><code>CLAUDE.md</code>: doc table (six links), milestone-doc list (six links), working rules (five
+  <code>docs/design/</code> links), the "M3 is done; M4 is next" line, the Gotchas section, the memory
+  paragraph. Every one changes.</li>
+  <li><code>src/</code>: twelve files with comments citing a <code>docs/…</code> path or section — eight under <code>src/ui/</code> plus <code>src/index.css</code>, <code>src/domain/character.ts</code>, and the two <code>src/engine/sim/balance*</code> files (all listed in §1). Comments only; nothing in <code>src/</code> reads a doc at runtime.</li>
+  <li><code>content-pipeline/</code>: two comments citing tuning-doc sections by path; seven scripts citing
+  <code>content-plan-v2.html §N</code> by bare name; one runtime read of <code>monster-manual.json</code>.</li>
+  <li><code>.claude/settings.local.json</code>: permission strings containing old doc paths — harmless, no
+  change needed.</li>
+  <li><code>vite.config.ts</code>: a comment noting dev serves <code>/docs/</code>; still true.</li>
+  <li>Auto-memory (<code>~/.claude/projects/-Users-nb-Documents-dnt/memory/</code>): five project-status files
+  whose "next is …" content the roadmap and plans index will now carry, and three user/feedback files that
+  stay personal. See §5 for the gotchas worth extracting first.</li>
+</ul>
+
+<h2>4. Candidate feature names and dates</h2>
+
+<table>
+  <tr><th>Feature name</th><th>Date</th><th>PRD</th><th>Wireframes</th><th>Plan</th></tr>
+  <tr><td><code>m0-combat-spike</code></td><td>20260704</td><td>— (gap)</td><td>core-screens canvas (shared)</td><td>from m0-implementation</td></tr>
+  <tr><td><code>m2-progression-loop</code></td><td>20260704</td><td>from m2-scope</td><td>core-screens canvas (shared) + README handoff parts</td><td>from m2-implementation</td></tr>
+  <tr><td><code>content-v1</code></td><td>20260704</td><td>from content-plan</td><td>—</td><td>— (gap)</td></tr>
+  <tr><td><code>m3-character-sheet</code></td><td>20260705</td><td>from m3-scope</td><td>from m3-wireframes</td><td>from m3-implementation</td></tr>
+  <tr><td><code>content-v2-tiers</code></td><td>20260707</td><td>from content-plan-v2 §1–2, §4</td><td>—</td><td>from content-plan-v2 §3 (if split)</td></tr>
+  <tr><td><code>combat-retune</code></td><td>20260708</td><td>from content-plan-v2-tuning §1–7</td><td>—</td><td>from …-tuning-implementation (+ §8)</td></tr>
+  <tr><td><code>m5-game-mechanics</code></td><td>20260710</td><td>from the audit (wip)</td><td>— (Phase C screens have none yet; a wip wireframe slot is open)</td><td>from m5-…-implementation (wip)</td></tr>
+  <tr><td><code>docs-refactor</code></td><td>20260912</td><td>exists (wip)</td><td>—</td><td>exists (wip)</td></tr>
+</table>
+
+<p>Not in the table: <strong>M1</strong> (no doc of any kind) and <strong>M4</strong> (hosting + PWA; no doc,
+but memory holds a detailed record of what was built and the commits exist). M4 is the borderline case for the
+"restate, don't invent" rule — a short done plan reconstructed from the memory record and commit history would
+be restating something written, just not written in the repo. Lean: put the how-it-works in
+<code>architecture.html</code> (evergreen) and the gotchas in notes, and skip the retro plan unless it turns
+out to be nearly free.</p>
+
+<h2>5. Gotchas that could seed <code>notes/</code></h2>
+
+<p>Collected from <code>CLAUDE.md</code>'s Gotchas section, the memory files, and what is known of the M2 plan's
+playtest tails. Each would become <code>notes/2026MMDD-nbutko-&lt;topic&gt;.html</code> with the original date
+where it is known. Items marked <em>evergreen instead</em> are architectural facts, not traps, and belong in a
+top-level doc rather than a note.</p>
+
+<table>
+  <tr><th>Topic</th><th>Source</th><th>Relevant when…</th></tr>
+  <tr><td>Save migrations are brittle (exact version literal, unrecognized saves wiped, v2→v3 and v3→v4 history)</td><td>CLAUDE.md; M5 memory</td><td>changing the save shape</td></tr>
+  <tr><td>Deleting IndexedDB from the console while the app holds a connection hangs Chrome for that origin (blank page, no error)</td><td>M2 memory</td><td>a blank page after tinkering with storage</td></tr>
+  <tr><td>File names differing only by case (<code>keyboard.ts</code> vs <code>Keyboard.tsx</code>) fail <code>tsc -b</code> (TS1149/TS1261), not just macOS</td><td>M0 memory</td><td>adding a file next to a similarly named component</td></tr>
+  <tr><td>ESLint is pinned to 8.57.1 because the airbnb configs don't support flat config</td><td>M0 memory</td><td>upgrading lint tooling</td></tr>
+  <tr><td>Flex children default to <code>min-width:auto</code>; a non-wrapping line blew the measured column to 6581px until <code>min-w-0</code> was added</td><td>M5 memory</td><td>layout measurements come back absurd</td></tr>
+  <tr><td>Agent browser tools can't open <code>file://</code>; use <code>npm run dev</code> and <code>/docs/…</code></td><td>CLAUDE.md</td><td>an agent needs to view a doc or the app</td></tr>
+  <tr><td><code>stats.battlesLost</code> is in the save shape but never written</td><td>CLAUDE.md</td><td>reading stats or adding a loss counter</td></tr>
+  <tr><td>The PWA is hand-rolled (rolldown-vite reports v8, no vite-plugin-pwa); <code>sw.js</code> is eslint-ignored; fonts come from Google's CDN and are runtime-cached</td><td>M4 memory</td><td>touching offline behavior or the service worker</td></tr>
+  <tr><td>Vite <code>base</code> is <code>/dnt/</code> only for production builds; deploy is every push to main via Actions</td><td>M4 memory</td><td>a deployed asset 404s or a local path works but the site doesn't</td></tr>
+  <tr><td>Other agents may work in the repo concurrently; unfamiliar files (e.g. <code>monster-manual.json</code>'s arrival) may be legitimate</td><td>M0 memory</td><td>an unexplained file appears mid-session</td></tr>
+  <tr><td>The design-canvas <code>.dc.html</code> references a <code>support.js</code> that isn't in the repo</td><td>this inventory</td><td>the M0 wireframe canvas renders oddly</td></tr>
+  <tr><td>The combat retune's "verified by user" boxes were never ticked; Wizard is structurally weakest</td><td>content-wiring memory</td><td>retuning classes or reading the retune plan's status</td></tr>
+  <tr><td>Battle launches inside <code>DungeonScreen</code>, not as a top-level screen</td><td>CLAUDE.md</td><td><em>evergreen instead</em> — codebase-architecture</td></tr>
+  <tr><td>Per-point ability magnitudes are placeholders</td><td>CLAUDE.md</td><td><em>evergreen instead</em> — game-design / roadmap</td></tr>
+  <tr><td>Drive the app, don't trust tests alone — it found real bugs twice</td><td>feedback memory</td><td><em>already a working rule</em> in CLAUDE.md; no note needed</td></tr>
+  <tr><td>Whatever the M2 plan's two playtest-feedback tails contain</td><td>m2-implementation</td><td>to be read during the plan; not yet mined</td></tr>
+</table>
+
+<h2>6. Questions the plan has to settle</h2>
+<ul>
+  <li>Three-way split of content-plan-v2, or PRD + evergreen only?</li>
+  <li>Audit whole, or bug ledger into the plan?</li>
+  <li>One canvas serving two features: name by content, or duplicate?</li>
+  <li>Does <code>design/README.md</code> merge into the visual spec or become a second evergreen doc? Either way,
+  where does the dungeon-graph node-state description (cited from source) live?</li>
+  <li><code>architecture.html</code> and <code>codebase-architecture.html</code>: two docs or one?</li>
+  <li>A retro plan for M4, or evergreen + notes only?</li>
+  <li>Which M5 stories are already partly shipped by the 07-09 batch, and how to record that in a wip plan?</li>
+  <li>Conventions as its own doc or as a section of the index?</li>
+  <li>Order of operations: move-and-relink everything first (one big mechanical commit), then split and scrub
+  doc by doc? Or one feature at a time? The mechanical-first order keeps every intermediate state link-clean.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a> · This note is a pre-refactor snapshot; once <code>docs-refactor</code> closes, the plan in <code>plans/done/</code> is the record of what actually happened.</footer>
+</body>
+</html>

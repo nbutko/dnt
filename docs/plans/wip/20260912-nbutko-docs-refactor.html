@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan: Docs Refactor — Dungeons & Typing</title>
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>docs-refactor</code></nav>
+<header class="page-head">
+  <h1>Plan: Docs Refactor</h1>
+  <p class="tagline">Move, split, and scrub every document in <code>docs/</code> into the evergreen / artifact /
+  note layout, one source document at a time, with the links clean after every commit.</p>
+  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>wip</strong>
+  · PRD: <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">yes</a> · wireframes: no (no screens change)</span>
+</header>
+<main>
+
+<p>
+  This is the implementation plan for <code>docs-refactor</code>. The
+  <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">PRD</a> says what the layout must be and why
+  (requirements R1–R12); the <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> is
+  the raw material — what every current file contains and who links to it. This document makes the calls the
+  note left open, fixes every file's destination, and breaks the work into stories that each end in one
+  link-clean commit.
+</p>
+
+<h2>1. Scope</h2>
+<ul>
+  <li><strong>In:</strong> everything under <code>docs/</code>; <code>CLAUDE.md</code>; the twelve source files
+  and two <code>content-pipeline/</code> files whose comments cite a doc path (plus the comments that cite a
+  doc by bare name — found by grep, per §2.2); the maintainer's session memory
+  (project-status files migrate into notes).</li>
+  <li><strong>Out:</strong> game code, tests, and the build. The one code touch is the path
+  <code>content-pipeline/manifest-gen.ts</code> reads <code>monster-manual.json</code> from (see §4). No new
+  tooling: the link audit in §7 is a script an agent runs, not CI.</li>
+  <li><strong>Deliverable:</strong> the tree in §3, every file in it true or banner'd, the four indexes complete,
+  the conventions doc and templates written, and this PRD + plan closed into <code>done/</code> as the first
+  worked example.</li>
+</ul>
+
+<h2>2. Approach</h2>
+
+<h3>2.1 Order of operations — what is cheapest for agents</h3>
+<p>
+  The expensive resource here is agent context, not keystrokes. The documents being reshaped are 20–96 KB
+  each; loading one costs more than any amount of <code>sed</code>. So the plan is organized around one rule:
+</p>
+<div class="callout decision">
+  <strong>Read each source document once.</strong> In the story that handles it, an agent reads the document,
+  writes <em>every</em> output it produces (PRD, plan, wireframe page, evergreen doc, notes) with their final
+  paths and links, removes the original, repoints every inbound link, updates the indexes, and runs the link
+  audit — then commits. No document is moved in one story and split in another.
+</div>
+<p>That rule, plus the requirement that links resolve at every commit, gives this order:</p>
+<ol>
+  <li><strong>Scaffold first (Stories 0–1).</strong> Create the directories, move the stylesheet into
+  <code>style/</code> and relink every existing document once, write the conventions doc, templates, and the
+  four index pages. After this, every destination exists and no later story touches a file just to fix its
+  <code>&lt;link rel="stylesheet"&gt;</code>.</li>
+  <li><strong>Then the design folder (Story 2).</strong> The milestone plans link into the wireframes, so the
+  wireframes must land first. This is also the story that dissolves <code>design/README.md</code>, whose
+  content fans out to three destinations; doing it in one story means the README is read once.</li>
+  <li><strong>Then one feature per story, chronologically (Stories 3–8).</strong> M0, M2, M3, content v1+v2,
+  the combat retune, M5. Each story is independent of the others once Story 2 is in; they only share the index
+  pages, <code>docs/index.html</code>, <code>roadmap.html</code>, and <code>CLAUDE.md</code>, where each story
+  makes one-line href repoints.</li>
+  <li><strong>Then notes and memory (Story 9).</strong> Gotchas from <code>CLAUDE.md</code> and memory become
+  notes; the memory files are pruned. Done after the feature stories so the notes Stories 4 and 7 mine from the M2
+  tails and the retune are already in place and the rest of the index fills in one pass.</li>
+  <li><strong>Evergreen scrub last (Story 10).</strong> The top-level docs must link to final paths and state
+  the final truth, and checking numbers against <code>src/config/</code> should happen once. The index page is
+  rewritten wholesale here; until then it carries the old cards with repointed hrefs.</li>
+  <li><strong><code>CLAUDE.md</code> rewrite and full audit (Story 11), then close-out (Story 12).</strong></li>
+</ol>
+
+<h3>2.2 Working rules for every story</h3>
+<ul>
+  <li><strong><code>git mv</code> for whole-file moves.</strong> For a split, <code>git mv</code> the original to
+  its largest output (usually the plan) so history follows the bulk of the text, then create the smaller
+  outputs as new files. <code>git rm</code> only when every section of a file has landed somewhere.</li>
+  <li><strong>Mechanical edits by script, not by hand.</strong> Stylesheet relinks, href repoints, and source
+  comment updates are <code>sed</code>/<code>grep</code> jobs. Only the splits and scrubs need a document
+  actually read.</li>
+  <li><strong>Find inbound links by grep, not memory.</strong> Before removing an old path, run
+  <code>grep -rl '&lt;old basename&gt;' docs CLAUDE.md src content-pipeline</code> and fix every hit. The audit
+  script in §7 is the backstop.</li>
+  <li><strong>Forward links use today's path.</strong> A banner or note written in one story that links a
+  document a <em>later</em> story moves (Story 4's link to the M3 PRD, Story 7's to the M5 PRD) targets that
+  document's current path, so the audit stays clean; the later story's inbound grep repoints it.</li>
+  <li><strong>Interim index rule.</strong> Until Story 10, <code>docs/index.html</code> keeps its old cards; a move
+  story only repoints the card's href. A card is never left pointing at a deleted file.</li>
+  <li><strong>The split in §3–§5 is a proposal, not a decree.</strong> Whoever reads a source document (usually
+  a subagent handling one story) is the only one who has actually seen it whole, and may come back with a
+  different split — fewer or more outputs, a section that belongs elsewhere, a feature name that fits better —
+  with a sentence of reasoning per change. The orchestrating agent is the arbiter: it accepts or rejects, and
+  on acceptance updates §3, §5, and the story's tasks in the same commit as the content, so this plan always
+  matches the tree. A proposal that would move content out of <code>docs/</code>, delete content, or change a
+  path that code reads goes to the maintainer at the check-in instead.</li>
+  <li><strong>Banners, not rewrites.</strong> A relocated done document gets a status banner at the top (what
+  shipped, what didn't, where the evergreen description now lives, "reconstructed" if applicable) and reconciled
+  checkboxes. Its body is restated and reorganized, never re-argued. Verification boxes that were never ticked
+  stay unticked and the banner says so.</li>
+  <li><strong>Over-split, tolerate redundancy.</strong> When a section serves two documents, copy it into both
+  (with a one-line "copied from …" note) so each document reads on its own. A reader should never have to open
+  a second file to understand the one in front of them.</li>
+  <li><strong>Every story ends the same way:</strong> run the link audit, run the index check, open one moved
+  file at its new depth via the dev server (and, if a human is present, via <code>file://</code>), commit, stop,
+  check in.</li>
+  <li><strong>Source-comment stories run <code>npm run lint</code></strong> (they touch <code>src/</code>, even if
+  only comments). Pure docs commits skip presubmit per <code>CLAUDE.md</code>.</li>
+</ul>
+
+<h3>2.3 Parallelism</h3>
+<p>
+  Stories 3–8 are independent after Story 2 and could run in parallel worktrees, one feature each. The only
+  merge points are the index pages, <code>docs/index.html</code>, <code>roadmap.html</code>, and
+  <code>CLAUDE.md</code>, all of which take one-line additions per story and merge trivially. The default is
+  still one agent in sequence with a check-in per story — the "one story = one commit" rule is the point, and
+  the total is a day's work, not a week's. Parallelize only if a second agent is idle anyway.
+</p>
+
+<h2>3. Target layout — every file, final</h2>
+<p>"Final" as of planning. Per §2.2, a story may revise its own rows here once its author has read the
+source; the tree below is kept current as those revisions land.</p>
+<pre><code>docs/
+├── index.html                    evergreen: pitch, principles, doc index, links to the four sub-indexes
+├── conventions.html              NEW  evergreen: layout, naming, lifecycle, indexes, notes, close-out checklist
+├── roadmap.html                  evergreen (rewritten): where we are, what's next, one-liners into done/
+├── game-design.html              evergreen: combat math, abilities, leveling, dice, weapons, items (retune numbers verified)
+├── content.html                  NEW  evergreen: 14-tier ladder, dungeon→tier map, the cast, pipeline as it runs today
+├── architecture.html             evergreen: stack, state lifetimes, persistence, hosting + PWA as shipped
+├── codebase-architecture.html    evergreen: the src/ map (scrubbed of milestone narration)
+├── visual-spec.html              evergreen (from design/): palette, type, layout, keyboard; anchors #palette #layout kept
+├── screens.html                  NEW  evergreen (from design/README.md): every shipped screen, interactions, node states
+├── design-tokens.json            evergreen data (from design/tokens.json); "keyboard" key kept, "meta" scrubbed
+├── style/
+│   ├── style.css                 (from docs/style.css) + .banner and .tasks rules
+│   └── templates/  prd.html · wireframes.html · plan.html · note.html
+├── prds/
+│   ├── index.html
+│   ├── wip/   20260710-nbutko-m5-game-mechanics.html
+│   │          20260912-nbutko-docs-refactor.html            (→ done/ at close)
+│   └── done/  20260704-nbutko-content-v1.html
+│              20260704-nbutko-m2-progression-loop.html
+│              20260705-nbutko-m3-character-sheet.html
+│              20260707-nbutko-content-v2-tiers.html
+│              20260708-nbutko-combat-retune.html
+├── wireframes/
+│   ├── index.html
+│   ├── wip/   (empty; .gitkeep)
+│   └── done/  20260704-nbutko-core-screens.dc.html          the Claude Design canvas, shared by the next two
+│              20260704-nbutko-m0-combat-spike.html          battle screen: direction 2a, rejected 2b/2c
+│              20260704-nbutko-m2-progression-loop.html      map 3a, dungeon graph 3b, Inn 4a (retired)
+│              20260705-nbutko-m3-character-sheet.html       (from design/m3-wireframes.html; #t1–#t8 kept)
+├── plans/
+│   ├── index.html
+│   ├── wip/   20260710-nbutko-m5-game-mechanics.html
+│   │          20260912-nbutko-docs-refactor.html            (this file → done/ at close)
+│   └── done/  20260704-nbutko-m0-combat-spike.html
+│              20260704-nbutko-m2-progression-loop.html      (+ playtest tails as an appendix)
+│              20260705-nbutko-m3-character-sheet.html
+│              20260707-nbutko-content-v2-tiers.html
+│              20260708-nbutko-combat-retune.html
+│              20260708-nbutko-m4-ship-it.html               reconstructed; banner says so
+└── notes/
+    ├── index.html
+    ├── 20260912-nbutko-docs-inventory.html
+    └── one file per gotcha (list in Story 9; Stories 4 and 7 add theirs)
+</code></pre>
+<p>Gone after the refactor: <code>docs/design/</code> (all four files relocated or dissolved),
+<code>docs/style.css</code>, every <code>m*-</code>/<code>content-plan*</code> file at the top level, and
+<code>docs/monster-manual.json</code> (moved to <code>content-pipeline/</code>, its only consumer). No
+<em>content</em> is deleted; <code>design/README.md</code> is the one file removed outright, because all of it
+lands in <code>screens.html</code> and the two wireframe pages.</p>
+
+<h2>4. Decisions</h2>
+
+<div class="callout decision">
+  <strong>Content plan v2: three-way split.</strong> §1–2 (ladder, mapping), §4 (cast), §5 (worked example) →
+  the <code>content-v2-tiers</code> PRD. §3 (generation method), §6 (status &amp; build order, turned into
+  stories), §7 (the cheap-generation implementation) → the <code>content-v2-tiers</code> plan. A new evergreen
+  <code>content.html</code> restates the ladder, mapping, cast, and the pipeline as it runs today, in the present
+  tense, and replaces <code>content-plan.html</code> as <code>CLAUDE.md</code>'s content pointer.
+</div>
+
+<div class="callout decision">
+  <strong>M5 audit: whole into the PRD; bug ledger also copied into the plan.</strong> Parts I–V stay together
+  as <code>prds/wip/20260710-nbutko-m5-game-mechanics.html</code> so every "Finding N" and "B7" citation in the
+  plan keeps resolving. Part IV's ledger table is <em>additionally</em> appended to the plan as an appendix
+  ("copied from the PRD"), because Phase A's eight stories are that table and the plan should read alone.
+</div>
+
+<div class="callout decision">
+  <strong>One canvas, two features: name the canvas by content, write a wireframe page per feature.</strong>
+  The Claude Design file becomes <code>wireframes/done/20260704-nbutko-core-screens.dc.html</code> (extension
+  kept; the <code>support.js</code> script tag removed — the file never existed). Two ordinary wireframe pages,
+  <code>…-m0-combat-spike.html</code> and <code>…-m2-progression-loop.html</code>, carry the handoff prose from
+  <code>design/README.md</code> (which option is canonical, what was rejected, fidelity) and link into the canvas.
+  The feature-name rule holds for the pages; the canvas is a shared asset the index describes as such.
+</div>
+
+<div class="callout decision">
+  <strong><code>design/README.md</code> dissolves into three HTML documents; no Markdown remains in
+  <code>docs/</code>.</strong> "About the design files" / "Fidelity" / screens 1–4 with their option letters →
+  the two wireframe pages. "Overview", screens 1–3 and 5–9 <em>as shipped</em>, "Interactions &amp; Behavior",
+  "State Management", "Design Tokens", "Assets", "Files" → the new evergreen <code>screens.html</code>, present
+  tense, with stable anchors (<code>#battle</code>, <code>#map</code>, <code>#dungeon-graph</code>,
+  <code>#node-states</code>, <code>#creation</code>, <code>#inn</code>, <code>#shop</code>,
+  <code>#encounter-d20</code>, <code>#bag</code>). Screen 4 (the retired skill tree) appears only in the M2
+  wireframe page with a retired banner. <code>visual-spec.html</code> stays a separate document about the
+  visual <em>system</em> (palette, type, layout grammar, keyboard); <code>screens.html</code> is about the
+  <em>screens</em>. Source comments citing "README.md §3" repoint to <code>screens.html#node-states</code>.
+</div>
+
+<div class="callout decision">
+  <strong><code>architecture.html</code> and <code>codebase-architecture.html</code> stay two documents.</strong>
+  Architecture answers "what is the stack, where does state live and why, how is it persisted and hosted";
+  codebase-architecture answers "where in <code>src/</code> is X and what may import what." Story 10 removes the
+  duplicated Stack section from one of them (keep it in architecture, link from codebase-architecture) and
+  moves the note-shaped "Things worth knowing going in" items into <code>notes/</code>.
+</div>
+
+<div class="callout decision">
+  <strong>M4 gets a short reconstructed plan.</strong> The memory file and the four <code>M4:</code> commits of
+  2026-07-08 are a written record, so restating them is not inventing. <code>plans/done/20260708-nbutko-m4-ship-it.html</code>
+  is one screen long, opens with a banner saying it was reconstructed on 2026-09-12 from memory and git history,
+  and records the one unfinished deliverable (install + offline test on the real Chromebook was never logged).
+  No PRD, no wireframes. If it grows past a screen, stop — the point is a complete milestone series in
+  <code>plans/index.html</code>, not a retro novel. M1 stays a gap.
+</div>
+
+<div class="callout decision">
+  <strong>M5 plan reconciliation: a dated status banner plus per-story lines, not silent ticks.</strong> The
+  three <code>M5:</code> commits of 2026-07-08/09 (<code>ad47bb7</code> leveling fix + v3→v4 save reconcile,
+  <code>6ac5cf5</code> XP-reward retune, <code>f1f7f4f</code> multiline wrap) predate the plan. Story 8 reads
+  each commit's summary against each story's "done when"; a story fully covered gets its "code merged" box
+  ticked with the hash; a story partly covered gets a "partly done by <code>hash</code>: …" line under its
+  header and no tick. The banner lists the mapping so a reader sees it in one place.
+</div>
+
+<div class="callout decision">
+  <strong>Conventions get their own evergreen doc, <code>docs/conventions.html</code>.</strong> It is the
+  document <code>CLAUDE.md</code> points at for "how do I open / name / index / close a feature." The index
+  page carries a two-line pointer to it, not the rules.
+</div>
+
+<div class="callout decision">
+  <strong><code>design-tokens.json</code> stays a top-level evergreen doc, not in <code>style/</code>.</strong>
+  Nothing reads it: <code>src/index.css</code>'s <code>@theme</code> block mirrors it by hand, and the comments
+  in <code>Key.tsx</code>, <code>Flash.tsx</code>, and <code>index.css</code> cite it as the reference. It is
+  the machine-readable half of <code>visual-spec.html</code> — a spec of the <em>game's</em> look, exactly as
+  evergreen as the spec. <code>style/</code> is for the <em>docs'</em> own presentation (the stylesheet,
+  templates); putting game tokens there would invite the next agent to confuse the two. Its <code>meta</code>
+  block ("source: M0 wireframe pass", "appliesFrom M0 or M1") is history and is replaced by one line saying
+  <code>src/index.css</code> mirrors it by hand.
+</div>
+
+<div class="callout decision">
+  <strong><code>monster-manual.json</code> moves to <code>content-pipeline/monster-manual.json</code>.</strong>
+  Its only consumer is <code>content-pipeline/manifest-gen.ts</code> (a relative <code>readFileSync</code> from
+  the pipeline's own directory), and the pipeline already keeps its other inputs there (<code>dice.json</code>,
+  the per-habitat corpora). It is pipeline input data, not documentation, and it was only ever in
+  <code>docs/</code> because that is where it was dropped. The move is one path string plus one comment, done
+  in Story 6 with the content docs; the four doc links and the <code>CLAUDE.md</code> line repoint to
+  <code>../content-pipeline/monster-manual.json</code>, which resolves both from <code>file://</code> and from
+  the dev server (it serves the repo root). This is the plan's single code edit; the PRD's R9 allows it.
+</div>
+
+<div class="callout decision">
+  <strong>Missing files: drop the reference.</strong> The only case is <code>support.js</code> in the design
+  canvas. Remove the script tag; no note needed once the reference is gone.
+</div>
+
+<div class="callout decision">
+  <strong>Checkbox glyphs, not form controls.</strong> Tasks and status lines use <code>☐</code> / <code>☑</code>
+  text, as the M5 and retune plans already do, wrapped in a <code>.tasks</code> list so they render as a
+  checklist. HTML checkboxes cannot persist state in a static file.
+</div>
+
+<div class="callout decision">
+  <strong>Dates.</strong> Relocated artifacts take their first-commit date (all of the initial import is
+  2026-07-04). Notes take the date the gotcha was learned when the source records it, else 2026-09-12. The
+  reconstructed M4 plan takes 2026-07-08, the day its commits landed.
+</div>
+
+<h2>5. Destination map</h2>
+<p>One row per file that exists today, then the files that will be new. "Story" is where the move happens.</p>
+<table>
+  <tr><th>Today</th><th>Lands as</th><th>Story</th><th>Notes</th></tr>
+  <tr><td><code>style.css</code></td><td><code>style/style.css</code></td><td>0</td><td>every <code>&lt;link&gt;</code> relinked by depth in the same commit</td></tr>
+  <tr><td><code>index.html</code></td><td><code>index.html</code> (rewritten)</td><td>1, 10</td><td>Story 1 adds the artifacts section; Stories 3–8 repoint card hrefs; Story 10 rewrites the cards</td></tr>
+  <tr><td><code>roadmap.html</code></td><td><code>roadmap.html</code> (rewritten)</td><td>10</td><td>hrefs repointed by Stories 3–6 as their targets move</td></tr>
+  <tr><td><code>game-design.html</code></td><td><code>game-design.html</code> (verified)</td><td>7, 10</td><td>retune §9 numbers folded in (7); full check vs <code>src/config/</code> (10)</td></tr>
+  <tr><td><code>architecture.html</code></td><td><code>architecture.html</code> (scrubbed)</td><td>9, 10</td><td>"things worth knowing" → notes (9); hosting/PWA present tense (10)</td></tr>
+  <tr><td><code>codebase-architecture.html</code></td><td><code>codebase-architecture.html</code> (scrubbed)</td><td>10</td><td>"as of M3", "retired M2's", crit "pending" sentence</td></tr>
+  <tr><td><code>monster-manual.json</code></td><td><code>content-pipeline/monster-manual.json</code></td><td>6</td><td>path in <code>manifest-gen.ts</code> updated; doc links → <code>../content-pipeline/…</code></td></tr>
+  <tr><td><code>design/visual-spec.html</code></td><td><code>visual-spec.html</code></td><td>2</td><td>anchors <code>#palette</code>, <code>#layout</code> kept; "(2a)" dropped from the heading text</td></tr>
+  <tr><td><code>design/tokens.json</code></td><td><code>design-tokens.json</code></td><td>2</td><td>not read by code; <code>meta</code> scrubbed; <code>Key.tsx</code>, <code>Flash.tsx</code>, <code>index.css</code> comments repointed</td></tr>
+  <tr><td><code>design/README.md</code></td><td><code>screens.html</code> + the two 20260704 wireframe pages</td><td>2</td><td>then <code>git rm</code>; five inbound comments/links repointed</td></tr>
+  <tr><td><code>design/M0 Wireframes.dc.html</code></td><td><code>wireframes/done/20260704-nbutko-core-screens.dc.html</code></td><td>2</td><td><code>support.js</code> tag removed</td></tr>
+  <tr><td><code>design/m3-wireframes.html</code></td><td><code>wireframes/done/20260705-nbutko-m3-character-sheet.html</code></td><td>2</td><td>self-styled; add a one-line done banner in its own CSS; <code>#t1</code>–<code>#t8</code> unchanged</td></tr>
+  <tr><td><code>m0-implementation.html</code></td><td><code>plans/done/20260704-nbutko-m0-combat-spike.html</code></td><td>3</td><td>no PRD; banner quotes the roadmap's M0 blurb as the recorded "why"</td></tr>
+  <tr><td><code>m2-scope.html</code></td><td><code>prds/done/20260704-nbutko-m2-progression-loop.html</code></td><td>4</td><td>banner: skill tree retired in M3 → M3 PRD</td></tr>
+  <tr><td><code>m2-implementation.html</code></td><td><code>plans/done/20260704-nbutko-m2-progression-loop.html</code></td><td>4</td><td>playtest tails kept as appendix, mined for notes</td></tr>
+  <tr><td><code>m3-scope.html</code></td><td><code>prds/done/20260705-nbutko-m3-character-sheet.html</code></td><td>5</td><td><code>src/domain/character.ts</code> comment repointed; open questions annotated in the banner</td></tr>
+  <tr><td><code>m3-implementation.html</code></td><td><code>plans/done/20260705-nbutko-m3-character-sheet.html</code></td><td>5</td><td>wireframe links → <code>../../wireframes/done/…#tN</code></td></tr>
+  <tr><td><code>content-plan.html</code></td><td><code>prds/done/20260704-nbutko-content-v1.html</code></td><td>6</td><td>banner: superseded by content-v2-tiers</td></tr>
+  <tr><td><code>content-plan-v2.html</code></td><td><code>prds/done/20260707-nbutko-content-v2-tiers.html</code> (§1,2,4,5) + <code>plans/done/20260707-nbutko-content-v2-tiers.html</code> (§3,6,7) + <code>content.html</code></td><td>6</td><td><code>git mv</code> to the PRD (larger); plan and evergreen are new files</td></tr>
+  <tr><td><code>content-plan-v2-tuning.html</code></td><td><code>prds/done/20260708-nbutko-combat-retune.html</code> (whole, §8 also copied into the plan)</td><td>7</td><td>section numbers unchanged: four source comments cite §2/§3</td></tr>
+  <tr><td><code>content-plan-v2-tuning-implementation.html</code></td><td><code>plans/done/20260708-nbutko-combat-retune.html</code></td><td>7</td><td>"verified by user" stays unticked; banner says why</td></tr>
+  <tr><td><code>m5-game-mechanics-audit.html</code></td><td><code>prds/wip/20260710-nbutko-m5-game-mechanics.html</code></td><td>8</td><td>whole; wip banner</td></tr>
+  <tr><td><code>m5-game-mechanics-implementation.html</code></td><td><code>plans/wip/20260710-nbutko-m5-game-mechanics.html</code></td><td>8</td><td>+ ledger appendix + reconciliation banner</td></tr>
+  <tr><td><code>prds/wip/20260912-nbutko-docs-refactor.html</code></td><td>→ <code>prds/done/</code> at close</td><td>12</td><td>already in the layout</td></tr>
+  <tr><td><code>notes/20260912-nbutko-docs-inventory.html</code>, <code>notes/index.html</code></td><td>unmoved</td><td>12</td><td>note gets a "refactor complete" banner at close</td></tr>
+  <tr><td>(new) <code>conventions.html</code></td><td>top level</td><td>1</td><td>R5</td></tr>
+  <tr><td>(new) <code>style/templates/*.html</code></td><td>four files</td><td>1</td><td>R8</td></tr>
+  <tr><td>(new) <code>prds/index.html</code>, <code>wireframes/index.html</code></td><td>—</td><td>1</td><td><code>plans/index.html</code> exists already with this plan listed</td></tr>
+  <tr><td>(new) <code>screens.html</code></td><td>top level</td><td>2</td><td>from the README</td></tr>
+  <tr><td>(new) <code>content.html</code></td><td>top level</td><td>6</td><td>from content-plan-v2</td></tr>
+  <tr><td>(new) <code>plans/done/20260708-nbutko-m4-ship-it.html</code></td><td>—</td><td>9</td><td>reconstructed</td></tr>
+  <tr><td>(new) notes</td><td><code>notes/2026MMDD-nbutko-&lt;topic&gt;.html</code></td><td>4, 7, 9</td><td>list in Story 9</td></tr>
+  <tr><td><code>CLAUDE.md</code></td><td>rewritten doc sections</td><td>2–8 (hrefs), 11 (content)</td><td></td></tr>
+  <tr><td>12 <code>src/</code> + 2 <code>content-pipeline/</code> comments citing a <code>docs/</code> path, plus bare-name citations</td><td>repointed</td><td>2, 5, 6, 7</td><td>comments only; lint after</td></tr>
+  <tr><td>memory <code>project_dnt_*.md</code> (5 files)</td><td>content → notes + roadmap; files deleted</td><td>9</td><td><code>user_*</code> / <code>feedback_*</code> stay</td></tr>
+</table>
+
+<h2>6. Stories &amp; tasks</h2>
+<p>One story, one commit, one check-in. Tasks are ☐ until done. Each story's "done when" is the exit
+check; §7 holds the scripts.</p>
+
+<h3 id="s0">Story 0 — Branch, scaffold, stylesheet into <code>style/</code></h3>
+<ul class="tasks">
+  <li>☐ <code>git checkout -b docs-refactor</code> from <code>main</code>.</li>
+  <li>☐ Create <code>prds/{wip,done}</code>, <code>wireframes/{wip,done}</code>, <code>plans/{wip,done}</code>,
+  <code>notes/</code>, <code>style/templates/</code>; drop a <code>.gitkeep</code> in each directory that will be
+  empty after this story (R1: the empty ones must exist in git).</li>
+  <li>☐ <code>git mv docs/style.css docs/style/style.css</code>. Append rules for <code>.banner</code>
+  (variants <code>.done</code>, <code>.wip</code>, <code>.outdated</code>, <code>.retired</code> — a full-width
+  strip under the header, uppercase label, dated line) and <code>ul.tasks</code> (no bullets, monospace glyph
+  column).</li>
+  <li>☐ Relink every <code>&lt;link rel="stylesheet"&gt;</code> under <code>docs/</code> by depth with
+  <code>sed</code>: top level → <code>style/style.css</code>; <code>design/</code>, <code>notes/</code> →
+  <code>../style/style.css</code>; <code>prds/wip/</code>, <code>plans/wip/</code> → <code>../../style/style.css</code>.
+  (<code>m3-wireframes.html</code> and the canvas are self-styled and untouched.)</li>
+  <li>☐ Run the link audit (§7.1). Open one file at each depth via the dev server and confirm it renders
+  styled; if a human is present, also via <code>file://</code>.</li>
+  <li>☐ Commit: <code>docs-refactor: scaffold directories, move stylesheet to docs/style/</code>.</li>
+</ul>
+<p><em>Done when:</em> tree matches §3's directory skeleton; every HTML doc renders with the shared stylesheet from
+its current location; audit clean.</p>
+
+<h3 id="s1">Story 1 — Conventions doc, templates, index pages</h3>
+<ul class="tasks">
+  <li>☐ Write <code>docs/conventions.html</code>: the layout and what each directory is for; the evergreen
+  rule (present tense, current "why" allowed, link to <code>done/</code> for history, maintenance obligation);
+  naming <code>[YYYYMMDD]-[author]-[feature].html</code>; author-as-context-hint; when a PRD / wireframes are
+  warranted (the PRD's decision callout, restated); the lifecycle (open in <code>wip/</code>, index line, close
+  → reconcile, banner, move, index, evergreen update, note if learned); index upkeep; notes (head summary,
+  "relevant when" line, the stale-banner rule); where templates live; memory holds preferences only. Include
+  the close-out checklist as a copy-pasteable list.</li>
+  <li>☐ Write <code>style/templates/prd.html</code>, <code>wireframes.html</code>, <code>plan.html</code>,
+  <code>note.html</code>. Each renders on its own (stylesheet at <code>../style.css</code>), has the status
+  line in the header, and carries short bracketed prompts in each section. The plan template's skeleton is
+  this document's: Scope, Approach, Decisions, Stories with <code>ul.tasks</code>, Verification, Out of scope.
+  The PRD template's skeleton is the docs-refactor PRD's. The note template opens with the
+  <code>callout why</code> "When to read this" block.</li>
+  <li>☐ Write <code>prds/index.html</code> (wip: docs-refactor; done: empty) and <code>wireframes/index.html</code>
+  (both sections empty, a line saying so). Bring <code>plans/index.html</code> and <code>notes/index.html</code>
+  to the same shape: crumbs, one-line intro linking <code>conventions.html</code>, wip table, done table (the
+  notes index keeps its single table).</li>
+  <li>☐ <code>docs/index.html</code>: add a "Development artifacts" section with cards for the four indexes and
+  a card for <code>conventions.html</code>. Leave the old numbered cards in place for now.</li>
+  <li>☐ Reconcile this plan and the PRD with the templates (same header status line, same section order) so
+  the templates and their first two instances agree.</li>
+  <li>☐ Audit; commit: <code>docs-refactor: conventions doc, templates, index pages</code>.</li>
+</ul>
+<p><em>Done when:</em> an agent given only <code>conventions.html</code> and <code>style/templates/</code> can
+name, place, and index a new feature's docs without reading the PRD (the real test is Story 12).</p>
+
+<h3 id="s2">Story 2 — The design folder: visual spec, screens, wireframes, tokens</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv design/visual-spec.html visual-spec.html</code>; relink stylesheet; drop "(2a)" from the
+  Layout heading text (anchor <code>#layout</code> unchanged); present tense pass ("M3 screens reuse this exact
+  system" → "All screens use this system").</li>
+  <li>☐ <code>git mv design/tokens.json design-tokens.json</code>; replace the <code>meta</code> block with
+  <code>{"mirroredBy": "src/index.css @theme block (by hand)", "spec": "visual-spec.html"}</code>.</li>
+  <li>☐ Read <code>design/README.md</code> once. Write <code>screens.html</code> (evergreen): Overview; screens
+  1–3 and 5–9 as shipped with the anchors listed in §4; Interactions &amp; Behavior; State Management (the
+  cleared / available / locked node-state language under <code>#node-states</code>); Design Tokens (pointing at
+  <code>design-tokens.json</code>); Assets; Files (pointing at the wireframe pages and canvas). No option
+  letters, no "RETIRED" sections — that is history.</li>
+  <li>☐ Write <code>wireframes/done/20260704-nbutko-m0-combat-spike.html</code>: banner (shipped in M1's slice;
+  no PRD); "About the design files" and "Fidelity" from the README; screen 1 as the handoff described it
+  (direction 2a chosen, 2b/2c rejected and why); link into the canvas.</li>
+  <li>☐ Write <code>wireframes/done/20260704-nbutko-m2-progression-loop.html</code>: banner; screens 2 (3a),
+  3 (3b) and 4 (4a, with a <code>.retired</code> banner line: replaced by the M3 character sheet) from the
+  README; the node-state legend copied from <code>screens.html#node-states</code> so the page stands alone;
+  link into the canvas.</li>
+  <li>☐ <code>git mv "design/M0 Wireframes.dc.html" wireframes/done/20260704-nbutko-core-screens.dc.html</code>;
+  delete the <code>&lt;script&gt;</code> line that loads <code>./support.js</code>; confirm it still opens.</li>
+  <li>☐ <code>git mv design/m3-wireframes.html wireframes/done/20260705-nbutko-m3-character-sheet.html</code>;
+  add a one-line done banner in its own inline style; <code>#t1</code>–<code>#t8</code> untouched. It links
+  <code>M0%20Wireframes.dc.html</code> three times — repoint those to <code>20260704-nbutko-core-screens.dc.html</code>.</li>
+  <li>☐ <code>git rm design/README.md</code>; confirm <code>design/</code> is empty and gone.</li>
+  <li>☐ Repoint inbound links: <code>CLAUDE.md</code> (six <code>docs/design/</code> hrefs);
+  <code>src/index.css</code> (tokens + visual-spec line; README line → <code>screens.html#node-states</code>);
+  <code>src/ui/battle/Key.tsx</code>, <code>BattleScreen.tsx</code>, <code>HealthBar.tsx</code>,
+  <code>src/ui/common/Flash.tsx</code> (mentions <code>tokens.json</code> by bare name);
+  <code>src/ui/common/Tabs.tsx</code>, <code>Die.tsx</code>, <code>Legend.tsx</code>, <code>nodeState.ts</code>
+  (→ <code>screens.html#node-states</code>), <code>Frame.tsx</code> (→ <code>screens.html</code>); the eight
+  <code>src/ui/</code> files citing <code>design/README.md §2</code>/<code>§3</code> by bare name (grep
+  <code>README.md</code>). Any doc under <code>docs/</code> linking <code>design/…</code> (grep).</li>
+  <li>☐ Fill <code>wireframes/index.html</code> done section: three pages and the canvas (described as "the
+  design canvas both 20260704 pages link into").</li>
+  <li>☐ <code>npm run lint</code>; audit; commit: <code>docs-refactor: dissolve docs/design/ into visual-spec,
+  screens, wireframes</code>.</li>
+</ul>
+<p><em>Done when:</em> <code>docs/design/</code> no longer exists; every former design link resolves; the
+canvas and all three wireframe pages open; no Markdown under <code>docs/</code>.</p>
+
+<h3 id="s3">Story 3 — M0 combat spike</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv m0-implementation.html plans/done/20260704-nbutko-m0-combat-spike.html</code>; relink
+  stylesheet and internal hrefs (<code>game-design.html</code> → <code>../../game-design.html</code> etc.).</li>
+  <li>☐ Banner: shipped 2026-07-04; no PRD was written — the "why" was the roadmap's M0 entry (quote its two
+  sentences) and <code>game-design.html</code>'s formulas; wireframes: link the M0 wireframe page; evergreen
+  home: <code>game-design.html</code>, <code>codebase-architecture.html</code>.</li>
+  <li>☐ Reconcile Stories 0–7 as ☑ (M0 recorded complete on 2026-07-04).</li>
+  <li>☐ Repoint: <code>CLAUDE.md</code>, <code>docs/index.html</code> card, <code>roadmap.html</code>.</li>
+  <li>☐ <code>plans/index.html</code> done row. Audit; commit: <code>docs-refactor: M0 plan → plans/done</code>.</li>
+</ul>
+
+<h3 id="s4">Story 4 — M2 progression loop</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv m2-scope.html prds/done/20260704-nbutko-m2-progression-loop.html</code>; relink. Banner:
+  shipped 2026-07-04; the Inn skill tree described here was retired in M3 and replaced by ability scores and
+  5e leveling (link the M3 PRD); the "Save data changes" section is left in place as the data-model
+  requirement it was; wireframes: link the M2 wireframe page.</li>
+  <li>☐ <code>git mv m2-implementation.html plans/done/20260704-nbutko-m2-progression-loop.html</code>; relink.
+  Banner: shipped; Stories 0–11 ☑; the two "Post-playtest feedback" sections become an appendix titled "After
+  the plan closed" under the banner, unchanged.</li>
+  <li>☐ Read the two playtest tails once; for each gotcha that would cost time again, write a note (date from
+  the tail if it records one, else 20260704), with head summary and <code>notes/index.html</code> row. Items
+  that are just fixed bugs get no note.</li>
+  <li>☐ Repoint: <code>CLAUDE.md</code>, <code>docs/index.html</code> cards, <code>roadmap.html</code> (two hrefs),
+  any doc linking <code>m2-scope</code>/<code>m2-implementation</code> (grep — the M3 docs likely do).</li>
+  <li>☐ <code>prds/index.html</code>, <code>plans/index.html</code> rows. Audit; commit:
+  <code>docs-refactor: M2 scope/plan → prds,plans/done; playtest notes</code>.</li>
+</ul>
+
+<h3 id="s5">Story 5 — M3 character sheet</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv m3-scope.html prds/done/20260705-nbutko-m3-character-sheet.html</code>; relink; wireframe
+  hrefs → <code>../../wireframes/done/20260705-nbutko-m3-character-sheet.html#tN</code>; anchors
+  <code>#creation</code>, <code>#encounter-roll</code>, <code>#mimic-sense</code> kept (cited by bare name from
+  <code>src/ui/dungeon/</code> and <code>src/engine/</code>). Banner: shipped;
+  the open-questions list annotated: crit wiring closed by <code>combat-retune</code>, leveling/XP by the M5
+  batch, the rest tracked in the M5 PRD.</li>
+  <li>☐ <code>git mv m3-implementation.html plans/done/20260705-nbutko-m3-character-sheet.html</code>; relink;
+  wireframe hrefs as above. Banner: shipped; Stories 0–14 ☑.</li>
+  <li>☐ Repoint: <code>src/domain/character.ts</code> comment and the bare-name <code>m3-scope.html#…</code>
+  comments (grep <code>m3-scope</code>); <code>CLAUDE.md</code>; <code>docs/index.html</code>;
+  <code>roadmap.html</code> (four hrefs incl. <code>#reshaping</code>, <code>#open</code>); grep for the rest.</li>
+  <li>☐ Index rows. <code>npm run lint</code>; audit; commit: <code>docs-refactor: M3 scope/plan → prds,plans/done</code>.</li>
+</ul>
+
+<h3 id="s6">Story 6 — Content v1, content v2, and the evergreen content doc</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv content-plan.html prds/done/20260704-nbutko-content-v1.html</code>; relink. Banner:
+  superseded by <code>content-v2-tiers</code> on 2026-07-07 (link); "Visual identity" checked against
+  <code>visual-spec.html</code> — if it is still true, it stays in the PRD and the evergreen home is noted.</li>
+  <li>☐ Read <code>content-plan-v2.html</code> once. <code>git mv</code> it to
+  <code>prds/done/20260707-nbutko-content-v2-tiers.html</code> and cut it to §1, 2, 4, 5 (section numbers
+  unchanged in both outputs — source comments cite §2 and §3.x by number) plus a banner
+  (shipped 2026-07-07; pipeline is <code>content-pipeline/</code>; evergreen home <code>content.html</code>).</li>
+  <li>☐ Write <code>plans/done/20260707-nbutko-content-v2-tiers.html</code> from §3 (method, drills, lint,
+  volume, merge), §6 (status &amp; build order → stories with ☑ per what shipped), §7 (agent tree, cost, spawn
+  plan). Banner: shipped; note anything §6 listed that did not ship.</li>
+  <li>☐ Write <code>content.html</code> (evergreen): the 14-tier ladder, dungeon → tier mapping, the cast, how
+  the pipeline runs today (verify stage names against the files in <code>content-pipeline/</code> and where
+  the generated JSON lives in <code>src/</code>), and <code>monster-manual.json</code>'s role. Present tense;
+  numbers from the PRD only where the code agrees.</li>
+  <li>☐ <code>git mv docs/monster-manual.json content-pipeline/monster-manual.json</code>; change the
+  <code>readFileSync('../docs/monster-manual.json')</code> path and the header comment in
+  <code>content-pipeline/manifest-gen.ts</code>; repoint the doc links (<code>codebase-architecture.html</code>,
+  the M2 PRD and plan, the M5 plan's mention, <code>CLAUDE.md</code>'s gotcha line) to
+  <code>../content-pipeline/monster-manual.json</code> at the right depth. Prove the script still finds the
+  file: read the head of <code>manifest-gen.ts</code> for how it is invoked, run it so that its output goes to
+  a scratch path or is diffed against the committed <code>content-pipeline/generated/</code>, and confirm the
+  output is unchanged.</li>
+  <li>☐ Repoint: <code>CLAUDE.md</code> content row → <code>content.html</code>; <code>docs/index.html</code>;
+  <code>roadmap.html</code> (M6 entry links <code>content-plan.html</code>); the bare-name
+  <code>content-plan-v2.html §N</code> comments in <code>src/config/</code>, <code>src/content/</code>,
+  <code>src/engine/sim/balance.ts</code>, and seven <code>content-pipeline/*.ts</code> scripts (§2 → the PRD,
+  §3.x → the plan); grep for others.</li>
+  <li>☐ Index rows (two PRDs, one plan). <code>npm run lint</code>; audit; commit: <code>docs-refactor: content
+  plans → prds,plans/done; evergreen content.html; monster-manual → content-pipeline</code>.</li>
+</ul>
+
+<h3 id="s7">Story 7 — Combat retune</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv content-plan-v2-tuning.html prds/done/20260708-nbutko-combat-retune.html</code>; relink;
+  section numbers untouched. Banner: retune shipped 2026-07-08 on branch <code>m3</code>; §9 holds the
+  converged numbers and <code>game-design.html</code> now carries them; user feel-verification never recorded.</li>
+  <li>☐ <code>git mv content-plan-v2-tuning-implementation.html plans/done/20260708-nbutko-combat-retune.html</code>;
+  relink. Append §8 (8.1–8.5) as an appendix "Remediation plan — copied from the PRD". Banner: code merged and
+  Claude-verified for Stories 1–5; "Verified by User" left ☐ on purpose; the "Adjacent, deliberately not in this
+  pass" list forward-links the M5 PRD.</li>
+  <li>☐ <code>game-design.html</code>: confirm the Damage section states the retune's cap, per-tier factors, and
+  crit as wired, against <code>src/config/combat.ts</code> and <code>engine/damage.ts</code>; fix what §9 says
+  and the doc does not.</li>
+  <li>☐ Write <code>notes/20260708-nbutko-class-balance-spread.html</code> (Wizard structurally weakest,
+  Rogue strongest; where the sim harness that shows it lives) with index row.</li>
+  <li>☐ Repoint comments: <code>content-pipeline/retune-sweep.ts</code> (two), <code>src/engine/sim/balance.ts</code>,
+  <code>src/engine/sim/balance.test.ts</code>, plus the bare-name <code>content-plan-v2-tuning.html §N</code>
+  comments in <code>src/engine/</code>, <code>src/config/abilities.ts</code>, <code>src/domain/</code> (grep
+  <code>tuning.html</code>). <code>CLAUDE.md</code> Gotchas mentions
+  <code>content-plan-v2-tuning-implementation.html</code> by name — repoint (Story 11 rewrites the section).</li>
+  <li>☐ Index rows. <code>npm run lint</code>; audit; commit: <code>docs-refactor: combat retune → prds,plans/done</code>.</li>
+</ul>
+
+<h3 id="s8">Story 8 — M5 game mechanics (the active feature)</h3>
+<ul class="tasks">
+  <li>☐ <code>git mv m5-game-mechanics-audit.html prds/wip/20260710-nbutko-m5-game-mechanics.html</code>;
+  relink; wip banner (opened 2026-07-10; plan link).</li>
+  <li>☐ <code>git mv m5-game-mechanics-implementation.html plans/wip/20260710-nbutko-m5-game-mechanics.html</code>;
+  relink; audit hrefs → <code>../../prds/wip/…</code>. Append Part IV's ledger table as an appendix "Bug ledger
+  B1–B15 — copied from the PRD".</li>
+  <li>☐ Reconcile against <code>ad47bb7</code>, <code>6ac5cf5</code>, <code>f1f7f4f</code>: read each commit's
+  message and file list (<code>git show --stat</code>) against Stories 1–19's "done when"; tick "code merged"
+  only for full coverage, otherwise add a "partly done by …" line. Write the mapping into a dated
+  "Status as of 2026-09-12" banner.</li>
+  <li>☐ Repoint: <code>docs/index.html</code> two cards; grep for others (including the M3 PRD's and the retune
+  plan's forward links from Stories 5 and 7, written against the old path per §2.2).</li>
+  <li>☐ Index rows under wip. Audit; commit: <code>docs-refactor: M5 audit/plan → prds,plans/wip, reconciled</code>.</li>
+</ul>
+
+<h3 id="s9">Story 9 — Seed the notes, reconstruct M4, prune memory</h3>
+<ul class="tasks">
+  <li>☐ Write these notes (each with the head summary and an index row; dates as decided in §4):
+    <ul>
+      <li><code>20260704-nbutko-save-migrations.html</code> — exact version literal, unrecognized saves wiped,
+      the v2→v3 and v3→v4 history (from <code>CLAUDE.md</code> + M5 memory).</li>
+      <li><code>20260704-nbutko-indexeddb-delete-hang.html</code> — deleting the DB from DevTools while the app
+      holds a connection blanks the origin.</li>
+      <li><code>20260704-nbutko-case-only-filenames.html</code> — TS1149/TS1261 under <code>tsc -b</code>.</li>
+      <li><code>20260704-nbutko-eslint-pinned.html</code> — 8.57.1 because the airbnb configs lack flat config.</li>
+      <li><code>20260704-nbutko-concurrent-agents.html</code> — unfamiliar files may be another agent's work.</li>
+      <li><code>20260708-nbutko-pwa-hand-rolled.html</code> — no plugin, rolldown-vite, <code>sw.js</code>
+      eslint-ignored, Google Fonts runtime-cached.</li>
+      <li><code>20260708-nbutko-vite-base-path.html</code> — <code>/dnt/</code> is build-only; deploy on every push
+      to main.</li>
+      <li><code>20260709-nbutko-flex-min-width.html</code> — the 6581 px column and <code>min-w-0</code>.</li>
+      <li><code>20260912-nbutko-battles-lost-dead-field.html</code> — in the save shape, never written.</li>
+      <li><code>20260912-nbutko-agent-browser-no-file-urls.html</code> — humans open <code>file://</code>; agent
+      browser tools use <code>npm run dev</code> and <code>/docs/…</code>; the dev server's SPA fallback makes HTTP
+      link checks meaningless.</li>
+    </ul>
+  </li>
+  <li>☐ Read <code>architecture.html</code>'s "Things worth knowing going in" once: each item either stays (it
+  is architectural, e.g. battle mounts inside <code>DungeonScreen</code>) or becomes a note; delete the section
+  heading if nothing architectural remains.</li>
+  <li>☐ Write <code>plans/done/20260708-nbutko-m4-ship-it.html</code> from the M4 memory file and commits
+  <code>b54fcb4</code>, <code>176afd3</code>, <code>6258e29</code>, <code>67ead92</code>: reconstruction banner; three
+  stories (Pages deploy, PWA, favicon) ☑; the real-Chromebook install/offline test listed as never recorded.
+  <code>plans/index.html</code> row.</li>
+  <li>☐ Memory: delete <code>project_dnt_m0.md</code>, <code>project_dnt_m2.md</code>,
+  <code>project_dnt_m4.md</code>, <code>project_dnt_content_wiring.md</code>, <code>project_dnt_m5.md</code>
+  after confirming every repo-relevant fact in them is now in a note, a done plan's banner, or (Story 10) the
+  roadmap; update <code>MEMORY.md</code>. Keep <code>user_dnt_context.md</code> and both <code>feedback_*</code>
+  files.</li>
+  <li>☐ Audit; commit: <code>docs-refactor: seed notes, reconstructed M4 plan</code>.</li>
+</ul>
+<p><em>Done when:</em> <code>notes/index.html</code> lists every file in <code>notes/</code>; no repo gotcha
+exists only in memory; <code>plans/index.html</code> shows M0, M2, M3, M4, content-v2, retune under done and
+M5, docs-refactor under wip.</p>
+
+<h3 id="s10">Story 10 — Evergreen scrub</h3>
+<ul class="tasks">
+  <li>☐ <code>roadmap.html</code> → "Where we are, what's next": M5 in progress (link the wip plan, name the
+  next phase); M6 ahead (unchanged intent); each finished milestone one line linking its done PRD/plan; M1
+  marked "no artifacts recorded". Delete the "Suggested build order recap" and every future-tense description
+  of shipped work. Keep the current "why" of the milestone sequence.</li>
+  <li>☐ <code>architecture.html</code>: "Getting it onto the Chromebook" → present tense from the M4 record
+  (Pages, Actions on push to main, base path, PWA, per-device saves); remove the duplicated Stack section in
+  favor of a link to <code>codebase-architecture.html</code> or vice versa; "Non-goals (for now)" → "Non-goals".</li>
+  <li>☐ <code>codebase-architecture.html</code>: remove "as of M3", "retired M2's …", the crit "pending gap"
+  sentence; keep every "why".</li>
+  <li>☐ <code>game-design.html</code>: check every number against <code>src/config/combat.ts</code>,
+  <code>abilities.ts</code>, <code>leveling.ts</code>, <code>dungeon-tiers.ts</code> (XP table vs
+  <code>6ac5cf5</code>); state that per-point magnitudes are placeholders pending M5.</li>
+  <li>☐ Tense pass on <code>visual-spec.html</code>, <code>screens.html</code>, <code>content.html</code>.</li>
+  <li>☐ Rewrite <code>docs/index.html</code>: pitch and principles (still true); evergreen cards (conventions,
+  roadmap, game design, content, architecture, codebase architecture, visual spec, screens, tokens); the artifacts section from Story 1; Status reduced to one line pointing at the roadmap. Old numbered
+  cards gone.</li>
+  <li>☐ Audit; commit: <code>docs-refactor: evergreen docs scrubbed to present tense; index rewritten</code>.</li>
+</ul>
+<p><em>Done when:</em> reading each top-level doc end to end finds no sentence false about the repo today and no
+milestone narration; every "why" survived.</p>
+
+<h3 id="s11">Story 11 — <code>CLAUDE.md</code> and the full audit</h3>
+<ul class="tasks">
+  <li>☐ "Start here" table → the evergreen list plus <code>conventions.html</code> and the four indexes.</li>
+  <li>☐ "Milestone docs" section → "Active work": the wip plan is under <code>plans/index.html</code>; history
+  in <code>done/</code>; the roadmap says which milestone is live. Drop the hard-coded "M3 is done; M4 is next".</li>
+  <li>☐ Working rules: add the close-out rule ("a feature's last commit is the docs commit: reconcile plan,
+  banner, move to done, indexes, evergreen, note"); design links → <code>visual-spec.html</code>,
+  <code>screens.html</code>, <code>design-tokens.json</code>; the browser note reworded: humans open docs via
+  <code>file://</code>, agent browser tools need <code>npm run dev</code>.</li>
+  <li>☐ "Architecture invariants" section stays; "Gotchas / good-to-knows" section → a pointer to
+  <code>notes/index.html</code> in place of the itemized gotchas.</li>
+  <li>☐ Memory paragraph → memory holds preferences and workflow feedback; project gotchas live in
+  <code>docs/notes/</code>.</li>
+  <li>☐ Commit-attribution line: it names an older model. Update it to the current attribution the harness
+  provides — confirm with the maintainer at check-in.</li>
+  <li>☐ Full audit: §7.1 links, §7.2 index-vs-directory, §7.3 stragglers, one <code>file://</code> open at each
+  depth by the maintainer, <code>git status</code> clean of untracked docs.</li>
+  <li>☐ Commit: <code>docs-refactor: CLAUDE.md points at the new layout</code>.</li>
+</ul>
+
+<h3 id="s12">Story 12 — Close-out (the dogfood test)</h3>
+<ul class="tasks">
+  <li>☐ Fresh-session test: start a new agent session and ask it, using only <code>CLAUDE.md</code>,
+  <code>conventions.html</code>, and the templates, to open a hypothetical feature (PRD + plan under
+  <code>wip/</code> with index rows) and then close it. Fix whatever it got wrong in the conventions doc or
+  templates; discard its files.</li>
+  <li>☐ Reconcile this plan: tick every task, record deviations from §5 in a short "What actually happened"
+  section, add the done banner.</li>
+  <li>☐ Reconcile the PRD: status line to done, banner, and a line per requirement R1–R12 saying where it was
+  met.</li>
+  <li>☐ <code>git mv</code> the PRD and this plan to <code>done/</code>; move their index rows.</li>
+  <li>☐ Inventory note: add a dated banner ("The refactor is complete; this note is the pre-refactor snapshot
+  and stays useful for looking up where an old path went") and update its index sentence.</li>
+  <li>☐ Audit; commit: <code>docs-refactor: close out</code>. Then merge <code>docs-refactor</code> into
+  <code>main</code> as the maintainer prefers.</li>
+</ul>
+
+<h2>7. Verification toolkit</h2>
+
+<h3>7.1 Link audit (filesystem, not HTTP)</h3>
+<p>The dev server's SPA fallback returns 200 for anything, so links are checked on disk. Run from the repo
+root after every story; exit code 0 and no output means clean. (Until Story 2 removes it, the canvas's
+<code>./support.js</code> line is the one expected hit — Stories 0 and 1 are clean apart from that.)</p>
+<pre><code>python3 - &lt;&lt;'PY'
+import re, sys, pathlib, urllib.parse
+root = pathlib.Path('.')
+bad = []
+strip = lambda s: re.sub(r'&lt;(pre|code)&gt;.*?&lt;/\1&gt;', '', s, flags=re.S)  # quoted markup isn't a link
+# 1. every href/src inside docs/
+for f in root.glob('docs/**/*.html'):
+    text = strip(f.read_text(errors='ignore'))
+    for m in re.finditer(r'(?:href|src)="([^"#]+)(#[^"]*)?"', text):
+        target = urllib.parse.unquote(m.group(1))
+        if re.match(r'^(https?:|mailto:|data:|javascript:)', target): continue
+        p = (f.parent / target).resolve()
+        if not p.exists(): bad.append(f'{f}: {target}')
+# 2. every docs/... path mentioned outside docs/
+for f in [root/'CLAUDE.md', *root.glob('src/**/*.ts'), *root.glob('src/**/*.tsx'),
+          *root.glob('src/**/*.css'), *root.glob('content-pipeline/**/*.ts'), root/'vite.config.ts']:
+    if not f.exists(): continue
+    for m in re.finditer(r'docs/[\w./ -]+?\.(?:html|json|md|css)', f.read_text(errors='ignore')):
+        if not (root / m.group(0)).exists(): bad.append(f'{f}: {m.group(0)}')
+print('\n'.join(bad)); sys.exit(1 if bad else 0)
+PY</code></pre>
+<p>Fragments (<code>#t4</code>, <code>#node-states</code>) are not checked by the script; the stories that move
+anchored documents check theirs by grep (<code>grep -c 'id="t4"'</code>).</p>
+
+<h3>7.2 Index-vs-directory check</h3>
+<pre><code>for d in prds wireframes plans; do
+  for s in wip done; do
+    for f in docs/$d/$s/*.html; do
+      [ -e "$f" ] || continue
+      grep -q "$(basename "$f")" docs/$d/index.html || echo "unlisted: $f"
+    done
+  done
+done
+for f in docs/notes/2*.html; do grep -q "$(basename "$f")" docs/notes/index.html || echo "unlisted: $f"; done</code></pre>
+
+<h3>7.3 Stragglers</h3>
+<pre><code>ls docs            # must be exactly the top-level list in §3 plus the five directories
+ls docs/design 2&gt;/dev/null &amp;&amp; echo "design/ still exists"
+find docs -name '*.md'   # must print nothing
+# stale bare-name citations in code comments (the §7.1 script only sees docs/… paths):
+grep -rnE 'm[0-5]-(scope|implementation|wireframes|game-mechanics)|content-plan|design/README|README\.md §|tokens\.json|M0 Wireframes' \
+  src content-pipeline CLAUDE.md vite.config.ts   # must print nothing after Story 11</code></pre>
+
+<h3>7.4 Rendering</h3>
+<p>Agents: <code>npm run dev</code> and open <code>http://127.0.0.1:5173/docs/plans/done/…</code> in the
+browser tool, confirming the dark theme applied. Maintainer: open the same file with
+<code>file:///Users/nb/Documents/dnt/docs/…</code>. One file per directory depth is enough.</p>
+
+<h2>8. Out of scope, deliberately</h2>
+<ul>
+  <li>Any change to game code beyond comment text and the one <code>manifest-gen.ts</code> path.</li>
+  <li>Writing a PRD or wireframes for M1 or M4, or a PRD for M0 / content-v1 — nothing was recorded.</li>
+  <li>Re-verifying the retune "by user" or ticking any verification box the record does not support.</li>
+  <li>Adding link checking to CI, a static-site generator, or Markdown rendering.</li>
+  <li>Restyling the docs. <code>style.css</code> gains two rule blocks and nothing else.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← plans index</a> · <a href="../../prds/wip/20260912-nbutko-docs-refactor.html">PRD</a> · <a href="../../notes/20260912-nbutko-docs-inventory.html">inventory note</a> · plan for <code>docs-refactor</code></footer>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD: Docs Refactor — Dungeons & Typing</title>
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · PRD · <code>docs-refactor</code></nav>
+<header class="page-head">
+  <h1>PRD: Docs Refactor</h1>
+  <p class="tagline">One documentation layout that stays trustworthy as the project keeps growing — evergreen
+  docs that describe <em>now</em>, dated artifacts that record <em>how we got here</em>, and notes that catch
+  the gotchas in between.</p>
+  <span class="status">feature: <code>docs-refactor</code> · author: nbutko · opened: 2026-09-12 · status: <strong>wip</strong></span>
+</header>
+<main>
+
+<p>
+  This is the product requirements document for the <code>docs-refactor</code> feature. It is also the first
+  artifact written under the conventions it proposes, so its own location and name
+  (<code>docs/prds/wip/20260912-nbutko-docs-refactor.html</code>) are part of the spec. A companion
+  <a href="../../plans/wip/20260912-nbutko-docs-refactor.html">implementation plan</a> covers how; this
+  document covers <strong>what</strong> we want and <strong>why</strong>, not how. The
+  file-by-file inventory of where each existing document lands belongs to the plan.
+</p>
+
+<h2>1. The problem</h2>
+
+<p>
+  Almost every "how / why" question about <code>dnt</code> is answered somewhere in <code>docs/</code> — the
+  project's standing rule is <em>read the docs before spelunking the code</em>. That rule only pays off if a
+  reader can find the right doc and trust what it says. Today neither is reliable:
+</p>
+<ul>
+  <li><strong>Evergreen and historical docs are interleaved in one flat directory.</strong> Sixteen HTML files
+  sit side by side: the always-current codebase map, three generations of the content plan (v1, v2, v2-tuning),
+  four milestone scope/implementation pairs, and an audit. Nothing in the layout says which ones describe the
+  game as it exists.</li>
+  <li><strong>"Current" docs have quietly gone stale.</strong> <code>index.html</code> still says
+  <em>"Planning stage — no code yet."</em> The roadmap describes M4 as future work and lists a crit-range gap as
+  "pending" that <code>CLAUDE.md</code> says was closed. <code>CLAUDE.md</code> itself hard-codes "M3 is done;
+  M4 is next" while the repo is mid-M5. Each of these was true when written; none is now, and there is no rule
+  that made anyone responsible for updating them.</li>
+  <li><strong>The same document tries to be two things.</strong> The design <code>README.md</code> is both a
+  wireframe handoff (rejected alternates, "which option is canonical") and the as-shipped visual reference.
+  Content Plan v2 is both a requirements doc (the 14-tier ladder) and a build log (measured prototype results).
+  Readers have to mentally separate "the decision" from "the record of making it."</li>
+  <li><strong>Hard-won gotchas live in the wrong places.</strong> Save-migration brittleness, the dead
+  <code>stats.battlesLost</code> field, the "post-playtest feedback logs" at the tail of the M2 plan,
+  <code>file://</code> URLs being blocked in the agent's browser tools — these are scattered across
+  <code>CLAUDE.md</code>, plan appendices, and one agent's private session memory. A new agent hits the same
+  wall twice, and an agent working for a different person never sees the memory at all.</li>
+  <li><strong>There is no convention to follow.</strong> Naming is ad hoc (<code>m3-scope</code>,
+  <code>content-plan-v2-tuning-implementation</code>, <code>M0 Wireframes.dc.html</code>), there is no notion of
+  "in progress" versus "finished," and nothing tells the next contributor what to write before starting a
+  feature or what to update after finishing one.</li>
+</ul>
+
+<div class="callout why">
+  The docs are written and read overwhelmingly by AI agents working in short sessions with no memory of the
+  last one. That makes documentation structure a <em>load-bearing</em> part of the development process here,
+  not a nicety: every session re-orients from scratch, and every stale sentence in an evergreen doc costs a
+  wrong assumption or a code spelunk. The structure has to make "which docs are true right now" answerable
+  from the directory listing alone.
+</div>
+
+<h2>2. Goals and non-goals</h2>
+
+<h3>Goals</h3>
+<ol>
+  <li><strong>Trust by location.</strong> Anything at the top level of <code>docs/</code> describes the project
+  as it is built today. Anything in a subdirectory is either shared presentation (<code>style/</code>), a dated
+  development artifact (<code>prds/</code>, <code>wireframes/</code>, <code>plans/</code>), or a dated gotcha
+  (<code>notes/</code>).</li>
+  <li><strong>A repeatable feature lifecycle.</strong> Every piece of work — feature, retune, bug batch,
+  refactor — leaves the same trail: an optional PRD, optional wireframes, a required plan, all moving from
+  <code>wip/</code> to <code>done/</code> with the evergreen docs updated on the way out.</li>
+  <li><strong>Cheap orientation for agents.</strong> A new session can read <code>CLAUDE.md</code>, the docs
+  index, and the four sub-indexes and know exactly which full documents are worth loading into context.</li>
+  <li><strong>Reshape the history into worked examples.</strong> The existing scope docs, plans, wireframes,
+  and design handoff already contain PRD-shaped rationale, wireframe-shaped screens, and plan-shaped story
+  lists — just not separated. Pulling those portions apart into properly shaped, dated PRD / wireframe / plan
+  documents preserves the record <em>and</em> gives future authors concrete examples of what each type looks
+  like. Where a milestone recorded nothing (M1 has no doc of any kind), the gap stays a gap; we restate and
+  reorganize what was written, we do not invent what wasn't.</li>
+  <li><strong>Written-down conventions.</strong> A future contributor (human or agent) can follow the pattern
+  without having read this PRD, because an evergreen doc explains it, templates exist to copy, and
+  <code>CLAUDE.md</code> points there.</li>
+</ol>
+
+<h3>Non-goals</h3>
+<ul>
+  <li>Changing game code, tests, or the build. This feature touches <code>docs/</code>,
+  <code>CLAUDE.md</code>, and the handful of source comments that link into <code>docs/</code>.</li>
+  <li>Re-deciding anything. Reshaped historical documents restate the rationale and plans that were actually
+  recorded at the time; they do not second-guess them, and they carry a status banner saying how the work
+  actually ended.</li>
+  <li>Switching document format or adding tooling. Docs stay plain, hand-written HTML sharing one stylesheet,
+  readable by opening the file directly in any browser — no build step, no generator, no link checker in CI.
+  A convention plus a manual link pass at each feature's close is enough for one repo and one kid.</li>
+</ul>
+
+<h2>3. Who this is for</h2>
+
+<table>
+  <tr><th>Reader</th><th>Job to be done</th><th>What they need from the docs</th></tr>
+  <tr><td>An agent starting a fresh session</td><td>Orient in under a minute and load only what matters</td>
+    <td>A short, always-true entry point; a clear line between "how it is" and "how it was"; skim-able
+    indexes.</td></tr>
+  <tr><td>An agent starting a feature</td><td>Know what to write before code, and where</td>
+    <td>The lifecycle rule (PRD → wireframes → plan), the naming pattern, a template to copy, worked examples
+    in <code>done/</code>, the active plan's story order.</td></tr>
+  <tr><td>An agent finishing a feature</td><td>Leave the repo honest</td>
+    <td>A checklist: reconcile the plan with what shipped, move artifacts to <code>done/</code>, update the
+    indexes and evergreen docs, add a note if a gotcha was learned.</td></tr>
+  <tr><td>An agent mid-debugging</td><td>Avoid re-learning a known trap</td>
+    <td>Notes whose first ten lines say when they apply, indexed in one place, with loud warnings when one has
+    gone stale.</td></tr>
+  <tr><td>The maintainer (nbutko) — and anyone else who joins</td><td>Review a plan, check progress, remember
+    why a decision was made, find who to ask</td>
+    <td>Plans with checkable stories/tasks; dated, findable history; an author hint on every artifact; evergreen
+    docs that don't lie.</td></tr>
+</table>
+
+<h2>4. What we're building: the target layout</h2>
+
+<pre><code>docs/
+├── index.html                 ← evergreen: pitch, principles, doc index, links to the four sub-indexes
+├── (other evergreen docs)     ← present tense only: architecture, codebase map, game design,
+│                                content, visual spec, roadmap ("where we are, what's next"), conventions
+├── style/                     ← shared CSS, templates, any visual asset used by more than one doc
+├── prds/
+│   ├── index.html             ← every PRD, short description each, grouped wip / done
+│   ├── wip/                   ← (no index here)
+│   └── done/
+├── wireframes/  index.html + wip/ + done/     (same shape)
+├── plans/       index.html + wip/ + done/     (same shape; a plan is required for every piece of work)
+└── notes/
+    ├── index.html             ← every note, one sentence each on when it's relevant
+    └── YYYYMMDD-author-topic.html
+</code></pre>
+
+<h3>4.1 Evergreen docs (top level)</h3>
+<ul>
+  <li>Describe the project <strong>as built today</strong>, in the present tense. No milestone narration, no
+  "originally," no "was replaced by," no "pending."</li>
+  <li><strong>May — and should — explain why things are the way they are</strong>, as long as the reasoning is
+  the <em>current</em> understanding. "The engine never imports React because…" belongs in an evergreen doc.
+  "In M2 we tried a skill tree, then in M3 replaced it…" does not; the evergreen doc states the current design
+  and links to the <code>done/</code> artifact for the story.</li>
+  <li>Are the <em>only</em> documents with a maintenance obligation: closing any feature includes updating the
+  ones it affected.</li>
+  <li>Include a conventions doc — the rules in this section, the naming pattern, the lifecycle checklist, and
+  where the templates live — so the pattern survives without this PRD.</li>
+</ul>
+
+<h3>4.2 Dated artifacts: <code>prds/</code>, <code>wireframes/</code>, <code>plans/</code></h3>
+<ul>
+  <li><strong>Naming:</strong> <code>[YYYYMMDD]-[author]-[feature-name].html</code>, e.g.
+  <code>20260912-nbutko-docs-refactor.html</code>. Feature name is lower-case-with-dashes and is
+  <strong>shared</strong> across a feature's PRD, wireframes, and plan so they can be found together. Date is
+  the day the document was opened.</li>
+  <li><strong>Author is a context hint, not a credit.</strong> It answers "who can tell me about this?" —
+  usually the person who opened the doc, who has enough context to answer questions or to route to someone
+  who does. It does not change when someone else picks the work up midstream, it need not be exactly right,
+  and it says nothing about who did the work. Agents writing on a person's behalf use that person's handle.</li>
+  <li><strong>Lifecycle:</strong> every artifact starts in <code>wip/</code>. When the feature is done, it is
+  (1) updated to reflect the work actually completed, (2) moved to <code>done/</code>, and (3) any evergreen doc
+  it affects is updated. Artifacts in <code>done/</code> are frozen thereafter.</li>
+  <li><strong>Indexes:</strong> <code>prds/index.html</code>, <code>wireframes/index.html</code>, and
+  <code>plans/index.html</code> each list every artifact of that type with a short description, grouped into a
+  <em>wip</em> section and a <em>done</em> section. The <code>wip/</code> and <code>done/</code> directories
+  themselves have no index. Opening or closing an artifact means updating its index.</li>
+  <li><strong>Plan (required for all work):</strong> technical scope — approach, design, and the work broken
+  into Stories, each a list of Tasks rendered as checkboxes that get checked as they complete. This is the
+  document the existing "one story = one commit" rule operates on.</li>
+  <li><strong>PRD (larger scope only):</strong> what we want to build and why — user value and experience, not
+  implementation. Written before the plan.</li>
+  <li><strong>Wireframes (anything visual):</strong> screens and flows. Written after the PRD, before the plan.
+  Design-canvas files keep their <code>.dc.html</code> extension so the canvas editor still opens them.</li>
+  <li><strong>Templates:</strong> one skeleton per type (PRD, wireframe page, plan with story/task checkboxes,
+  note with head summary) lives in <code>style/templates/</code>. Starting a doc means copying one.</li>
+</ul>
+
+<div class="callout decision">
+  <strong>"Larger scope" and "touches visuals" are judgment calls, made at the start of a feature and recorded
+  in the plan's header.</strong> Rule of thumb: a PRD is warranted when the work changes what the player
+  experiences or why a system exists (a new milestone, a retune with targets, a new screen); a bug batch or a
+  refactor with no player-visible change needs only a plan. Wireframes are warranted whenever a screen is
+  added or its layout changes — color/copy tweaks inside an existing layout are not.
+</div>
+
+<h3>4.3 <code>notes/</code>: the gotcha dump</h3>
+<ul>
+  <li>Any time an agent learns something non-trivial during development or debugging that another agent is
+  likely to trip on, it leaves a note: <code>[YYYYMMDD]-[author]-[note-name].html</code>. The note name
+  describes the <em>topic</em> and need not match any feature.</li>
+  <li>Every note opens with a <strong>5–10 line "when to read this" summary</strong>, so an agent can read the
+  head of the file and decide whether to load the rest.</li>
+  <li><code>notes/index.html</code> lists every note with a <strong>one-sentence "relevant when…"</strong>
+  description. Adding a note means adding its index line.</li>
+  <li><strong>Stale notes get a loud warning, not silent rot.</strong> A note is not rewritten when it ages,
+  but a later author who finds it wrong or obsolete must mark it — a banner at the top such as
+  <em>SOME CONTENT MAY BE OUTDATED</em> or <em>NO LONGER RELEVANT</em>, dated, with a line on what was found
+  and, if there is one, a link to the newer note — and update its index line to match. A wrong note taken as
+  authoritative is worse than no note.</li>
+  <li>Notes live in the repo, not in any one agent's private memory, so every author's agents share them.
+  Session memory is for personal preferences and workflow feedback only; project gotchas go here.</li>
+</ul>
+
+<h3>4.4 <code>style/</code></h3>
+<p>The docs' shared stylesheet, the document templates, and any visual element used by more than one document
+(icons, shared diagrams). Nothing in <code>style/</code> is project documentation in its own right.</p>
+
+<h2>5. Requirements</h2>
+
+<table>
+  <tr><th>#</th><th>Requirement</th><th>Why it matters</th></tr>
+  <tr><td>R1</td><td>The directory layout in §4 exists, including empty <code>wip/</code> and <code>done/</code>
+    subdirectories where nothing lands yet.</td><td>The structure is the convention; it must be visible even
+    where it is unused.</td></tr>
+  <tr><td>R2</td><td>Every existing document is relocated to its correct home, renamed to the convention, and
+    dated by an inferred historical date (git first-commit date unless something better is known). Nothing is
+    deleted.</td><td>History is the audit trail for decisions; it just must stop looking like the present.</td></tr>
+  <tr><td>R3</td><td>Existing documents that contain PRD-, wireframe-, and plan-shaped portions are split into
+    separate, properly shaped documents sharing one feature name, restating the rationale and stories that were
+    actually recorded. Applies at minimum to each milestone's scope/implementation pair, the content-plan
+    lineage, the design README, and the M5 audit if a clean split presents itself. Nothing is invented for
+    work that recorded nothing.</td><td>Done artifacts double as the worked examples future authors copy.</td></tr>
+  <tr><td>R4</td><td>Every evergreen doc is scrubbed of stale statements and milestone narration and reflects
+    the repo at the time of this refactor (mid-M5), while keeping — or adding — the current reasoning behind
+    each design and linking to history for more. Known offenders: the index's "no code yet," the roadmap's
+    M3/M4 status, the crit-range "pending" note, <code>CLAUDE.md</code>'s milestone line.</td><td>Goal 1 is void
+    if the first thing a reader sees is false; goal 3 is void if the "why" goes missing.</td></tr>
+  <tr><td>R5</td><td>An evergreen conventions doc explains the layout, naming, the author-as-context-hint rule,
+    lifecycle, index upkeep, the stale-note warning rule, and the close-out checklist; <code>CLAUDE.md</code>
+    links to it and its own doc table is updated.</td><td>The pattern must be self-teaching.</td></tr>
+  <tr><td>R6</td><td>Four index pages exist — <code>prds/</code>, <code>wireframes/</code>, <code>plans/</code>
+    (grouped wip / done, short description per feature) and <code>notes/</code> (one "relevant when" sentence
+    per note) — and the top-level <code>index.html</code> links to all four. No index inside
+    <code>wip/</code> or <code>done/</code>.</td><td>Indexes are how an agent decides what to load without
+    opening everything.</td></tr>
+  <tr><td>R7</td><td><code>notes/</code> is seeded with the gotchas already known — from <code>CLAUDE.md</code>'s
+    "Gotchas" section, the M2 plan's feedback tail, and the repo-relevant items in the maintainer's session
+    memory — each with the required head summary and index line. The migrated memory items are then removed
+    from memory.</td><td>An empty notes directory teaches nothing; seeded, it demonstrates the format and makes
+    the knowledge shareable across authors.</td></tr>
+  <tr><td>R8</td><td>Templates for PRD, wireframes, plan, and note exist in <code>style/templates/</code> and
+    this feature's own plan is written from the plan template.</td><td>Copying beats remembering.</td></tr>
+  <tr><td>R9</td><td>No broken links after the move: internal doc links, <code>CLAUDE.md</code>, source
+    comments (<code>src/ui/…</code>), and <code>content-pipeline/</code> references all resolve. Paths that code
+    reads at runtime (<code>docs/monster-manual.json</code>) either stay put or the code is updated in the same
+    change.</td><td>A moved doc that nothing can find is worse than an unmoved one.</td></tr>
+  <tr><td>R10</td><td>Every doc opens correctly straight from the filesystem
+    (<code>file:///…/docs/plans/wip/x.html</code>) with the shared stylesheet applied from every directory
+    depth. Serving via <code>npm run dev</code> at <code>/docs/…</code> keeps working as a convenience for agent
+    browser tools, which cannot open <code>file://</code> URLs.</td><td>Opening a file in a browser is how the
+    docs are actually read.</td></tr>
+  <tr><td>R11</td><td>Docs in <code>done/</code> carry a short status banner at the top (what shipped, what
+    didn't, where the evergreen description now lives) and their story checkboxes reflect what was actually
+    completed.</td><td>A frozen artifact is only useful if it says how it ended.</td></tr>
+  <tr><td>R12</td><td>This feature follows its own rules: this PRD, then a plan with checkable stories, both
+    listed in their indexes and moved to <code>done/</code> at close with the evergreen docs updated.</td>
+    <td>Dogfooding is the first test of whether the convention is followable.</td></tr>
+</table>
+
+<h2>6. The experience after</h2>
+
+<p><strong>Starting a session.</strong> An agent reads <code>CLAUDE.md</code>, which says: evergreen docs are
+at the top of <code>docs/</code>, the active plan is under <code>plans/index.html</code>'s wip section,
+gotchas are in <code>notes/index.html</code>. It skims the indexes (one line per entry), opens the one or two
+documents that match the task, and never wonders whether the roadmap is current.</p>
+
+<p><strong>Starting a feature.</strong> The agent decides — and writes down in the plan header — whether the
+work needs a PRD and wireframes. It copies the template from <code>style/templates/</code>, names the file
+<code>[today]-[handle]-[feature].html</code> under <code>wip/</code>, adds an index line, and breaks the work
+into stories with checkbox tasks. If it wants an example of a good PRD or plan, <code>done/</code> is full of
+them. The existing "one story = one commit, check in between" rule now has an obvious artifact to tick.</p>
+
+<p><strong>Finishing a feature.</strong> The close-out checklist in the conventions doc: reconcile the plan
+with what shipped and tick the boxes; add the status banner; <code>git mv</code> the PRD, wireframes, and
+plan to <code>done/</code> and move their index lines; update every evergreen doc the feature touched; write a
+note if anything surprising was learned and add its index line. The last commit of a feature is a docs
+commit.</p>
+
+<p><strong>Six months on.</strong> The top of <code>docs/</code> has roughly the same handful of files it had
+when this feature closed, all true. <code>done/</code> holds a dated, findable history. <code>notes/</code> has grown by a file or
+two per feature, a couple of them wearing an "outdated" banner, and its index is the fastest way to learn what
+the code will not tell you.</p>
+
+<h2>7. Success criteria</h2>
+<ul>
+  <li>Every file under <code>docs/</code> is either top-level evergreen, in <code>style/</code>, in
+  <code>notes/</code>, or in a <code>{prds,wireframes,plans}/{wip,done}/</code> directory with a
+  convention-conforming name. No stragglers.</li>
+  <li>A read-through of each evergreen doc finds no sentence that is false about the repo at the close of this
+  feature, and no milestone-history narration — but each design decision still has its current "why."</li>
+  <li>Each of the four sub-indexes lists every artifact in its directory, and nothing that isn't there.</li>
+  <li>Every link in <code>docs/</code>, <code>CLAUDE.md</code>, <code>src/</code>, and
+  <code>content-pipeline/</code> that targets <code>docs/…</code> resolves; every doc renders styled when
+  opened directly from the filesystem.</li>
+  <li>The conventions doc and templates alone are enough for an agent to correctly open, name, index, and close
+  a hypothetical new feature — verified by asking a fresh session to do exactly that.</li>
+  <li><code>notes/index.html</code> lists at least the seeded gotchas, each note's head summary stands on its
+  own, and no repo-relevant gotcha remains only in session memory.</li>
+  <li>This PRD and its plan are in <code>done/</code>, reconciled, when the feature closes.</li>
+</ul>
+
+<h2>8. Decisions recorded while writing this PRD</h2>
+
+<div class="callout decision">
+  <strong>Templates: yes.</strong> Four skeletons in <code>docs/style/templates/</code>, one per document
+  type.
+</div>
+
+<div class="callout decision">
+  <strong>Indexes: one per artifact type, at <code>prds/index.html</code> level.</strong> Grouped wip / done
+  with a short description per feature. Not inside <code>wip/</code> or <code>done/</code>.
+</div>
+
+<div class="callout decision">
+  <strong>Author is a context hint.</strong> "Who can tell me about this," not "who did the work." Does not
+  change midstream; exactness doesn't matter; agents use the handle of the person they work for.
+</div>
+
+<div class="callout decision">
+  <strong>The M5 audit may be split.</strong> If its "why" (findings, rationale) and any plan-shaped material
+  separate cleanly, split them like the milestone docs; if not, it lives whole in <code>prds/wip/</code> as the
+  document the M5 plan traces every story back to. The plan makes the call.
+</div>
+
+<div class="callout decision">
+  <strong>Session memory moves to notes.</strong> Repo-relevant gotchas in the maintainer's private auto-memory
+  become notes so other authors' agents can see them; memory keeps only personal preferences and workflow
+  feedback. The conventions doc says so.
+</div>
+
+<h2>9. Risks</h2>
+<ul>
+  <li><strong>Link rot in the move.</strong> Sixteen documents cross-link heavily, and source comments link into
+  <code>docs/design/</code>. Mitigated by R9's explicit link pass and by preferring <code>git mv</code> so
+  history follows the file.</li>
+  <li><strong>Over-scrubbing the evergreen docs.</strong> Cutting history can also cut the reason a rule
+  exists. The rule is: an evergreen doc keeps every "why" that is still the current understanding, and points
+  to the <code>done/</code> record for further context. What goes is the <em>narrative</em> of how it changed,
+  not the reasoning for how it is.</li>
+  <li><strong>Reshaping drifts into rewriting.</strong> Splitting an old scope doc into a PRD and a plan is
+  editorial work, and it is tempting to "improve" the content. Mitigated by the non-goal above: restate and
+  reorganize what was recorded, keep the original's decisions and numbers, and let the status banner carry
+  what changed afterward.</li>
+  <li><strong>Convention decay.</strong> The pattern only survives if every feature closes with the checklist.
+  Mitigated by putting the checklist in <code>CLAUDE.md</code>'s non-negotiable working rules, next to
+  "one story = one commit."</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../../index.html">← Back to overview</a> · PRD for <code>docs-refactor</code> · the implementation plan is at <code>docs/plans/wip/20260912-nbutko-docs-refactor.html</code></footer>
+</body>
+</html>

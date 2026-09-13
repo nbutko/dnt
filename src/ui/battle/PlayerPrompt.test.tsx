@@ -1,69 +1,32 @@
-import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import PlayerPrompt from './PlayerPrompt'
 
-// PlayerPrompt is a controlled component (input is lifted to BattleScreen as
-// of Story 7); this harness plays BattleScreen's part for the test.
-interface HarnessProps {
-  prompt: string
-  disabled?: boolean
-  paused?: boolean
-  pauseReason?: 'expire' | 'miss'
-  onSubmit: (input: string) => void
-}
-
-const Harness = ({
-  prompt,
-  disabled = false,
-  paused = false,
-  pauseReason,
-  onSubmit,
-}: HarnessProps) => {
-  const [input, setInput] = useState('')
-  return (
-    <PlayerPrompt
-      prompt={prompt}
-      input={input}
-      disabled={disabled}
-      paused={paused}
-      pauseReason={pauseReason}
-      onInputChange={setInput}
-      onSubmit={onSubmit}
-    />
-  )
-}
-
+// PlayerPrompt is presentational: `input` is owned by BattleScreen via
+// ui/hooks/useTypingInput.ts (tested there). Nothing here is focusable or
+// typeable by design.
 describe('PlayerPrompt', () => {
-  it('does not submit on Enter until the input length matches the prompt', async () => {
-    const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<Harness prompt="jak" onSubmit={onSubmit} />)
-
-    const input = screen.getByLabelText('Type the prompt')
-    await user.type(input, 'ja{enter}')
-    expect(onSubmit).not.toHaveBeenCalled()
-
-    await user.type(input, 'k{enter}')
-    expect(onSubmit).toHaveBeenCalledWith('jak')
-    expect(onSubmit).toHaveBeenCalledTimes(1)
+  it('renders the prompt with the typed progress overlaid, and no text field', () => {
+    const { container } = render(
+      <PlayerPrompt prompt="jak" input="ja" disabled={false} paused={false} />,
+    )
+    expect(container.textContent).toContain('jak')
+    expect(container.querySelector('input, textarea, [contenteditable]')).toBeNull()
   })
 
-  it('is disabled once the battle is no longer ongoing', () => {
-    render(<Harness prompt="jak" disabled onSubmit={vi.fn()} />)
-    expect(screen.getByLabelText('Type the prompt')).toBeDisabled()
-  })
-
-  it('shows a time-out message instead of the input while paused on an expire', () => {
-    render(<Harness prompt="jak" paused pauseReason="expire" onSubmit={vi.fn()} />)
+  it('shows a time-out message instead of the prompt while paused on an expire', () => {
+    const { container } = render(
+      <PlayerPrompt prompt="jak" input="" disabled={false} paused pauseReason="expire" />,
+    )
     expect(screen.getByText('Time Limit Expired. You missed!')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Type the prompt')).not.toBeInTheDocument()
+    expect(container.textContent).not.toContain('jak')
   })
 
-  it('shows a wrong-text message instead of the input while paused on a miss', () => {
-    render(<Harness prompt="jak" paused pauseReason="miss" onSubmit={vi.fn()} />)
+  it('shows a wrong-text message instead of the prompt while paused on a miss', () => {
+    const { container } = render(
+      <PlayerPrompt prompt="jak" input="" disabled={false} paused pauseReason="miss" />,
+    )
     expect(screen.getByText('Incorrect Incantation. You missed!')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Type the prompt')).not.toBeInTheDocument()
+    expect(container.textContent).not.toContain('jak')
   })
 })

@@ -7,6 +7,7 @@ import Flash, { type FlashVariant } from '../common/Flash'
 import Frame from '../common/Frame'
 import { useBattle } from '../hooks/useBattle'
 import { useGameLoop } from '../hooks/useGameLoop'
+import { useTypingInput } from '../hooks/useTypingInput'
 import BattleResult from './BattleResult'
 import HealthBar from './HealthBar'
 import Keyboard from './Keyboard'
@@ -109,10 +110,14 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
 
   // Owned here (not PlayerPrompt) because Keyboard needs it alongside
   // `prompt` — see docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard.
-  const [input, setInput] = useState('')
-  useEffect(() => {
-    setInput('')
-  }, [state.player.attempt])
+  // Built from window keydown, not a text field (useTypingInput explains why);
+  // captured only while the fight is live and the player isn't in a miss pause.
+  const input = useTypingInput({
+    prompt: state.player.prompt,
+    attempt: state.player.attempt,
+    active: state.status === 'ongoing' && !state.player.paused,
+    onSubmit: actions.submit,
+  })
 
   // The Story 11 flash overlays. `state.lastEvent` isn't cleared on ticks
   // where nothing new happened — it's the same object reference until a NEW
@@ -241,8 +246,6 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
               disabled={state.status !== 'ongoing'}
               paused={state.player.paused}
               pauseReason={state.player.pauseReason}
-              onInputChange={setInput}
-              onSubmit={actions.submit}
             />
           </div>
           <div className="w-16 flex-none text-center">
@@ -271,7 +274,8 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
               type="button"
               onClick={() => onResult('lose')}
               // Autofocused so a bare Enter confirms the loss too (feedback #1) —
-              // the typing input is gone/disabled, so this is the keydown target.
+              // the typing hook is inactive once the fight ends, so this is the
+              // only thing listening for Enter.
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               className="mx-auto mt-4 block rounded border border-border-gold px-5 py-2 font-mono text-sm text-text-primary hover:border-accent-gold-bright"

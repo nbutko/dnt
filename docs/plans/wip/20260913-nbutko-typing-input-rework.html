@@ -141,32 +141,32 @@
 
 <h3 id="s1">Story 1 — Keydown-driven typing input</h3>
 <ul class="tasks">
-  <li>☐ Add <code>src/ui/hooks/useTypingInput.ts</code> per §3: owns <code>input</code>, resets on
+  <li>☑ Add <code>src/ui/hooks/useTypingInput.ts</code> per §3: owns <code>input</code>, resets on
   <code>attempt</code>, subscribes to <code>window</code> <code>keydown</code> while <code>active</code>, applies
   the five key-handling rules, calls <code>onSubmit</code>. A header comment states the "no text field" decision
   and links this plan.</li>
-  <li>☐ <code>BattleScreen.tsx</code>: replace the local <code>useState('')</code> + attempt-reset effect with
+  <li>☑ <code>BattleScreen.tsx</code>: replace the local <code>useState('')</code> + attempt-reset effect with
   the hook; pass <code>active</code> as gated in §3; keep passing <code>input</code> to <code>PlayerPrompt</code>
   and <code>Keyboard</code> unchanged.</li>
-  <li>☐ <code>PlayerPrompt.tsx</code>: delete the <code>&lt;input&gt;</code>, <code>handleKeyDown</code>,
+  <li>☑ <code>PlayerPrompt.tsx</code>: delete the <code>&lt;input&gt;</code>, <code>handleKeyDown</code>,
   <code>onInputChange</code>, <code>onSubmit</code>, and the <code>autoFocus</code> lint suppression; the
   component renders only <code>TypedProgress</code> or the pause message. <code>disabled</code> now only drives
   <code>blinkCaret</code>. Rewrite the header comment (it currently narrates the hidden input).</li>
-  <li>☐ <code>src/index.css</code>: reword the <code>caret-blink</code> comment — the caret is the only
+  <li>☑ <code>src/index.css</code>: reword the <code>caret-blink</code> comment — the caret is the only
   "you type here" cue because there is <em>no</em> input element, not because one is hidden.</li>
-  <li>☐ Tests: new <code>useTypingInput.test.ts</code> (<code>renderHook</code> + <code>userEvent.keyboard</code>
+  <li>☑ Tests: new <code>useTypingInput.test.ts</code> (<code>renderHook</code> + <code>userEvent.keyboard</code>
   on <code>document.body</code>, i.e. with nothing focused): appends printable keys including a Shifted capital;
   Backspace trims; Enter does not submit until lengths match, then submits exactly once with the typed string;
   Ctrl/Meta chords are ignored; nothing is captured while <code>active</code> is false; input resets when
   <code>attempt</code> changes; Space is <code>preventDefault</code>ed. <code>PlayerPrompt.test.tsx</code> loses
   its typing test (moved to the hook) and its "is disabled" test; keeps the two pause-message tests, which now
   assert the prompt line is absent rather than the input.</li>
-  <li>☐ <code>npm run presubmit</code> clean.</li>
-  <li>☐ Dev-server check (<code>http://127.0.0.1:5173/</code>): start a fight; click the monster panel, the
+  <li>☑ <code>npm run presubmit</code> clean.</li>
+  <li>☑ Dev-server check (<code>http://127.0.0.1:5173/</code>): start a fight; click the monster panel, the
   on-screen keyboard, the countdown, and the page margin; press Tab; after each, type — keystrokes land and the
   keyboard highlights follow. Take a miss, wait out the pause, type again. Win a fight and confirm Enter on the
-  reward modal does not leak into the next battle's input; lose one and confirm Enter on Continue still works.</li>
-  <li>☐ Commit: <code>typing-input-rework: build the typed line from keydown, drop the hidden input</code>.</li>
+  reward modal does not leak into the next battle's input; lose one and confirm Enter on Continue still works. <em>Done 2026-09-13; two caveats: the agent browser tool's <code>type</code> action inserts text without firing <code>keydown</code> and its Enter arrives with <code>keyCode 0</code>, so the full line + submit was driven with synthetic <code>keydown</code> events (which the hook treats identically), and "Enter on the loss Continue" is asserted from the button holding focus with the hook inactive, not from a tool keypress.</em></li>
+  <li>☑ Commit: <code>typing-input-rework: build the typed line from keydown, drop the hidden input</code>.</li>
 </ul>
 <p><em>Done when:</em> every dev-server check above passes and presubmit is clean.
 <strong>Verified by user on the Chromebook:</strong> ☐ a stray tap mid-fight no longer kills typing ·

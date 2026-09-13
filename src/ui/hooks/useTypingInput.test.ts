@@ -82,6 +82,32 @@ describe('useTypingInput', () => {
     expect(result.current).toBe('')
   })
 
+  it('lets Enter through untouched while inactive, even with a full-length line typed', async () => {
+    // The modal-leak guarantee: once the fight is won/lost (or paused), Enter
+    // must neither submit nor be swallowed — the reward modal's / loss
+    // screen's autofocused Continue needs its native Enter.
+    const user = userEvent.setup()
+    const { rerender, onSubmit, initial } = setup('jak')
+    await user.keyboard('jak')
+    rerender({ ...initial, active: false })
+
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+    window.dispatchEvent(enter)
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(enter.defaultPrevented).toBe(false)
+  })
+
+  it('prevents the default on a submitting Enter', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = setup('jak')
+    await user.keyboard('jak')
+
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+    window.dispatchEvent(enter)
+    expect(onSubmit).toHaveBeenCalledWith('jak')
+    expect(enter.defaultPrevented).toBe(true)
+  })
+
   it('prevents the default on handled keys so Space cannot scroll the page', () => {
     setup('a b')
     const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })

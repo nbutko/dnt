@@ -167,9 +167,18 @@
   keyboard highlights follow. Take a miss, wait out the pause, type again. Win a fight and confirm Enter on the
   reward modal does not leak into the next battle's input; lose one and confirm Enter on Continue still works. <em>Done 2026-09-13; two caveats: the agent browser tool's <code>type</code> action inserts text without firing <code>keydown</code> and its Enter arrives with <code>keyCode 0</code>, so the full line + submit was driven with synthetic <code>keydown</code> events (which the hook treats identically), and "Enter on the loss Continue" is asserted from the button holding focus with the hook inactive, not from a tool keypress.</em></li>
   <li>☑ Commit: <code>typing-input-rework: build the typed line from keydown, drop the hidden input</code>.</li>
+  <li>☑ Review fixes (a subagent reviewed the plan and the commit; findings addressed 2026-09-13): the hook
+  reads <code>prompt</code>/<code>input</code>/<code>onSubmit</code> through a ref and subscribes once per
+  <code>active</code> flip instead of re-attaching per keystroke, so Enter's length check can never read a
+  stale closure; two tests pin that a full-length Enter while inactive neither submits nor is
+  <code>preventDefault</code>ed (the modal-leak guarantee) and that a submitting Enter is; a jsdom test renders
+  <code>BattleScreen</code> over a stubbed store and asserts typing + Enter reaches <code>store.submit</code>;
+  <code>BattleScreen</code> hoists one <code>typingActive</code> gate shared by the hook and the Keyboard.
+  Commit: <code>typing-input-rework: review fixes</code>.</li>
 </ul>
 <p><em>Done when:</em> every dev-server check above passes and presubmit is clean.
-<strong>Verified by user on the Chromebook:</strong> ☐ a stray tap mid-fight no longer kills typing ·
+<strong>Verified by user on the Chromebook:</strong> ☑ a stray tap mid-fight no longer kills typing (2026-09-13:
+initial health checks good, focus loss no longer reproducible) ·
 ☐ a word the OS used to autocorrect now lands as typed. These two boxes are the user's; the story is code-complete
 without them but the plan does not close as fully verified until they are ticked.</p>
 
@@ -180,11 +189,27 @@ without them but the plan does not close as fully verified until they are ticked
   drops the "shorter input treats Enter as a literal character" clause, which describes a rule that does not run.
   While there, fix the stale "Vertical Duel" bullet that still describes "live input echoed below with a
   blinking-caret span" — feedback #10 removed the echo row; the caret is drawn inside the prompt line.</li>
-  <li>☐ <a href="../../game-design.html">game-design.html</a> "Submitting an attack": mark the
-  Enter-as-literal-character sentence as a rule reserved for multi-line prompts, of which there are currently
-  none; Enter on a short input does nothing.</li>
+  <li>☐ <a href="../../game-design.html">game-design.html</a> "Submitting an attack": both sentences that lean
+  on inline line breaks (the "no auto-submit at matching length" reason and the Enter-as-literal-character
+  rule) are qualified as reserved for multi-line prompts, of which there are currently none; Enter on a short
+  input does nothing.</li>
   <li>☐ <a href="../../codebase-architecture.html">codebase-architecture.html</a>: the state table's "input box
-  text" row and the <code>ui/hooks</code> line of the tree name <code>useTypingInput</code>.</li>
+  text" row and the <code>ui/hooks</code> line of the tree name <code>useTypingInput</code>; the "Not covered:
+  the hooks…" test-coverage sentence is no longer true (the hook is unit-tested) — fix it; add a "how keystrokes
+  are captured → <code>ui/hooks/useTypingInput.ts</code>" row to the "where do I change X?" table.</li>
+  <li>☐ <a href="../../architecture.html">architecture.html</a>: the state table's twin "input box text" row.</li>
+  <li>☐ <a href="../../visual-spec.html">visual-spec.html</a>: the "Live input echo" type-scale row and the
+  "prompt+input stacked" layout bullet describe the echo row feedback #10 removed — the same staleness as
+  screens.html's Vertical Duel bullet; fix both so the two evergreen docs agree.</li>
+  <li>☐ Source comments that still assume the old rule or the old box: <code>engine/battle.ts</code>'s
+  "the caller's job to treat as a literal character" (the caller now ignores a short-input Enter) and
+  <code>domain/types.ts</code>'s "reset its typed-input box" on <code>attempt</code>.</li>
+  <li>☐ <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 PRD</a> (still wip): its B2 finding
+  narrates the <code>sr-only</code> input and prescribes the refocus fix — add the same one-line "superseded by
+  typing-input-rework" callout the M5 plan already carries, so the close-out grep's hit there is explained.</li>
+  <li>☐ While in screens.html's encounter section: it says "Begin Battle →" is autofocused, but
+  <code>EncounterModal</code> deliberately uses a window Enter listener instead (pre-existing, unrelated
+  staleness; one-line fix).</li>
   <li>☐ <a href="20260710-nbutko-m5-game-mechanics.html">M5 plan</a> Story 1: the B2 bullets are already marked
   as superseded by this plan (done when this plan was opened); after shipping, tick nothing there — B3 remains
   its own open work — but update the ledger's B2 row to point at this plan's done location.</li>
@@ -209,9 +234,10 @@ without them but the plan does not close as fully verified until they are ticked
   before, since only an invisible element left.</li>
   <li><strong>On the device:</strong> the two user-owned boxes in Story 1. The autocorrect claim in
   particular cannot be proven from a Mac; it is the user's playtest that closes it.</li>
-  <li><strong>Story 2:</strong> the link audit, plus a grep for <code>sr-only</code>, <code>autoFocus</code>,
-  and "hidden input" across <code>src/ui/battle</code> and <code>docs/</code> returning only the loss-screen
-  Continue button and this plan's history.</li>
+  <li><strong>Story 2:</strong> the link audit, plus a grep for <code>sr-only</code>, "hidden input", and
+  "input box" across <code>src/</code> and the top-level evergreen docs returning nothing, and a grep for
+  <code>autoFocus</code> across <code>src/ui/battle</code> returning only the loss-screen Continue button (the
+  modals' autofocused buttons and the dated plans/PRDs are expected hits and out of scope).</li>
 </ul>
 
 <h2>6. Out of scope, deliberately</h2>

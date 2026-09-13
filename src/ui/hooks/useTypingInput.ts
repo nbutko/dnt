@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface UseTypingInputOptions {
   prompt: string
@@ -42,6 +42,13 @@ export const useTypingInput = ({
     setInput('')
   }, [attempt])
 
+  // The listener is attached once per `active` flip, not once per keystroke:
+  // it reads the latest prompt/input/onSubmit through this ref instead of
+  // closing over them, so Enter's length check can never see a stale `input`
+  // from a keystroke whose render hasn't committed yet.
+  const latest = useRef({ input, prompt, onSubmit })
+  latest.current = { input, prompt, onSubmit }
+
   useEffect(() => {
     if (!active) return undefined
 
@@ -49,9 +56,10 @@ export const useTypingInput = ({
       if (event.ctrlKey || event.metaKey || event.altKey) return
 
       if (event.key === 'Enter') {
-        if (input.length !== prompt.length) return
+        const { input: typed, prompt: target, onSubmit: submit } = latest.current
+        if (typed.length !== target.length) return
         event.preventDefault()
-        onSubmit(input)
+        submit(typed)
         return
       }
 
@@ -68,7 +76,7 @@ export const useTypingInput = ({
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [active, input, prompt, onSubmit])
+  }, [active])
 
   return input
 }

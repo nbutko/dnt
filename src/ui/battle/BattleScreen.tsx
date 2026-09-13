@@ -112,10 +112,12 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   // `prompt` — see docs/plans/done/20260704-nbutko-m0-combat-spike.html#keyboard.
   // Built from window keydown, not a text field (useTypingInput explains why);
   // captured only while the fight is live and the player isn't in a miss pause.
+  // The same gate blanks the Keyboard's highlights, so the two can't drift.
+  const typingActive = state.status === 'ongoing' && !state.player.paused
   const input = useTypingInput({
     prompt: state.player.prompt,
     attempt: state.player.attempt,
-    active: state.status === 'ongoing' && !state.player.paused,
+    active: typingActive,
     onSubmit: actions.submit,
   })
 
@@ -260,7 +262,7 @@ const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
           <Keyboard
             prompt={state.player.prompt}
             input={input}
-            active={state.status === 'ongoing' && !state.player.paused}
+            active={typingActive}
           />
         </div>
 

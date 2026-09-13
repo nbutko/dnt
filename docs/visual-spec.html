@@ -71,21 +71,21 @@ of the site — don't add more hues.</p>
   <div style="font-family:'EB Garamond',serif;font-size:1.1rem">The goblin sneers and lunges for its next line.</div>
 </div>
 <div class="font-sample">
-  <span class="label">Monospace — target prompt, live input, monster's typed text (never swap this out — legibility of the actual typing is the one thing that can't flex)</span>
+  <span class="label">Monospace — the target prompt with the player's typing overlaid, and the monster's typed text (never swap this out — legibility of the actual typing is the one thing that can't flex)</span>
   <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem">the gobl<span style="color:#c94b4b">x</span>in sca_</div>
 </div>
 <pre><code>&lt;link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&amp;family=EB+Garamond:ital@0;1&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"&gt;
 
 font-family: 'Cinzel', serif;         /* display */
 font-family: 'EB Garamond', serif;    /* body */
-font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</code></pre>
+font-family: 'JetBrains Mono', monospace; /* prompt-with-typing / monster-typed */</code></pre>
 <table>
   <tr><th>Use</th><th>Font</th><th>Size</th><th>Weight</th><th>Notes</th></tr>
   <tr><td>Screen title ("Battle — Tier 1")</td><td>Cinzel</td><td>22px</td><td>700</td><td>letter-spacing .12em, uppercase</td></tr>
   <tr><td>Panel name (GOBLIN SCOUT / YOU)</td><td>Cinzel</td><td>15px</td><td>500</td><td>letter-spacing .06em</td></tr>
   <tr><td>HP numeric readout</td><td>JetBrains Mono</td><td>12px</td><td>400</td><td>text-dim color</td></tr>
   <tr><td>Target prompt / monster typed text</td><td>JetBrains Mono</td><td>16–19px</td><td>400</td><td>min 16px — this is the text a 10-year-old is reading under time pressure</td></tr>
-  <tr><td>Live input echo</td><td>JetBrains Mono</td><td>13px</td><td>400</td><td>dimmer than the prompt above it</td></tr>
+  <tr><td>Player's typed line</td><td>JetBrains Mono</td><td>16–19px</td><td>400</td><td>the same line as the target prompt: typing is overlaid in place (correct bright, wrong red, untyped dimmed) with a drawn blinking caret — there is no separate echo row and no text field</td></tr>
   <tr><td>Countdown number</td><td>Cinzel</td><td>22px</td><td>700</td><td>gold</td></tr>
   <tr><td>Keyboard key labels</td><td>JetBrains Mono</td><td>12–13px</td><td>400–700</td><td>700 only for the currently-lit key</td></tr>
 </table>
@@ -93,11 +93,11 @@ font-family: 'JetBrains Mono', monospace; /* prompt / input / monster-typed */</
 <h2 id="layout">Layout — Vertical Duel</h2>
 <ul>
   <li>Outer frame: max-width <code>1040px</code>, centered; <code>3px solid var(--border-gold)</code> outer border + a 1px inset outline 8px in for a double-border look; padding <code>28px</code>; background <code>radial-gradient(ellipse at 50% 0%, #2a1710 0%, #140b07 65%)</code>.</li>
-  <li>Stack order, top → bottom: title → monster panel → divider ("VS" + gold diamonds) → player panel (HP + prompt/input/countdown + keyboard).</li>
+  <li>Stack order, top → bottom: title → monster panel → divider ("VS" + gold diamonds) → player panel (HP + prompt-with-typing/countdown + keyboard).</li>
   <li>Monster panel: <code>border-radius: 8px</code>, <code>2px solid var(--border-gold)</code>, background <code>linear-gradient(180deg, #3b1220, #2a0d17)</code>, padding <code>16px 20px</code>.</li>
   <li>Player panel: same shape, background <code>linear-gradient(180deg, #241f3d20, #1a1226)</code> — i.e. same structure as the monster panel, gold family instead of red.</li>
   <li>HP bar: <code>14px</code> tall, <code>7px</code> radius, 1px border in the side's color family, fill is a gradient from the darker to brighter shade of that family.</li>
-  <li>Prompt/input row: prompt+input stacked on the left (flex: 1), countdown block fixed at <code>64px</code> wide to its right.</li>
+  <li>Prompt row: one prompt-with-typing block on the left (flex: 1; long passages wrap, at most four lines visible), countdown block fixed at <code>64px</code> wide to its right.</li>
 </ul>
 
 <h2 id="keyboard">Keyboard — all three states</h2>

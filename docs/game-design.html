@@ -48,8 +48,9 @@
   captures). What matters is what happens when the player presses <strong>Return</strong>:
 </p>
 <ul>
-  <li>The typed string must be <strong>exactly correct</strong> to land the hit. Return is the only way to submit — there's no auto-submit the instant length matches, since prompts may contain in-line line breaks.</li>
-  <li>Return only counts as a submit attempt once the typed input is the <strong>same length</strong> as the target text. If input is shorter than the target, Return is treated as a literal character (so a prompt with an inline line break types unambiguously).</li>
+  <li>The typed string must be <strong>exactly correct</strong> to land the hit. Return is the only way to submit — there's no auto-submit the instant length matches (a rule kept so that multi-line prompts could be added
+  without changing it — no bank text has a line break today).</li>
+  <li>Return only counts as a submit attempt once the typed input is the <strong>same length</strong> as the target text. If input is shorter than the target, Return does nothing. (Reserved: if multi-line prompts are ever authored, a short-input Return would type a literal line break so such a prompt types unambiguously — a one-line change in <code>ui/hooks/useTypingInput.ts</code>. Today no bank text contains one.)</li>
   <li>Once length matches and Return is pressed: exact match → hit lands; anything else (even one wrong character) → the attack misses. Either way, the next prompt starts immediately — there's no re-attempt on the same prompt.</li>
 </ul>
 <div class="callout decision">

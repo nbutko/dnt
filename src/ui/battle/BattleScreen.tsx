@@ -102,7 +102,7 @@ interface ReadyBattleScreenProps {
 
 // "Vertical Duel" layout (docs/visual-spec.html#layout): title, then
 // monster panel (top), a VS divider, then the player's own panel (bottom) —
-// HP, prompt, live input, countdown, and the keyboard.
+// HP, the prompt with typing overlaid, countdown, and the keyboard.
 const ReadyBattleScreen = ({ store, onResult }: ReadyBattleScreenProps) => {
   const { state, actions } = useBattle(store)
   useGameLoop(actions.tick, state.status === 'ongoing')

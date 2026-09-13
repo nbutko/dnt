@@ -12,17 +12,23 @@
   <h1>Plan: Typing Input Rework</h1>
   <p class="tagline">Replace the battle screen's hidden <code>&lt;input&gt;</code> with a window <code>keydown</code>
   listener, so typing needs no DOM focus and there is no text field for ChromeOS to autocorrect.</p>
-  <span class="status">feature: <code>typing-input-rework</code> · author: nbutko · opened: 2026-09-13 · status: <strong>wip</strong>
+  <span class="status">feature: <code>typing-input-rework</code> · author: nbutko · opened: 2026-09-13 · status: <strong>done</strong>
   · PRD: no (two reported bugs with one root cause; nothing the player experiences changes except the bugs going away)
   · wireframes: no (the element being removed was never visible; the battle layout is untouched)</span>
 </header>
-<!--
 <div class="banner done">
-  <p><strong>Shipped [YYYY-MM-DD].</strong> [What shipped, what didn't. Where the evergreen description of
-  this feature now lives. Any verification box left unticked, and why.]</p>
-  <p class="banner-date">Closed [YYYY-MM-DD].</p>
+  <p><strong>Shipped 2026-09-13.</strong> Both stories landed: the hidden <code>&lt;input&gt;</code> is gone
+  and <code>ui/hooks/useTypingInput.ts</code> builds the typed line from window <code>keydown</code>
+  (commits <code>f85809b</code>, <code>3c6c54d</code> after a subagent review, then this close-out). The evergreen
+  description now lives in <a href="../../screens.html">screens.html</a> ("Interactions &amp; behavior →
+  Battle") and <a href="../../codebase-architecture.html">codebase-architecture.html</a>; the gotcha is
+  <a href="../../notes/20260913-nbutko-no-text-field-in-battle.html">a note</a>. One verification box is left
+  unticked on purpose: "a word the OS used to autocorrect now lands as typed" needs the Chromebook to actually
+  meet such a word; the maintainer's play-test confirmed the focus-loss half. Deviation from the plan as
+  written: Story 1 gained a review-fixes commit (ref-based subscription, two Enter tests, a BattleScreen wiring
+  test) and Story 2's task list grew by five leftovers the reviewer found — both recorded inline.</p>
+  <p class="banner-date">Closed 2026-09-13.</p>
 </div>
--->
 <main>
 
 <p>
@@ -80,7 +86,7 @@
 <h2>3. Decisions</h2>
 <div class="callout decision">
   <strong>Keydown listener over a refocus band-aid.</strong> The M5 plan's
-  <a href="20260710-nbutko-m5-game-mechanics.html">Story 1</a> proposed keeping the hidden input and re-focusing it
+  <a href="../wip/20260710-nbutko-m5-game-mechanics.html">Story 1</a> proposed keeping the hidden input and re-focusing it
   on <code>mousedown</code>/<code>blur</code>. That fixes only the focus half, fights every future modal or
   autofocused button, and leaves the autocorrect half to opt-out attributes that are unverified on the one device
   that matters. A listener needs no focus and gives the OS no field to rewrite. Its cost is one hook of roughly
@@ -184,43 +190,43 @@ without them but the plan does not close as fully verified until they are ticked
 
 <h3 id="s2">Story 2 — Docs close-out</h3>
 <ul class="tasks">
-  <li>☐ <a href="../../screens.html">screens.html</a>: "Interactions &amp; behavior → Battle" says where input
+  <li>☑ <a href="../../screens.html">screens.html</a>: "Interactions &amp; behavior → Battle" says where input
   comes from (window <code>keydown</code> while the fight is ongoing and unpaused; no focusable element) and
   drops the "shorter input treats Enter as a literal character" clause, which describes a rule that does not run.
   While there, fix the stale "Vertical Duel" bullet that still describes "live input echoed below with a
   blinking-caret span" — feedback #10 removed the echo row; the caret is drawn inside the prompt line.</li>
-  <li>☐ <a href="../../game-design.html">game-design.html</a> "Submitting an attack": both sentences that lean
+  <li>☑ <a href="../../game-design.html">game-design.html</a> "Submitting an attack": both sentences that lean
   on inline line breaks (the "no auto-submit at matching length" reason and the Enter-as-literal-character
   rule) are qualified as reserved for multi-line prompts, of which there are currently none; Enter on a short
   input does nothing.</li>
-  <li>☐ <a href="../../codebase-architecture.html">codebase-architecture.html</a>: the state table's "input box
+  <li>☑ <a href="../../codebase-architecture.html">codebase-architecture.html</a>: the state table's "input box
   text" row and the <code>ui/hooks</code> line of the tree name <code>useTypingInput</code>; the "Not covered:
   the hooks…" test-coverage sentence is no longer true (the hook is unit-tested) — fix it; add a "how keystrokes
   are captured → <code>ui/hooks/useTypingInput.ts</code>" row to the "where do I change X?" table.</li>
-  <li>☐ <a href="../../architecture.html">architecture.html</a>: the state table's twin "input box text" row.</li>
-  <li>☐ <a href="../../visual-spec.html">visual-spec.html</a>: the "Live input echo" type-scale row and the
+  <li>☑ <a href="../../architecture.html">architecture.html</a>: the state table's twin "input box text" row.</li>
+  <li>☑ <a href="../../visual-spec.html">visual-spec.html</a>: the "Live input echo" type-scale row and the
   "prompt+input stacked" layout bullet describe the echo row feedback #10 removed — the same staleness as
   screens.html's Vertical Duel bullet; fix both so the two evergreen docs agree.</li>
-  <li>☐ Source comments that still assume the old rule or the old box: <code>engine/battle.ts</code>'s
+  <li>☑ Source comments that still assume the old rule or the old box: <code>engine/battle.ts</code>'s
   "the caller's job to treat as a literal character" (the caller now ignores a short-input Enter) and
   <code>domain/types.ts</code>'s "reset its typed-input box" on <code>attempt</code>.</li>
-  <li>☐ <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 PRD</a> (still wip): its B2 finding
+  <li>☑ <a href="../../prds/wip/20260710-nbutko-m5-game-mechanics.html">M5 PRD</a> (still wip): its B2 finding
   narrates the <code>sr-only</code> input and prescribes the refocus fix — add the same one-line "superseded by
   typing-input-rework" callout the M5 plan already carries, so the close-out grep's hit there is explained.</li>
-  <li>☐ While in screens.html's encounter section: it says "Begin Battle →" is autofocused, but
+  <li>☑ While in screens.html's encounter section: it says "Begin Battle →" is autofocused, but
   <code>EncounterModal</code> deliberately uses a window Enter listener instead (pre-existing, unrelated
   staleness; one-line fix).</li>
-  <li>☐ <a href="20260710-nbutko-m5-game-mechanics.html">M5 plan</a> Story 1: the B2 bullets are already marked
+  <li>☑ <a href="../wip/20260710-nbutko-m5-game-mechanics.html">M5 plan</a> Story 1: the B2 bullets are already marked
   as superseded by this plan (done when this plan was opened); after shipping, tick nothing there — B3 remains
   its own open work — but update the ledger's B2 row to point at this plan's done location.</li>
-  <li>☐ Write note <code>docs/notes/20260913-nbutko-no-text-field-in-battle.html</code> + index row: ChromeOS
+  <li>☑ Write note <code>docs/notes/20260913-nbutko-no-text-field-in-battle.html</code> + index row: ChromeOS
   autocorrects and auto-capitalizes any editable field regardless of opt-out attributes, and an invisible
   focused element is a focus trap with no escape; the battle screen therefore has no text field, and the
   typing hook is the only keystroke source. "Relevant when" touching anything that captures typing.</li>
-  <li>☐ Reconcile this plan (tick what shipped), add the done banner, <code>git mv</code> to
+  <li>☑ Reconcile this plan (tick what shipped), add the done banner, <code>git mv</code> to
   <code>plans/done/</code>, move the index row.</li>
-  <li>☐ Run the link audit
-  (<a href="../done/20260912-nbutko-docs-refactor.html#audit">docs-refactor plan §7.1</a>); commit:
+  <li>☑ Run the link audit
+  (<a href="20260912-nbutko-docs-refactor.html#audit">docs-refactor plan §7.1</a>); commit:
   <code>typing-input-rework: close out</code>.</li>
 </ul>
 <p><em>Done when:</em> no evergreen doc or source comment still describes a hidden input; audit clean.</p>

@@ -106,7 +106,7 @@ may import what.</p>
               RewardModal  Bag  ActiveBuffsStrip
     inn/      InnScreen (Rest &amp; Sheet / Armory tabs)  RestPanel  CharacterSheet  AsiPanel  Armory
     shop/     ShopScreen  ShopItem  PriceTag
-    hooks/    useBattle  useGameLoop
+    hooks/    useBattle  useGameLoop  useTypingInput
   test/setup.ts                       # jest-dom import
 </code></pre>
 
@@ -140,7 +140,7 @@ may import what.</p>
     screen, <strong>never</strong> touched by IndexedDB</td>
   </tr>
   <tr>
-    <td>Ephemeral / UI</td><td>input box text, which screen is up</td><td>a render</td>
+    <td>Ephemeral / UI</td><td>the player's typed line (built from window keydown by <code>ui/hooks/useTypingInput.ts</code> — there is no text field), which screen is up</td><td>a render</td>
     <td>local <code>useState</code>; navigation is <code>useState&lt;Screen&gt;</code> in <code>GameShell</code></td>
   </tr>
 </table>
@@ -270,8 +270,8 @@ may import what.</p>
   ability-roll/pricing, the encounter/band/mimic-sense dice), the dungeon (graph + invariant sweep), progression
   (rewards), the balance sim + combat-invariants sweep, content (monsters, text-banks), state (save-reducer,
   save-storage, SaveProvider, dungeon-run-reducer), and a growing set of UI units (PlayerPrompt, TypedProgress,
-  graph-layout, RewardModal), plus <code>battle-store</code> itself. Not covered: the hooks and most top-level
-  screens.
+  graph-layout, RewardModal, BattleScreen's typing wiring) and the typing hook (<code>useTypingInput</code>),
+  plus <code>battle-store</code> itself. Not covered: the other hooks and most top-level screens.
   <strong>The habit:</strong> engine/data logic is proven headlessly (unit tests + the
   <code>engine/sim/</code> harnesses) <em>before</em> the UI that consumes it — mirror it.
 </p>
@@ -282,6 +282,7 @@ may import what.</p>
   <tr><td>a combat constant (damage, HP, crit, timing)</td><td><code>config/combat.ts</code> (committed — change deliberately)</td></tr>
   <tr><td>the damage math itself</td><td><code>engine/damage.ts</code></td></tr>
   <tr><td>how monsters type</td><td><code>engine/monster-typing.ts</code></td></tr>
+  <tr><td>how the player's keystrokes are captured</td><td><code>ui/hooks/useTypingInput.ts</code> (window keydown; deliberately no text field — see <a href="notes/20260913-nbutko-no-text-field-in-battle.html">the note</a>)</td></tr>
   <tr><td>what a save holds / a save action</td><td><code>domain/save.ts</code> + <code>state/save/save-reducer.ts</code></td></tr>
   <tr><td>how save data reaches combat</td><td><code>engine/character/modifiers.ts</code> (<code>resolveModifiers</code>)</td></tr>
   <tr><td>an ability/leveling/class/weapon/item magnitude</td><td><code>config/abilities.ts</code> / <code>config/leveling.ts</code> / <code>config/classes.ts</code> / <code>config/weapons.ts</code> / <code>config/items.ts</code></td></tr>

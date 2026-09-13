@@ -5,7 +5,7 @@ import { useTypingInput } from './useTypingInput'
 
 // Nothing is focused in any of these tests — keystrokes go to document.body
 // and bubble to window. That IS the point of the hook: typing must work with
-// no focused element (docs/plans/wip/20260913-nbutko-typing-input-rework.html).
+// no focused element (docs/plans/done/20260913-nbutko-typing-input-rework.html).
 const setup = (prompt: string, overrides: { attempt?: number; active?: boolean } = {}) => {
   const onSubmit = vi.fn()
   const initial = { prompt, attempt: overrides.attempt ?? 1, active: overrides.active ?? true, onSubmit }

@@ -217,8 +217,9 @@ export const createBattle = (config: BattleConfig): Battle => {
   }
 
   // Return only counts as a submit once input length matches the target
-  // (see game-design.html#submitting); a shorter input is the caller's job
-  // to treat as a literal character, not a submit attempt.
+  // (see game-design.html#submitting); the caller (ui/hooks/useTypingInput.ts)
+  // never calls this with a shorter input — a short-input Enter is ignored
+  // there — but the engine enforces the rule too rather than trusting it.
   const submitPlayerAttack = (input: string): void => {
     if (status !== 'ongoing') return
     if (playerPauseRemainingMs > 0) return

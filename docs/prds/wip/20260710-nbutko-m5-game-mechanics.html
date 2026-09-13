@@ -350,6 +350,13 @@ typing-native mapping exists <em>within the no-mid-typing rule</em>:</p>
 </p>
 
 <h3>The two reported symptoms, explained</h3>
+<div class="callout why">
+  <strong>2026-09-13: the focus finding below is superseded</strong> by
+  <a href="../../plans/done/20260913-nbutko-typing-input-rework.html">typing-input-rework</a>, which removed the
+  hidden input altogether instead of refocusing it (a second Chromebook report — OS autocorrect rewriting typed
+  words — shared the root cause). The paragraph is kept as the record of the diagnosis; its prescribed fix was
+  not built.
+</div>
 <ul>
   <li><strong>"Pressing keys stops affecting the prompt" = lost focus, never recovered.</strong> The only
   real input is a visually-hidden <code>sr-only</code> <code>&lt;input&gt;</code>
@@ -374,7 +381,7 @@ typing-native mapping exists <em>within the no-mid-typing rule</em>:</p>
 <table>
   <tr><th>#</th><th>Bug</th><th>Where</th><th>How it shows up in play</th><th>Severity</th></tr>
   <tr><td>B1</td><td>Wrapped lines begin with the inter-word space</td><td><code>ui/battle/TypedProgress.tsx</code> (<code>wrapPrompt</code>)</td><td>Reported: must type an invisible space at line start; typing the visible letter reads as an error</td><td>breaks-play · certain</td></tr>
-  <tr><td>B2</td><td>Typing dies after any stray click; nothing restores focus</td><td><code>ui/battle/PlayerPrompt.tsx</code></td><td>Reported: keys stop affecting the prompt mid-fight; no visible way to recover</td><td>breaks-play · certain</td></tr>
+  <tr><td>B2</td><td>Typing dies after any stray click; nothing restores focus</td><td><code>ui/battle/PlayerPrompt.tsx</code></td><td>Reported: keys stop affecting the prompt mid-fight; no visible way to recover. <strong>Fixed 2026-09-13</strong> by <a href="../../plans/done/20260913-nbutko-typing-input-rework.html">typing-input-rework</a> (hidden input removed; keystrokes come from window keydown)</td><td>breaks-play · fixed</td></tr>
   <tr><td>B3</td><td>Backgrounded tab delivers one giant <code>dt</code> on return</td><td><code>ui/hooks/useGameLoop.ts</code></td><td>Switch tabs / close the lid mid-fight → both clocks instantly expire; a free miss the player never made. Clamp <code>dt</code> (~250ms)</td><td>wrong-numbers · certain</td></tr>
   <tr><td>B4</td><td>Debounced save never flushed on page hide</td><td><code>state/save/save-storage.ts</code></td><td>Slamming the Chromebook lid within ~250ms of a kill silently drops that kill's XP/coins. Flush on <code>visibilitychange</code>/<code>pagehide</code></td><td>wrong-numbers · certain, rare</td></tr>
   <tr><td>B5</td><td>Encounter d20 is seeded per node — a retried fight re-rolls the <em>identical</em> roll</td><td><code>ui/dungeon/DungeonScreen.tsx</code> (<code>encounterDice</code> seed)</td><td>At 2+ hearts, losing and retrying a node reproduces the same band forever; a fumbled node is fumbled on every retry. Contradicts "rolled the moment you commit" (the M3 PRD, <code>docs/prds/done/20260705-nbutko-m3-character-sheet.html</code>) and quietly devalues the Bard's reroll. Salt the seed with a per-node attempt counter</td><td>wrong-numbers · certain</td></tr>

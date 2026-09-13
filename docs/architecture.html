@@ -42,7 +42,7 @@
   <tr><th>Kind</th><th>Example</th><th>Home</th></tr>
   <tr><td>Simulation / battle</td><td>monster's typed string, HP bars, countdowns</td><td>A framework-agnostic engine (a factory function per <a href="#code-style">no-class</a>) that owns the state and advances via <code>tick(dt)</code>; React reads it through <code>useSyncExternalStore</code></td></tr>
   <tr><td>Persistent / save</td><td>coins, the character (class/level/XP/abilities), equipped weapon + inventory</td><td>React Context + <code>useReducer</code> — cross-component and low-frequency, the textbook Context case (arrives in M2)</td></tr>
-  <tr><td>Ephemeral UI</td><td>the input box text, which screen is up</td><td>Local <code>useState</code> in the component</td></tr>
+  <tr><td>Ephemeral UI</td><td>the player's typed line, which screen is up</td><td>Local <code>useState</code> — the typed line lives in <code>ui/hooks/useTypingInput.ts</code>, built from window <code>keydown</code> (there is no text field)</td></tr>
 </table>
 <div class="callout why">
   Redux/Zustand really would be overhead — but the reason isn't "the app is small," it's that none of these

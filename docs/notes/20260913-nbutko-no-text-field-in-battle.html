@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note: No text field in battle — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../index.html">← Dungeons &amp; Typing</a> · <a href="index.html">notes</a> · <code>no-text-field-in-battle</code></nav>
+<header class="page-head">
+  <h1>The battle screen has no text field, on purpose</h1>
+  <p class="tagline">A hidden <code>&lt;input&gt;</code> is a focus trap with no escape and an autocorrect target
+  for ChromeOS; keystrokes come from window <code>keydown</code> instead.</p>
+  <span class="status">author: nbutko · opened: 2026-09-13</span>
+</header>
+<main>
+
+<div class="callout why">
+  <strong>When to read this.</strong> You're about to add an <code>&lt;input&gt;</code>,
+  <code>&lt;textarea&gt;</code>, or <code>contentEditable</code> to the battle screen — "for focus", "for
+  accessibility", "so the Chromebook's on-screen keyboard pops up", or because a library expects one. Or you're
+  debugging "typing stopped working" / "my word got changed" on the Chromebook and reaching for
+  <code>autoFocus</code>, <code>onBlur</code>-refocus, or <code>autocorrect="off"</code>. Don't. Read
+  <code>ui/hooks/useTypingInput.ts</code> first; it is the only keystroke source, and the two bugs you'd be
+  reintroducing were the worst the game has had.
+</div>
+
+<h2>Relevant when</h2>
+<p>You're touching anything that captures the player's typing in a battle, or considering putting a focusable
+text control on the battle screen.</p>
+
+<h2>The gotcha</h2>
+<p>
+  Through M0–M4 the player typed into a real <code>&lt;input&gt;</code> that was visually hidden with
+  <code>sr-only</code> and whose <code>.value</code> was the typed string. Two things made that a trap on the one
+  device that matters:
+</p>
+<ul>
+  <li><strong>Focus.</strong> The element had to hold DOM focus to receive anything, and it only got focus from
+  <code>autoFocus</code> on mount. Any touchpad tap, touchscreen tap, or Tab press moved focus away; nothing
+  moved it back; and because the element was invisible there was no box to click into. The reported symptom was
+  "keys stop affecting the prompt mid-fight, and it never recovers until reload."</li>
+  <li><strong>ChromeOS autocorrect.</strong> ChromeOS applies its own auto-correction, auto-capitalization, and
+  spellcheck to any editable field. A bare text field got all three, so a correctly typed line was sometimes
+  rewritten into a miss. The <code>autocorrect</code>/<code>autocapitalize</code>/<code>spellcheck</code> opt-out
+  attributes have historically not been honored reliably by ChromeOS's physical-keyboard autocorrect, so they
+  are not a fix you can trust.</li>
+</ul>
+<p>
+  Both have one root cause — an editable element in the DOM — so the fix removed the element rather than
+  patching each symptom (<a href="../plans/done/20260913-nbutko-typing-input-rework.html">the plan</a>, with the
+  diagnosis and decisions).
+</p>
+
+<h2>What to do</h2>
+<p>
+  <code>ui/hooks/useTypingInput.ts</code> builds the typed line from window <code>keydown</code> while the
+  battle is ongoing and the player isn't in a miss pause. It needs no focus (the tests deliberately type with
+  nothing focused) and gives the OS nothing to rewrite. If you need new typing behavior, change the hook's key
+  rules; if you need a control the player clicks, make it a <code>&lt;button&gt;</code>. If a future feature
+  truly needs an editable field on this screen, re-read the two bullets above first and plan for both.
+</p>
+
+<h2>History</h2>
+<ul>
+  <li>2026-09-13 — written at the close of typing-input-rework, after both Chromebook reports were traced to the
+  hidden input. The focus-loss half was confirmed fixed by the maintainer's play-test; the autocorrect half is
+  structurally gone but awaits a word the OS used to rewrite.</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="index.html">← notes index</a></footer>
+</body>
+</html>

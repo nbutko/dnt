@@ -18,9 +18,9 @@ interface UseTypingInputOptions {
 // and ChromeOS autocorrects / auto-capitalizes anything editable regardless of
 // opt-out attributes. Building the line from window `keydown` needs neither
 // focus nor a field. Don't reintroduce an input "for focus" — see
-// docs/plans/wip/20260913-nbutko-typing-input-rework.html.
+// docs/plans/done/20260913-nbutko-typing-input-rework.html.
 //
-// Key rules, in order (docs/plans/wip/20260913-nbutko-typing-input-rework.html §3):
+// Key rules, in order (docs/plans/done/20260913-nbutko-typing-input-rework.html §3):
 //  1. Ctrl / Meta / Alt held -> ignore (browser + ChromeOS shortcuts keep
 //     working; Shift is just how capitals are typed).
 //  2. Enter -> submit only once input.length === prompt.length; a short-input

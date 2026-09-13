@@ -33,7 +33,7 @@
       "family": "JetBrains Mono",
       "weights": [400, 500, 700],
       "googleFontsUrl": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700",
-      "usage": "target prompt, live input, monster's live-typed text — never substitute, legibility-critical"
+      "usage": "the target prompt with the player's typing overlaid, and the monster's live-typed text — never substitute, legibility-critical"
     }
   },
   "layout": {

@@ -41,7 +41,7 @@
 <p><strong>Purpose:</strong> the core combat loop — the player types a prompt to attack while the monster
 "types" its own prompt on its own clock, in real time.</p>
 <p><strong>Layout:</strong> a single centered panel, max-width 1040px, stacked vertically: title → monster panel
-→ divider → player panel (HP, prompt/input/countdown, and the on-screen keyboard).</p>
+→ divider → player panel (HP, the prompt with typing overlaid, countdown, and the on-screen keyboard).</p>
 <ul>
   <li>Outer frame: <code>border: 3px solid #7a5a22</code>, plus a 1px inset outline offset 8px in (a
   double-border look), padding <code>28px</code>, background
@@ -57,9 +57,11 @@
   <code>#c9a227</code>) with fading horizontal rules either side.</li>
   <li>Player panel: same shape as the monster panel, gold family instead of red — background
   <code>linear-gradient(180deg,#241f3d20,#1a1226)</code>, HP fill
-  <code>linear-gradient(90deg,#8a6a1a,#e8c766)</code>. Below HP: a row with (a) the prompt/input block — the
-  target prompt shown dimmed above, live input echoed below with a blinking-caret span
-  (<code>border-right:2px solid #e8c766</code>) — and (b) a fixed 64px-wide countdown column (Cinzel 22px
+  <code>linear-gradient(90deg,#8a6a1a,#e8c766)</code>. Below HP: a row with (a) the prompt block — a single
+  block, not a prompt row plus an echo row: the target prompt with the player's typing overlaid on it in place
+  (typed-correct bright, typed-wrong red, untyped dimmed) and a blinking caret drawn at the next position; long
+  passages wrap, at most four lines visible; there is no text field — and (b) a fixed 64px-wide countdown column
+  (Cinzel 22px
   <code>#e8c766</code> number + "sec left" caption, JetBrains Mono 10px uppercase <code>#a89a7a</code>).</li>
   <li>Keyboard: a full 5-row QWERTY. Base key <code>34×32px</code>, 4px radius, <code>1px solid #4a3a18</code>,
   background <code>rgba(237,225,195,.06)</code>. Row 1 ends in a wide Backspace key; row 3 ends in a wide Enter
@@ -178,8 +180,8 @@ component the character-creation ability roller uses) plus a total/breakdown lin
 <p>Die palette by result: <strong>gold</strong> (<code>outline #e8c766</code>) for an ordinary landed roll,
 <strong>green</strong> (<code>outline #9cf07c</code>, faces <code>#368349</code> family) for an Inspired nat-20,
 <strong>red</strong> (<code>outline #ff9a9a</code>, faces <code>#872a2a</code> family) for a Fumble nat-1. A
-Bard's "🎵 Reroll" button appears once per dungeon when available; "Begin Battle →" is autofocused so Enter
-fires it without hunting for the mouse.</p>
+Bard's "🎵 Reroll" button appears once per dungeon when available; a window Enter listener fires "Begin
+Battle →" without hunting for the mouse (not the button's own focus — it's disabled while the die tumbles).</p>
 
 <h2 id="bag">The Bag</h2>
 <p><strong>Purpose:</strong> an expandable drawer over the dungeon map for using an owned consumable before a
@@ -191,11 +193,13 @@ again the instant a dungeon node is selected, so it can't be left open mid-fight
 
 <h2>Interactions &amp; behavior</h2>
 <ul>
-  <li><strong>Battle:</strong> input is local component state; Enter only submits once
-  <code>input.length === prompt.length</code> (shorter input treats Enter as a literal character, for prompts
-  containing inline line breaks). Exact match → hit; anything else → miss; the next prompt starts immediately
-  either way. Keyboard highlight state recomputes on every keystroke from <code>prompt</code> + <code>input</code>
-  (a pure function, no stored state of its own).</li>
+  <li><strong>Battle:</strong> there is no text field. The typed line is built from window
+  <code>keydown</code> by <code>ui/hooks/useTypingInput.ts</code> while the fight is ongoing and the player isn't
+  in a miss pause — no element needs focus, so a stray tap can't kill typing and the OS has nothing to
+  autocorrect. Printable keys append, Backspace trims, Ctrl/Alt/Meta chords are ignored, and Enter only submits
+  once <code>input.length === prompt.length</code> (a shorter-input Enter does nothing). Exact match → hit;
+  anything else → miss; the next prompt starts immediately either way. Keyboard highlight state recomputes on
+  every keystroke from <code>prompt</code> + <code>input</code> (a pure function, no stored state of its own).</li>
   <li><strong>World map:</strong> tapping an unlocked-or-cleared tier card navigates into that dungeon's branch
   graph (regenerated fresh each visit). Tapping the Inn opens its Rest &amp; Sheet/Armory tabs. Tapping the Shop
   opens the Shop.</li>

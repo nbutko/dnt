@@ -84,6 +84,13 @@
   <h3>Story 1 — The typing surface never goes dead <span class="tag flag">B2 + B3 · reported</span></h3>
   <p>Focus loss is the "keys stop working" bug; the unclamped <code>dt</code> is its cousin (a
   backgrounded tab returns to a pair of instantly-expired clocks, which also reads as "the game broke").</p>
+  <div class="callout why">
+    <strong>2026-09-13: the B2 half of this story is superseded</strong> by
+    <a href="20260913-nbutko-typing-input-rework.html">typing-input-rework</a>, which removes the hidden input
+    altogether (a second Chromebook report — OS autocorrect rewriting typed words — has the same root cause,
+    and a refocus band-aid would not fix it). Skip the two <code>PlayerPrompt</code>/Frame focus bullets below;
+    the <code>useGameLoop</code> clamp (B3) is still this story's work.
+  </div>
   <ul>
     <li><code>ui/battle/PlayerPrompt.tsx</code>: wrap the prompt area's container with
     <code>onMouseDown={(e) =&gt; { e.preventDefault(); inputRef.current?.focus() }}</code> — any click inside

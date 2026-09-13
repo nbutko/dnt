@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan: Typing Input Rework — Dungeons &amp; Typing</title>
+<link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<nav class="crumbs"><a href="../../index.html">← Dungeons &amp; Typing</a> · <a href="../index.html">plans</a> · <code>typing-input-rework</code></nav>
+<header class="page-head">
+  <h1>Plan: Typing Input Rework</h1>
+  <p class="tagline">Replace the battle screen's hidden <code>&lt;input&gt;</code> with a window <code>keydown</code>
+  listener, so typing needs no DOM focus and there is no text field for ChromeOS to autocorrect.</p>
+  <span class="status">feature: <code>typing-input-rework</code> · author: nbutko · opened: 2026-09-13 · status: <strong>wip</strong>
+  · PRD: no (two reported bugs with one root cause; nothing the player experiences changes except the bugs going away)
+  · wireframes: no (the element being removed was never visible; the battle layout is untouched)</span>
+</header>
+<!--
+<div class="banner done">
+  <p><strong>Shipped [YYYY-MM-DD].</strong> [What shipped, what didn't. Where the evergreen description of
+  this feature now lives. Any verification box left unticked, and why.]</p>
+  <p class="banner-date">Closed [YYYY-MM-DD].</p>
+</div>
+-->
+<main>
+
+<p>
+  This is the implementation plan for <code>typing-input-rework</code>. It fixes two bugs reported from the
+  Chromebook against the core battle screen: <strong>(1)</strong> typing goes dead mid-fight and never comes
+  back until a page reload, and <strong>(2)</strong> typed words are sometimes autocorrected, which turns a
+  correctly-typed line into a miss. Both are consequences of one design choice in
+  <code>src/ui/battle/PlayerPrompt.tsx</code>, so this plan replaces the mechanism rather than patching each
+  symptom. Conventions used throughout (naming, lifecycle, banners, checkboxes) are in
+  <a href="../../conventions.html">conventions.html</a>.
+</p>
+
+<div class="callout why">
+  <strong>Diagnosis.</strong> The battle reads keystrokes through a real <code>&lt;input&gt;</code> that is
+  visually hidden (<code>sr-only</code>) and treats its <code>.value</code> as the typed string. That element
+  must hold DOM focus to receive anything, and it only ever gets focus from <code>autoFocus</code> on mount
+  (and on remount after a miss pause, since the paused branch unmounts it). Any touchpad tap, touchscreen tap,
+  or Tab press moves focus off it, nothing ever moves focus back, and because the element is invisible there is
+  no box to click into — hence "never regained until page load." Separately, ChromeOS applies its own
+  auto-correction, auto-capitalization, and spellcheck to any editable text field, and this is a bare text
+  field with none of the opt-out attributes; ChromeOS's physical-keyboard autocorrect has historically not
+  honored those attributes reliably anyway. Remove the text field and both bugs become structurally impossible.
+</div>
+
+<h2>1. Scope</h2>
+<ul>
+  <li><strong>In:</strong> how the player's in-progress <code>input</code> string is built during a battle
+  (<code>ui/battle/BattleScreen.tsx</code>, <code>ui/battle/PlayerPrompt.tsx</code>, a new hook under
+  <code>ui/hooks/</code>); the tests that exercise it; every comment and evergreen doc that describes the hidden
+  input; a note recording the gotcha.</li>
+  <li><strong>Out:</strong> the combat engine, the battle store, the Keyboard/TypedProgress rendering, the
+  submit rule (Enter only counts once lengths match; exact match hits), and the M5 plan's unrelated
+  <code>dt</code>-clamp fix (B3) — see §6.</li>
+  <li><strong>Deliverable:</strong> mid-fight, clicking or tapping anything on the page and then typing still
+  lands keystrokes in the prompt; on the Chromebook, a correctly-typed line is never rewritten by the OS.</li>
+</ul>
+
+<h2>2. Approach</h2>
+<p>
+  Two stories, code first then docs, per the working rules. The code story moves keystroke capture out of the
+  DOM and into a window <code>keydown</code> listener that is only armed while the battle is
+  <code>ongoing</code> and the player is not <code>paused</code>. <code>BattleScreen</code> already owns the
+  <code>input</code> state (lifted there in M0 Story 7 because the Keyboard needs it too), so the listener lives
+  beside it as a small hook and <code>PlayerPrompt</code> becomes purely presentational. The codebase already
+  uses exactly this idiom for Enter in <code>ui/dungeon/EncounterModal.tsx</code>, so nothing new is being
+  invented.
+</p>
+<div class="callout decision">
+  <strong>No text field, anywhere on the battle screen.</strong> The typed string is built from
+  <code>KeyboardEvent.key</code> and nothing else. Do not reintroduce an <code>&lt;input&gt;</code>,
+  <code>&lt;textarea&gt;</code>, or <code>contentEditable</code> "for focus" or "for accessibility" — that is the
+  thing that broke.
+</div>
+
+<h2>3. Decisions</h2>
+<div class="callout decision">
+  <strong>Keydown listener over a refocus band-aid.</strong> The M5 plan's
+  <a href="20260710-nbutko-m5-game-mechanics.html">Story 1</a> proposed keeping the hidden input and re-focusing it
+  on <code>mousedown</code>/<code>blur</code>. That fixes only the focus half, fights every future modal or
+  autofocused button, and leaves the autocorrect half to opt-out attributes that are unverified on the one device
+  that matters. A listener needs no focus and gives the OS no field to rewrite. Its cost is one hook of roughly
+  thirty lines. The B2 half of M5 Story 1 is superseded by this plan; its B3 half (clamp the game loop's
+  <code>dt</code>) stays there.
+</div>
+<div class="callout decision">
+  <strong>The hook is the one keystroke authority; it lives in <code>ui/hooks/useTypingInput.ts</code>.</strong>
+  Signature: <code>useTypingInput({ prompt, attempt, active, onSubmit }) → input</code>. It owns the
+  <code>input</code> state (moving it out of <code>BattleScreen</code>'s <code>useState</code>), resets to
+  <code>''</code> whenever <code>attempt</code> changes (today's <code>useEffect</code>), and subscribes to
+  <code>window</code> <code>keydown</code> only while <code>active</code>. Mirrors <code>useGameLoop</code>: a
+  headless, testable seam between the DOM and the battle. <code>BattleScreen</code> passes
+  <code>active = state.status === 'ongoing' &amp;&amp; !state.player.paused</code>.
+</div>
+<div class="callout decision">
+  <strong>Key handling rules.</strong> In order, per <code>keydown</code>:
+  <ol>
+    <li>Any of <code>ctrlKey</code>, <code>metaKey</code>, <code>altKey</code> held → ignore (browser and
+    ChromeOS shortcuts keep working; Shift is not a modifier here, it is how capitals are typed).</li>
+    <li><code>key === 'Enter'</code> → if <code>input.length === prompt.length</code>, <code>preventDefault</code>
+    and <code>onSubmit(input)</code>; otherwise ignore. Same rule as today's handler.</li>
+    <li><code>key === 'Backspace'</code> → <code>preventDefault</code>, drop the last character. Backspace is
+    always allowed (<a href="../../game-design.html">game-design.html</a>, "Submitting an attack").</li>
+    <li><code>key.length === 1</code> → <code>preventDefault</code> (so Space cannot scroll the page), append.
+    This is every printable character a physical keyboard produces, including capitals and punctuation via
+    Shift.</li>
+    <li>Anything else (<code>Shift</code>, <code>Tab</code>, arrows, <code>Dead</code>, function keys) → ignore.</li>
+  </ol>
+  <code>event.repeat</code> is honored, not filtered: holding a key auto-repeats exactly as a text field would,
+  and a kid who leans on a key gets an off-track line and a Backspace highlight, same as today.
+</div>
+<div class="callout decision">
+  <strong>Gating replaces focus management.</strong> On a win the reward modal mounts over the still-mounted
+  battle screen (<code>ui/dungeon/DungeonScreen.tsx</code>), but <code>status</code> is already
+  <code>'won'</code> so the listener is off and Enter reaches only the modal's autofocused Continue. On a loss
+  <code>status</code> is <code>'lost'</code>, so the in-battle Continue button's autofocus works unchanged. During
+  a miss pause the listener is off, so keystrokes typed at the "You missed!" message are dropped instead of
+  silently pre-filling the next prompt — the same behavior as today's unmounted input.
+</div>
+<div class="callout decision">
+  <strong>Enter-as-literal-character stays dormant.</strong> <a href="../../game-design.html">game-design.html</a>
+  says a short-input Enter is treated as a literal character so prompts with inline line breaks type
+  unambiguously. Today's <code>&lt;input&gt;</code> cannot hold a newline, so that rule has never actually run,
+  and every string in <code>src/content/text/library.json</code> is single-line ASCII (checked 2026-09-13:
+  6,893 strings, zero newlines, zero non-ASCII). The new hook ignores a short-input Enter, exactly as today.
+  If multi-line prompts are ever authored, appending <code>'\n'</code> on a short-input Enter is a one-line
+  change in the hook; it is not done here.
+</div>
+<div class="callout decision">
+  <strong>Paste and screen-reader text entry are dropped on purpose.</strong> A typing trainer has no use for
+  paste, and the one player does not use a screen reader. The prompt line and keyboard remain ordinary rendered
+  text.
+</div>
+
+<h2>4. Stories &amp; tasks</h2>
+<p>One story, one commit, one check-in. Tasks are ☐ until done.</p>
+
+<h3 id="s1">Story 1 — Keydown-driven typing input</h3>
+<ul class="tasks">
+  <li>☐ Add <code>src/ui/hooks/useTypingInput.ts</code> per §3: owns <code>input</code>, resets on
+  <code>attempt</code>, subscribes to <code>window</code> <code>keydown</code> while <code>active</code>, applies
+  the five key-handling rules, calls <code>onSubmit</code>. A header comment states the "no text field" decision
+  and links this plan.</li>
+  <li>☐ <code>BattleScreen.tsx</code>: replace the local <code>useState('')</code> + attempt-reset effect with
+  the hook; pass <code>active</code> as gated in §3; keep passing <code>input</code> to <code>PlayerPrompt</code>
+  and <code>Keyboard</code> unchanged.</li>
+  <li>☐ <code>PlayerPrompt.tsx</code>: delete the <code>&lt;input&gt;</code>, <code>handleKeyDown</code>,
+  <code>onInputChange</code>, <code>onSubmit</code>, and the <code>autoFocus</code> lint suppression; the
+  component renders only <code>TypedProgress</code> or the pause message. <code>disabled</code> now only drives
+  <code>blinkCaret</code>. Rewrite the header comment (it currently narrates the hidden input).</li>
+  <li>☐ <code>src/index.css</code>: reword the <code>caret-blink</code> comment — the caret is the only
+  "you type here" cue because there is <em>no</em> input element, not because one is hidden.</li>
+  <li>☐ Tests: new <code>useTypingInput.test.ts</code> (<code>renderHook</code> + <code>userEvent.keyboard</code>
+  on <code>document.body</code>, i.e. with nothing focused): appends printable keys including a Shifted capital;
+  Backspace trims; Enter does not submit until lengths match, then submits exactly once with the typed string;
+  Ctrl/Meta chords are ignored; nothing is captured while <code>active</code> is false; input resets when
+  <code>attempt</code> changes; Space is <code>preventDefault</code>ed. <code>PlayerPrompt.test.tsx</code> loses
+  its typing test (moved to the hook) and its "is disabled" test; keeps the two pause-message tests, which now
+  assert the prompt line is absent rather than the input.</li>
+  <li>☐ <code>npm run presubmit</code> clean.</li>
+  <li>☐ Dev-server check (<code>http://127.0.0.1:5173/</code>): start a fight; click the monster panel, the
+  on-screen keyboard, the countdown, and the page margin; press Tab; after each, type — keystrokes land and the
+  keyboard highlights follow. Take a miss, wait out the pause, type again. Win a fight and confirm Enter on the
+  reward modal does not leak into the next battle's input; lose one and confirm Enter on Continue still works.</li>
+  <li>☐ Commit: <code>typing-input-rework: build the typed line from keydown, drop the hidden input</code>.</li>
+</ul>
+<p><em>Done when:</em> every dev-server check above passes and presubmit is clean.
+<strong>Verified by user on the Chromebook:</strong> ☐ a stray tap mid-fight no longer kills typing ·
+☐ a word the OS used to autocorrect now lands as typed. These two boxes are the user's; the story is code-complete
+without them but the plan does not close as fully verified until they are ticked.</p>
+
+<h3 id="s2">Story 2 — Docs close-out</h3>
+<ul class="tasks">
+  <li>☐ <a href="../../screens.html">screens.html</a>: "Interactions &amp; behavior → Battle" says where input
+  comes from (window <code>keydown</code> while the fight is ongoing and unpaused; no focusable element) and
+  drops the "shorter input treats Enter as a literal character" clause, which describes a rule that does not run.
+  While there, fix the stale "Vertical Duel" bullet that still describes "live input echoed below with a
+  blinking-caret span" — feedback #10 removed the echo row; the caret is drawn inside the prompt line.</li>
+  <li>☐ <a href="../../game-design.html">game-design.html</a> "Submitting an attack": mark the
+  Enter-as-literal-character sentence as a rule reserved for multi-line prompts, of which there are currently
+  none; Enter on a short input does nothing.</li>
+  <li>☐ <a href="../../codebase-architecture.html">codebase-architecture.html</a>: the state table's "input box
+  text" row and the <code>ui/hooks</code> line of the tree name <code>useTypingInput</code>.</li>
+  <li>☐ <a href="20260710-nbutko-m5-game-mechanics.html">M5 plan</a> Story 1: the B2 bullets are already marked
+  as superseded by this plan (done when this plan was opened); after shipping, tick nothing there — B3 remains
+  its own open work — but update the ledger's B2 row to point at this plan's done location.</li>
+  <li>☐ Write note <code>docs/notes/20260913-nbutko-no-text-field-in-battle.html</code> + index row: ChromeOS
+  autocorrects and auto-capitalizes any editable field regardless of opt-out attributes, and an invisible
+  focused element is a focus trap with no escape; the battle screen therefore has no text field, and the
+  typing hook is the only keystroke source. "Relevant when" touching anything that captures typing.</li>
+  <li>☐ Reconcile this plan (tick what shipped), add the done banner, <code>git mv</code> to
+  <code>plans/done/</code>, move the index row.</li>
+  <li>☐ Run the link audit
+  (<a href="../done/20260912-nbutko-docs-refactor.html#audit">docs-refactor plan §7.1</a>); commit:
+  <code>typing-input-rework: close out</code>.</li>
+</ul>
+<p><em>Done when:</em> no evergreen doc or source comment still describes a hidden input; audit clean.</p>
+
+<h2>5. Verification</h2>
+<ul>
+  <li><strong>Story 1, headless:</strong> the hook test above is the spec for the five key rules and the gate.
+  <code>npm run presubmit</code> (lint + <code>tsc</code> + vitest) before the commit.</li>
+  <li><strong>Story 1, visual:</strong> the dev-server click-then-type sweep in the story's task list, against
+  <a href="../../screens.html">screens.html</a>'s battle section — the layout must be pixel-identical to
+  before, since only an invisible element left.</li>
+  <li><strong>On the device:</strong> the two user-owned boxes in Story 1. The autocorrect claim in
+  particular cannot be proven from a Mac; it is the user's playtest that closes it.</li>
+  <li><strong>Story 2:</strong> the link audit, plus a grep for <code>sr-only</code>, <code>autoFocus</code>,
+  and "hidden input" across <code>src/ui/battle</code> and <code>docs/</code> returning only the loss-screen
+  Continue button and this plan's history.</li>
+</ul>
+
+<h2>6. Out of scope, deliberately</h2>
+<ul>
+  <li><strong>The game loop's unclamped <code>dt</code> (M5 bug B3).</strong> It also reads as "the game broke"
+  on returning to a tab, but it is a different mechanism in a different file; it stays in the M5 plan's Story 1.</li>
+  <li><strong>Tapping the on-screen keyboard to type.</strong> The Keyboard component is a display aid; making
+  its keys touch targets is a feature, not a fix, and would need wireframes.</li>
+  <li><strong>IME, dead keys, non-ASCII prompts.</strong> No bank text needs them; if a future content tier
+  does, the hook's "ignore anything that isn't a single-character <code>key</code>" rule is where that work
+  starts.</li>
+  <li><strong>Accessible text entry.</strong> Deliberately dropped with the input (§3).</li>
+</ul>
+
+</main>
+<footer class="page-foot"><a href="../index.html">← plans index</a> · plan for <code>typing-input-rework</code></footer>
+</body>
+</html>
